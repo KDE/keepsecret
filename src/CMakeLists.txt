@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
+
+# Target: static library
+qt_add_qml_module(kwallets_static
+    STATIC
+    URI org.kde.kwallets
+    VERSION 1.0
+    QML_FILES
+        contents/ui/Main.qml
+        contents/ui/About.qml
+        contents/ui/WalletContentsPage.qml
+        contents/ui/WalletListPage.qml
+)
+
+target_sources(kwallets_static PUBLIC
+    app.cpp
+)
+
+target_link_libraries(kwallets_static PUBLIC
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::Svg
+    KF6::I18n
+    KF6::CoreAddons
+    KF6::ConfigCore
+    KF6::ConfigGui
+)
+target_include_directories(kwallets_static PUBLIC ${CMAKE_BINARY_DIR})
+
+if (ANDROID)
+    kirigami_package_breeze_icons(ICONS
+        list-add
+        help-about
+        application-exit
+        applications-graphics
+    )
+else()
+    target_link_libraries(kwallets_static PUBLIC Qt::Widgets)
+endif()
+
+kconfig_add_kcfg_files(kwallets_static GENERATE_MOC kwalletsconfig.kcfgc)
+
+# Target: main executable
+add_executable(kwallets main.cpp)
+target_link_libraries(kwallets PUBLIC kwallets_static kwallets_staticplugin)
+install(TARGETS kwallets ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
