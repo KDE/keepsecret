@@ -62,11 +62,11 @@ int main(int argc, char *argv[])
         // The program name used internally.
         u"kwallets"_s,
         // A displayable program name string.
-        i18nc("@title", "kwallets"),
+        i18nc("@title", "Wallets"),
         // The program version string.
         QStringLiteral(KWALLETS_VERSION_STRING),
         // Short description of what the app does.
-        i18n("Application Description"),
+        i18n("Secret Service Wallet Manager"),
         // The license this code is released under.
         KAboutLicense::GPL,
         // Copyright Statement.
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
                         u"https://yourwebsite.com"_s);
     aboutData.setTranslator(i18nc("NAME OF TRANSLATORS", "Your names"), i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);
-    QGuiApplication::setWindowIcon(QIcon::fromTheme(u"org.kde.kwallets"_s));
+    QGuiApplication::setWindowIcon(QIcon::fromTheme(u"kwalletmanager"_s));
 
     QQmlApplicationEngine engine;
 

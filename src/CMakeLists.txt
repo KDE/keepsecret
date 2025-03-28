@@ -9,6 +9,8 @@ qt_add_qml_module(kwallets_static
     QML_FILES
         contents/ui/Main.qml
         contents/ui/About.qml
+        contents/ui/EntryPage.qml
+        contents/ui/ResizeHandle.qml
         contents/ui/WalletContentsPage.qml
         contents/ui/WalletListPage.qml
 )
