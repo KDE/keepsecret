@@ -20,6 +20,7 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMSetupVersion)
 include(ECMFindQmlModule)
+include(ECMQtDeclareLoggingCategory)
 if (NOT ANDROID)
     include(KDEGitCommitHooks)
     include(KDEClangFormat)
@@ -39,6 +40,10 @@ find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickContro
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Kirigami CoreAddons Config I18n)
 
 qt_policy(SET QTP0001 NEW)
+
+pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
+include_directories(${LIBSECRET_INCLUDE_DIRS})
+link_directories(${LIBSECRET_LIBRARY_DIRS})
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 

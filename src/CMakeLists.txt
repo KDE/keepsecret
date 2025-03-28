@@ -17,6 +17,17 @@ qt_add_qml_module(kwallets_static
 
 target_sources(kwallets_static PUBLIC
     app.cpp
+    itemsmodel.cpp
+    secretserviceclient.cpp
+    walletsmodel.cpp
+)
+
+ecm_qt_declare_logging_category(kwallets_static
+    HEADER kwallets_debug.h
+    IDENTIFIER KWALLETS_LOG
+    CATEGORY_NAME org.kde.kwallets
+    DESCRIPTION "kwallets"
+    EXPORT KWALLETS
 )
 
 target_link_libraries(kwallets_static PUBLIC
@@ -30,6 +41,8 @@ target_link_libraries(kwallets_static PUBLIC
     KF6::CoreAddons
     KF6::ConfigCore
     KF6::ConfigGui
+    Qt::DBus
+    ${LIBSECRET_LIBRARIES}
 )
 target_include_directories(kwallets_static PUBLIC ${CMAKE_BINARY_DIR})
 

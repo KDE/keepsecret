@@ -10,7 +10,7 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
-    title: i18n("Name")
+    title: App.itemsModel.currentWallet
 
     property alias currentEntry: view.currentIndex
     property int state: WalletContentsPage.Loaded
@@ -51,19 +51,42 @@ Kirigami.ScrollablePage {
     ListView {
         id: view
         currentIndex: -1
-        model: page.state == WalletContentsPage.Loaded ? 100 : 0
+        model: App.itemsModel
         onModelChanged: currentIndex = -1
+        section.property: "folder"
+        section.delegate: RowLayout {
+            x: Kirigami.Units.largeSpacing
+            Kirigami.Icon {
+                source: "folder"
+                implicitWidth: Kirigami.Units.iconSizes.smallMedium
+                implicitHeight: implicitWidth
+            }
+            Kirigami.Heading {
+                level: 4
+                text: section
+                color: Kirigami.Theme.textColor
+               // height: implicitHeight + Kirigami.Units.largeSpacing
+               // verticalAlignment: Qt.AlignBottom
+            }
+            Kirigami.Separator {
+                Layout.alignment: Qt.alignCenter
+                Layout.fillWidth: true
+            }
+        }
+        section.criteria: ViewSection.FullString
         delegate: QQC.ItemDelegate {
+            required property var model
+            required property int index
             width: view.width
-            icon.name: "folder"
-            text: modelData
+            icon.name: "encrypted"
+            text: model.display
             highlighted: view.currentIndex == index
             onClicked: view.currentIndex = index
         }
 
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
-            visible: page.state != WalletContentsPage.Loaded
+            visible: view.count === 0
             icon.name: "folder-locked-symbolic"
             text: i18n("Wallet is locked")
             helpfulAction: Kirigami.Action {

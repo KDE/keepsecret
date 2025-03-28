@@ -101,7 +101,7 @@ Kirigami.ApplicationWindow {
         implicitWidth: Math.max(minimumSidebarWidth, root.leadingSidebarWidth)
         onCurrentWalletChanged: {
             walletContentsPage.currentEntry = -1
-            if (currentWallet >= 0) {
+            if (currentWallet.length >= 0) {
                 if (pageStack.depth < 2) {
                     pageStack.push(walletContentsPage)
                 }
@@ -118,7 +118,6 @@ Kirigami.ApplicationWindow {
 
     WalletContentsPage {
         id: walletContentsPage
-        title: walletListPage.currentWallet
         visible: false
         Kirigami.ColumnView.fillWidth: true
         Kirigami.ColumnView.reservedSpace: walletListPage.width + (pageStack.depth === 3 ? entryPage.width : 0)

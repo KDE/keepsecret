@@ -12,7 +12,7 @@ Kirigami.ScrollablePage {
 
     //title: i18n("Wallets")
 
-    property alias currentWallet: view.currentIndex
+    readonly property string currentWallet: App.itemsModel.currentWallet
 
     actions: [
         Kirigami.Action {
@@ -26,13 +26,18 @@ Kirigami.ScrollablePage {
     ListView {
         id: view
         currentIndex: -1
-        model: 5
+        model: App.walletsModel
         delegate: QQC.ItemDelegate {
+            required property var model
+            required property int index
             width: view.width
             icon.name: "wallet-closed-symbolic"
-            text: modelData
+            text: model.display
             highlighted: view.currentIndex == index
-            onClicked: view.currentIndex = index
+            onClicked: {
+                App.itemsModel.currentWallet = model.display
+                view.currentIndex = index
+            }
         }
     }
 }
