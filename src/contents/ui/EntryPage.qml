@@ -10,7 +10,7 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
-    title: i18n("Entry")
+    title: App.secretItem.itemName
 
     actions: [
         Kirigami.Action {
@@ -22,7 +22,12 @@ Kirigami.ScrollablePage {
         }
     ]
 
-    QQC.Label {
-        text: "stub"
+    ColumnLayout {
+        QQC.Label {
+            text: i18n("Value:")
+        }
+        Kirigami.PasswordField {
+            text: App.secretItem.secretValue
+        }
     }
 }

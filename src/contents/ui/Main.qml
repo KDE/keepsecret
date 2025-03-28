@@ -137,7 +137,6 @@ Kirigami.ApplicationWindow {
         id: entryPage
         implicitWidth: Math.max(minimumSidebarWidth, root.trailingSidebarWidth)
         visible: false
-        title: walletContentsPage.currentEntry
         Kirigami.ColumnView.fillWidth: false
     }
 

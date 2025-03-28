@@ -18,6 +18,7 @@ qt_add_qml_module(kwallets_static
 target_sources(kwallets_static PUBLIC
     app.cpp
     itemsmodel.cpp
+    secretitemproxy.cpp
     secretserviceclient.cpp
     walletsmodel.cpp
 )

@@ -78,10 +78,14 @@ Kirigami.ScrollablePage {
             required property var model
             required property int index
             width: view.width
-            icon.name: "encrypted"
+            //icon.name: "encrypted"
+            leftPadding: 35
             text: model.display
             highlighted: view.currentIndex == index
-            onClicked: view.currentIndex = index
+            onClicked: {
+                view.currentIndex = index
+                App.secretItem.loadItem(App.itemsModel.currentWallet, model.folder, model.display);
+            }
         }
 
         Kirigami.PlaceholderMessage {

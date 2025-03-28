@@ -14,6 +14,7 @@ App::App(QObject *parent)
 {
     m_walletsModel = new WalletsModel(m_secretServiceClient, this);
     m_itemsModel = new ItemsModel(m_secretServiceClient, this);
+    m_secretItemProxy = new SecretItemProxy(m_secretServiceClient, this);
 }
 
 App::~App()
@@ -28,6 +29,11 @@ WalletsModel *App::walletsModel() const
 ItemsModel *App::itemsModel() const
 {
     return m_itemsModel;
+}
+
+SecretItemProxy *App::secretItem() const
+{
+    return m_secretItemProxy;
 }
 
 void App::restoreWindowGeometry(QQuickWindow *window, const QString &group) const

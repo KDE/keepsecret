@@ -39,7 +39,6 @@ void ItemsModel::setCurrentWallet(const QString &wallet)
             m_items << QPair<QString, QString>(folder, item);
         }
     }
-    qWarning() << "AAAA" << m_items;
     endResetModel();
 
     Q_EMIT(currentWalletChanged(wallet));

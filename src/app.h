@@ -7,6 +7,7 @@
 #include <QQmlEngine>
 
 #include "itemsmodel.h"
+#include "secretitemproxy.h"
 #include "secretserviceclient.h"
 #include "walletsmodel.h"
 
@@ -22,6 +23,7 @@ class App : public QObject
 
     Q_PROPERTY(WalletsModel *walletsModel READ walletsModel CONSTANT)
     Q_PROPERTY(ItemsModel *itemsModel READ itemsModel CONSTANT)
+    Q_PROPERTY(SecretItemProxy *secretItem READ secretItem CONSTANT)
 
 public:
     App(QObject *parent = nullptr);
@@ -29,6 +31,7 @@ public:
 
     WalletsModel *walletsModel() const;
     ItemsModel *itemsModel() const;
+    SecretItemProxy *secretItem() const;
 
     // Restore current window geometry
     Q_INVOKABLE void restoreWindowGeometry(QQuickWindow *window, const QString &group = QStringLiteral("main")) const;
@@ -39,4 +42,5 @@ private:
     SecretServiceClient *m_secretServiceClient = nullptr;
     WalletsModel *m_walletsModel = nullptr;
     ItemsModel *m_itemsModel = nullptr;
+    SecretItemProxy *m_secretItemProxy = nullptr;
 };
