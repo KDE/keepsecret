@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
-#include "itemsmodel.h"
+#include "walletmodel.h"
 #include "secretserviceclient.h"
 
-ItemsModel::ItemsModel(SecretServiceClient *secretServiceClient, QObject *parent)
+WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
 }
 
-ItemsModel::~ItemsModel()
+WalletModel::~WalletModel()
 {
 }
 
-QString ItemsModel::currentWallet() const
+QString WalletModel::currentWallet() const
 {
     return m_currentWallet;
 }
 
-void ItemsModel::setCurrentWallet(const QString &wallet)
+void WalletModel::setCurrentWallet(const QString &wallet)
 {
     if (wallet == m_currentWallet) {
         return;
@@ -44,7 +44,7 @@ void ItemsModel::setCurrentWallet(const QString &wallet)
     Q_EMIT(currentWalletChanged(wallet));
 }
 
-QHash<int, QByteArray> ItemsModel::roleNames() const
+QHash<int, QByteArray> WalletModel::roleNames() const
 {
     QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
     roleNames[FolderRole] = "folder";
@@ -52,7 +52,7 @@ QHash<int, QByteArray> ItemsModel::roleNames() const
     return roleNames;
 }
 
-int ItemsModel::rowCount(const QModelIndex &parent) const
+int WalletModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) {
         return 0;
@@ -61,7 +61,7 @@ int ItemsModel::rowCount(const QModelIndex &parent) const
     return m_items.count();
 }
 
-QVariant ItemsModel::data(const QModelIndex &index, int role) const
+QVariant WalletModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() > m_items.count() - 1) {
         return {};
@@ -79,4 +79,4 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-#include "moc_itemsmodel.cpp"
+#include "moc_walletmodel.cpp"

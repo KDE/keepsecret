@@ -10,9 +10,10 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
+    Kirigami.Theme.colorSet: Kirigami.Theme.Window
     //title: i18n("Wallets")
 
-    readonly property string currentWallet: App.itemsModel.currentWallet
+    readonly property string currentWallet: App.walletModel.currentWallet
 
     actions: [
         Kirigami.Action {
@@ -35,7 +36,7 @@ Kirigami.ScrollablePage {
             text: model.display
             highlighted: view.currentIndex == index
             onClicked: {
-                App.itemsModel.currentWallet = model.display
+                App.walletModel.currentWallet = model.display
                 view.currentIndex = index
             }
         }

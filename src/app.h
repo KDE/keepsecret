@@ -6,9 +6,9 @@
 #include <QObject>
 #include <QQmlEngine>
 
-#include "itemsmodel.h"
 #include "secretitemproxy.h"
 #include "secretserviceclient.h"
+#include "walletmodel.h"
 #include "walletsmodel.h"
 
 class QQuickWindow;
@@ -22,7 +22,7 @@ class App : public QObject
     QML_SINGLETON
 
     Q_PROPERTY(WalletsModel *walletsModel READ walletsModel CONSTANT)
-    Q_PROPERTY(ItemsModel *itemsModel READ itemsModel CONSTANT)
+    Q_PROPERTY(WalletModel *walletModel READ walletModel CONSTANT)
     Q_PROPERTY(SecretItemProxy *secretItem READ secretItem CONSTANT)
 
 public:
@@ -30,7 +30,7 @@ public:
     ~App();
 
     WalletsModel *walletsModel() const;
-    ItemsModel *itemsModel() const;
+    WalletModel *walletModel() const;
     SecretItemProxy *secretItem() const;
 
     // Restore current window geometry
@@ -41,6 +41,6 @@ public:
 private:
     SecretServiceClient *m_secretServiceClient = nullptr;
     WalletsModel *m_walletsModel = nullptr;
-    ItemsModel *m_itemsModel = nullptr;
+    WalletModel *m_walletModel = nullptr;
     SecretItemProxy *m_secretItemProxy = nullptr;
 };

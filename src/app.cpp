@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 #include "app.h"
-#include "itemsmodel.h"
 #include "secretserviceclient.h"
+#include "walletmodel.h"
 #include <KSharedConfig>
 #include <KWindowConfig>
 #include <QQuickWindow>
@@ -13,7 +13,7 @@ App::App(QObject *parent)
     , m_secretServiceClient(new SecretServiceClient(this))
 {
     m_walletsModel = new WalletsModel(m_secretServiceClient, this);
-    m_itemsModel = new ItemsModel(m_secretServiceClient, this);
+    m_walletModel = new WalletModel(m_secretServiceClient, this);
     m_secretItemProxy = new SecretItemProxy(m_secretServiceClient, this);
 }
 
@@ -26,9 +26,9 @@ WalletsModel *App::walletsModel() const
     return m_walletsModel;
 }
 
-ItemsModel *App::itemsModel() const
+WalletModel *App::walletModel() const
 {
-    return m_itemsModel;
+    return m_walletModel;
 }
 
 SecretItemProxy *App::secretItem() const

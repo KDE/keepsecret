@@ -10,7 +10,7 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
-    title: App.itemsModel.currentWallet
+    title: App.walletModel.currentWallet
 
     property alias currentEntry: view.currentIndex
     property int state: WalletContentsPage.Loaded
@@ -24,10 +24,11 @@ Kirigami.ScrollablePage {
 
     actions: [
         Kirigami.Action {
+            id: searchAction
             text: i18n("Search")
             icon.name: "search-symbolic"
             tooltip: i18n("Search entries in this wallet")
-            onTriggered: root.counter += 1
+            checkable: true
         },
         Kirigami.Action {
             text: i18n("Lock")
@@ -48,10 +49,22 @@ Kirigami.ScrollablePage {
         }
     ]
 
+    header: QQC.ToolBar {
+        visible: searchAction.checked
+        contentItem: QQC.TextField {
+            onVisibleChanged: {
+                if (visible) {
+                    forceActiveFocus()
+                }
+            }
+            placeholderText: i18n("Search...")
+        }
+    }
+
     ListView {
         id: view
         currentIndex: -1
-        model: App.itemsModel
+        model: App.walletModel
         onModelChanged: currentIndex = -1
         section.property: "folder"
         section.delegate: QQC.Control {
@@ -82,7 +95,7 @@ Kirigami.ScrollablePage {
             highlighted: view.currentIndex == index
             onClicked: {
                 view.currentIndex = index
-                App.secretItem.loadItem(App.itemsModel.currentWallet, model.folder, model.display);
+                App.secretItem.loadItem(App.walletModel.currentWallet, model.folder, model.display);
             }
         }
 

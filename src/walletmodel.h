@@ -8,7 +8,7 @@
 
 class SecretServiceClient;
 
-class ItemsModel : public QAbstractListModel
+class WalletModel : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -20,8 +20,8 @@ public:
     };
     Q_ENUM(Roles)
 
-    ItemsModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
-    ~ItemsModel();
+    WalletModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
+    ~WalletModel();
 
     QString currentWallet() const;
     void setCurrentWallet(const QString &wallet);
