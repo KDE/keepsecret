@@ -40,15 +40,6 @@ struct GListDeleter {
     }
 };
 
-struct GHashTableDeleter {
-    void operator()(GHashTable *table) const
-    {
-        if (table) {
-            g_hash_table_destroy(table);
-        }
-    }
-};
-
 struct SecretValueDeleter {
     void operator()(SecretValue *value) const
     {
@@ -59,7 +50,6 @@ struct SecretValueDeleter {
 };
 
 using GListPtr = std::unique_ptr<GList, GListDeleter>;
-using GHashTablePtr = std::unique_ptr<GHashTable, GHashTableDeleter>;
 using SecretValuePtr = std::unique_ptr<SecretValue, SecretValueDeleter>;
 
 static bool wasErrorFree(GError **error)

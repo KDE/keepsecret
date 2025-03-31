@@ -14,20 +14,69 @@ Kirigami.ScrollablePage {
 
     actions: [
         Kirigami.Action {
+            text: i18n("Save")
+            icon.name: "document-save"
+            tooltip: i18n("Save changes")
+            enabled: App.secretItem.needsSave
+            onTriggered: App.secretItem.save()
+        },
+        Kirigami.Action {
             text: i18n("Delete")
             icon.name: "delete-symbolic"
             tooltip: i18n("Delete this entry")
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            onTriggered: root.counter += 1
+            onTriggered: {
+                print("delete")
+            }
         }
     ]
 
     ColumnLayout {
         QQC.Label {
-            text: i18n("Value:")
+            Layout.fillWidth: true
+            text: i18n("Label:")
+        }
+        QQC.TextField {
+            id: labelField
+            Layout.fillWidth: true
+            text: App.secretItem.label
+            onTextEdited: App.secretItem.label = text
+        }
+        QQC.Label {
+            Layout.fillWidth: true
+            text: i18n("Password:")
         }
         Kirigami.PasswordField {
+            id: passwordField
+            Layout.fillWidth: true
             text: App.secretItem.secretValue
+            onTextEdited: App.secretItem.secretValue = text
+        }
+        QQC.Label {
+            Layout.fillWidth: true
+            text: i18n("Created: %1", Qt.formatDateTime(App.secretItem.creationTime, Locale.LongFormat))
+        }
+        QQC.Label {
+            Layout.fillWidth: true
+            text: i18n("Modified: %1", Qt.formatDateTime(App.secretItem.modificationTime, Locale.LongFormat))
+        }
+
+        Repeater {
+            model: App.secretItem.attributes.__keys
+            delegate: RowLayout {
+                //TODO: hide for kwallet-type entries?
+                QQC.Label {
+                    Layout.fillWidth: true
+                    text: modelData
+                }
+                QQC.Label {
+                    text: App.secretItem.attributes[modelData]
+                }
+            }
+        }
+        QQC.Label {
+            Layout.fillWidth: true
+            text: i18n("Schema: %1", App.secretItem.schemaName)
         }
     }
 }

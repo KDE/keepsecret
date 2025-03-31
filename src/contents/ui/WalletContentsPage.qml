@@ -54,23 +54,21 @@ Kirigami.ScrollablePage {
         model: App.itemsModel
         onModelChanged: currentIndex = -1
         section.property: "folder"
-        section.delegate: RowLayout {
-            x: Kirigami.Units.largeSpacing
-            Kirigami.Icon {
-                source: "folder"
-                implicitWidth: Kirigami.Units.iconSizes.smallMedium
-                implicitHeight: implicitWidth
-            }
-            Kirigami.Heading {
-                level: 4
-                text: section
-                color: Kirigami.Theme.textColor
-               // height: implicitHeight + Kirigami.Units.largeSpacing
-               // verticalAlignment: Qt.AlignBottom
-            }
-            Kirigami.Separator {
-                Layout.alignment: Qt.alignCenter
-                Layout.fillWidth: true
+        section.delegate: QQC.Control {
+            contentItem: RowLayout {
+                Kirigami.Icon {
+                    source: "folder"
+                    implicitWidth: Kirigami.Units.iconSizes.smallMedium
+                    implicitHeight: implicitWidth
+                }
+                QQC.Label {
+                    text: section
+                    Layout.fillWidth: false
+                }
+                Kirigami.Separator {
+                    Layout.alignment: Qt.alignCenter
+                    Layout.fillWidth: true
+                }
             }
         }
         section.criteria: ViewSection.FullString
@@ -79,7 +77,7 @@ Kirigami.ScrollablePage {
             required property int index
             width: view.width
             //icon.name: "encrypted"
-            leftPadding: 35
+            leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
             text: model.display
             highlighted: view.currentIndex == index
             onClicked: {

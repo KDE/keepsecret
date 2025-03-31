@@ -25,11 +25,21 @@ struct GObjectDeleter {
     }
 };
 
+struct GHashTableDeleter {
+    void operator()(GHashTable *table) const
+    {
+        if (table) {
+            g_hash_table_destroy(table);
+        }
+    }
+};
+
 template<typename T>
 using GObjectPtr = std::unique_ptr<T, GObjectDeleter>;
 using SecretServicePtr = GObjectPtr<SecretService>;
 using SecretCollectionPtr = GObjectPtr<SecretCollection>;
 using SecretItemPtr = GObjectPtr<SecretItem>;
+using GHashTablePtr = std::unique_ptr<GHashTable, GHashTableDeleter>;
 
 class SecretServiceClient : public QObject
 {
@@ -49,6 +59,9 @@ public:
 
     bool useKSecretBackend() const;
     bool isAvailable() const;
+
+    SecretCollection *retrieveCollection(const QString &name);
+    SecretItemPtr retrieveItem(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok);
 
     bool unlockCollection(const QString &collectionName, bool *ok);
 
@@ -96,8 +109,6 @@ protected:
     void onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner);
 
     QString collectionLabelForPath(const QDBusObjectPath &path);
-    SecretCollection *retrieveCollection(const QString &name);
-    SecretItemPtr retrieveItem(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok);
 
 protected Q_SLOTS:
     void handlePrompt(bool dismissed);

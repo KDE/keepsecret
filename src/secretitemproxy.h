@@ -4,7 +4,9 @@
 #pragma once
 
 #include "secretserviceclient.h"
+#include <QDateTime>
 #include <QObject>
+#include <qt6/QtCore/qcontainerfwd.h>
 
 class SecretServiceClient;
 
@@ -12,35 +14,75 @@ class SecretItemProxy : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString wallet READ wallet WRITE setWallet NOTIFY walletChanged)
-    Q_PROPERTY(QString itemName READ itemName WRITE setItemName NOTIFY itemNameChanged)
+    Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
+    Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged)
+    Q_PROPERTY(bool locked READ isLocked NOTIFY lockedChanged)
+    Q_PROPERTY(QDateTime creationTime READ creationTime NOTIFY creationTimeChanged)
+    Q_PROPERTY(QDateTime modificationTime READ modificationTime NOTIFY modificationTimeChanged)
+    Q_PROPERTY(QString wallet READ wallet NOTIFY walletChanged)
+    Q_PROPERTY(QString itemName READ itemName NOTIFY itemNameChanged)
+    Q_PROPERTY(QString label READ label WRITE setLabel NOTIFY labelChanged)
     Q_PROPERTY(QString secretValue READ secretValue WRITE setSecretValue NOTIFY secretValueChanged)
+
+    Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
+
+    Q_PROPERTY(QString schemaName READ schemaName NOTIFY schemaNameChanged)
 
 public:
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
 
+    bool isValid() const;
+    bool needsSave() const;
+    bool isLocked() const;
+    QDateTime creationTime() const;
+    QDateTime modificationTime() const;
+
     QString wallet() const;
-    void setWallet(const QString &wallet);
 
     QString itemName() const;
-    void setItemName(const QString &itemName);
+
+    QString label() const;
+    void setLabel(const QString &label);
 
     QString secretValue() const;
     void setSecretValue(const QString &secretValue);
 
+    QVariantMap attributes() const;
+
+    QString schemaName() const;
+
     Q_INVOKABLE void loadItem(const QString &wallet, const QString &folder, const QString &item);
+    Q_INVOKABLE void save();
+    Q_INVOKABLE void close();
 
 Q_SIGNALS:
+    void validChanged(bool valid);
+    void needsSaveChanged(bool needsSave);
+    void lockedChanged(bool locked);
+    void creationTimeChanged(const QDateTime &time);
+    void modificationTimeChanged(const QDateTime &time);
     void walletChanged(const QString &wallet);
+    void folderChanged(const QString &folder);
     void itemNameChanged(const QString &itemName);
+    void labelChanged(const QString &itemName);
     void secretValueChanged(const QString &secretValue);
+    void attributesChanged(const QVariantMap &attribures);
+    void schemaNameChanged(const QString &schemaName);
 
 private:
+    bool m_needsSave = false;
+    bool m_locked = false;
+    QDateTime m_creationTime;
+    QDateTime m_modificationTime;
     QString m_wallet;
     QString m_folder;
     QString m_itemName;
+    QString m_label;
     QString m_secretValue;
+    QVariantMap m_attributes;
+    QString m_schemaName;
 
+    SecretItemPtr m_secretItem;
     SecretServiceClient *m_secretServiceClient = nullptr;
 };
