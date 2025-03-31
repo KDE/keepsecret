@@ -13,7 +13,16 @@ Kirigami.ScrollablePage {
     title: App.walletModel.currentWallet
 
     property alias currentEntry: view.currentIndex
-    property int state: WalletContentsPage.Loaded
+    property int state: {
+        if (App.walletModel.currentWallet.length === 0) {
+            return WalletContentsPage.NoWallet
+        } else if (App.walletModel.locked) {
+            return WalletContentsPage.Locked
+        } else if (view.count === 0) {
+            return WalletContentsPage.Empty
+        }
+        return WalletContentsPage.Loaded
+    }
 
     enum State {
         NoWallet,
@@ -24,6 +33,12 @@ Kirigami.ScrollablePage {
 
     actions: [
         Kirigami.Action {
+            id: newAction
+            text: i18n("New Entry")
+            icon.name: "list-add-symbolic"
+            tooltip: i18n("Create a new entry in this wallet")
+        },
+        Kirigami.Action {
             id: searchAction
             text: i18n("Search")
             icon.name: "search-symbolic"
@@ -31,13 +46,16 @@ Kirigami.ScrollablePage {
             checkable: true
         },
         Kirigami.Action {
-            text: i18n("Lock")
-            icon.name: "lock-symbolic"
-            tooltip: i18n("Lock this wallet")
+            id: lockAction
+            text: App.walletModel.locked ? i18n("Unlock") : i18n("Lock")
+            icon.name: App.walletModel.locked ? "unlock-symbolic" : "lock-symbolic"
+            tooltip: App.walletModel.locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
             onTriggered: {
-                walletListPage.currentWallet = -1
-                currentEntry = -1
-                page.state = WalletContentsPage.Locked
+                if (App.walletModel.locked) {
+                    App.walletModel.unlock()
+                } else {
+                    App.walletModel.lock()
+                }
             }
         },
         Kirigami.Action {
@@ -79,7 +97,7 @@ Kirigami.ScrollablePage {
                     Layout.fillWidth: false
                 }
                 Kirigami.Separator {
-                    Layout.alignment: Qt.alignCenter
+                    Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
                 }
             }
@@ -95,19 +113,41 @@ Kirigami.ScrollablePage {
             highlighted: view.currentIndex == index
             onClicked: {
                 view.currentIndex = index
-                App.secretItem.loadItem(App.walletModel.currentWallet, model.folder, model.display);
+                App.secretItem.loadItem(App.walletModel.currentWallet, model.dbusPath);
             }
         }
 
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
             visible: view.count === 0
-            icon.name: "folder-locked-symbolic"
-            text: i18n("Wallet is locked")
-            helpfulAction: Kirigami.Action {
-                text: i18n("Unlock")
-                onTriggered: {
-                    page.state = WalletContentsPage.Loaded
+            icon.name: {
+                switch (page.state) {
+                case WalletContentsPage.Locked:
+                    return "folder-locked"
+                case WalletContentsPage.Empty:
+                    return "wallet-closed"
+                default:
+                    return ""
+                }
+            }
+            text: {
+                switch (page.state) {
+                case WalletContentsPage.Locked:
+                    return i18n("Wallet is locked")
+                case WalletContentsPage.Empty:
+                    return i18n("Wallet is empty")
+                default:
+                    return ""
+                }
+            }
+            helpfulAction: {
+                switch (page.state) {
+                case WalletContentsPage.Locked:
+                    return lockAction
+                case WalletContentsPage.Empty:
+                    return newAction
+                default:
+                    return null
                 }
             }
         }

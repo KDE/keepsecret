@@ -90,35 +90,39 @@ QVariantMap SecretItemProxy::attributes() const
     return m_attributes;
 }
 
-QString SecretItemProxy::schemaName() const
-{
-    return m_schemaName;
-}
-
-void SecretItemProxy::loadItem(const QString &wallet, const QString &folder, const QString &itemName)
+void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
 {
     bool wasValid = isValid();
     bool ok;
 
-    m_secretItem = m_secretServiceClient->retrieveItem(itemName, SecretServiceClient::Unknown, folder, wallet, &ok);
+    m_secretItem = m_secretServiceClient->retrieveItem(dbusPath, wallet, &ok);
 
     if (ok) {
         m_needsSave = false;
         m_locked = secret_item_get_locked(m_secretItem.get());
         m_creationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_created(m_secretItem.get()));
         m_modificationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_modified(m_secretItem.get()));
-        m_wallet = wallet;
-        m_folder = folder;
-        m_itemName = itemName;
         m_label = QString::fromUtf8(secret_item_get_label(m_secretItem.get()));
         // TODO: text vs binary vs map
-        m_secretValue = QString::fromUtf8(m_secretServiceClient->readEntry(itemName, SecretServiceClient::Unknown, folder, wallet, &ok));
-        m_schemaName = QString::fromUtf8(secret_item_get_schema_name(m_secretItem.get()));
+        // m_secretValue = QString::fromUtf8(m_secretServiceClient->readEntry(m_itemName, SecretServiceClient::Unknown, m_folder, m_wallet, &ok));
 
         m_attributes.clear();
         GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(m_secretItem.get()));
 
         if (attributes) {
+            const char *schema = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "xdg:schema"));
+            if (schema && g_strcmp0(schema, "org.qt.keychain") == 0) {
+                // Retrieve "server" value
+                const char *server = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "server"));
+                if (server) {
+                    m_folder = QString::fromUtf8(server);
+                }
+                const char *user = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "user"));
+                if (user) {
+                    m_itemName = QString::fromUtf8(server);
+                }
+            }
+
             GHashTableIter attrIter;
             gpointer key, value;
             g_hash_table_iter_init(&attrIter, attributes.get());
@@ -142,7 +146,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &folder, con
         m_itemName = QString();
         m_label = QString();
         m_secretValue = QString();
-        m_schemaName = QString();
         m_attributes.clear();
         m_attributes[QStringLiteral("__keys")] = QStringList();
     }
@@ -157,7 +160,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &folder, con
     Q_EMIT labelChanged(m_label);
     Q_EMIT secretValueChanged(m_secretValue);
     Q_EMIT attributesChanged(m_attributes);
-    Q_EMIT schemaNameChanged(m_schemaName);
 
     if (wasValid != ok) {
         Q_EMIT validChanged(ok);
@@ -189,7 +191,6 @@ void SecretItemProxy::close()
     m_label = QString();
     m_secretValue = QString();
     m_folder = QString();
-    m_schemaName = QString();
     m_attributes.clear();
     m_attributes[QStringLiteral("__keys")] = QStringList();
 
@@ -205,7 +206,6 @@ void SecretItemProxy::close()
     Q_EMIT labelChanged(m_label);
     Q_EMIT secretValueChanged(m_secretValue);
     Q_EMIT attributesChanged(m_attributes);
-    Q_EMIT schemaNameChanged(m_schemaName);
     Q_EMIT validChanged(false);
 }
 

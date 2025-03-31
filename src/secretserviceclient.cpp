@@ -31,14 +31,6 @@ const SecretSchema *qtKeychainSchema(void)
 }
 
 // Custom deleters for non GObject things
-struct GListDeleter {
-    void operator()(GList *list) const
-    {
-        if (list) {
-            g_list_free(list);
-        }
-    }
-};
 
 struct SecretValueDeleter {
     void operator()(SecretValue *value) const
@@ -49,7 +41,6 @@ struct SecretValueDeleter {
     }
 };
 
-using GListPtr = std::unique_ptr<GList, GListDeleter>;
 using SecretValuePtr = std::unique_ptr<SecretValue, SecretValueDeleter>;
 
 static bool wasErrorFree(GError **error)
@@ -174,10 +165,10 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
         return nullptr;
     }
 
-    auto it = m_openCollections.find(name);
-    if (it != m_openCollections.end()) {
-        return it->second.get();
-    }
+    /* auto it = m_openCollections.find(name);
+     if (it != m_openCollections.end()) {
+         return it->second.get();
+     }*/
 
     GListPtr collections = GListPtr(secret_service_get_collections(m_service.get()));
 
@@ -185,7 +176,7 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
         SecretCollectionPtr colPtr = SecretCollectionPtr(SECRET_COLLECTION(l->data));
         const gchar *label = secret_collection_get_label(colPtr.get());
         if (QString::fromUtf8(label) == name) {
-            m_openCollections.insert(std::make_pair(name, std::move(colPtr)));
+            // m_openCollections.insert(std::make_pair(name, std::move(colPtr)));
             SecretCollection *collection = colPtr.get();
             return collection;
         }
@@ -233,6 +224,30 @@ SecretServiceClient::retrieveItem(const QString &key, const SecretServiceClient:
     }
 
     return SecretItemPtr(item);
+}
+
+SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok)
+{
+    GError *error = nullptr;
+
+    SecretCollectionPtr collection = SecretCollectionPtr(retrieveCollection(collectionName));
+
+    GListPtr list = GListPtr(secret_collection_get_items(collection.get()));
+    if (list) {
+        *ok = true;
+        for (GList *l = list.get(); l != nullptr; l = l->next) {
+            SecretItem *item = static_cast<SecretItem *>(l->data);
+            const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item)));
+
+            if (path == dbusPath) {
+                return SecretItemPtr(item);
+            }
+        }
+    } else {
+        *ok = false;
+    }
+
+    return nullptr;
 }
 
 bool SecretServiceClient::attemptConnection()
@@ -411,6 +426,36 @@ bool SecretServiceClient::unlockCollection(const QString &collectionName, bool *
         *ok = wasErrorFree(&error);
         if (!success) {
             qCWarning(KWALLETS_LOG) << i18n("Unable to unlock collectionName %1", collectionName);
+        }
+        return success;
+    }
+
+    return true;
+}
+
+bool SecretServiceClient::lockCollection(const QString &collectionName, bool *ok)
+{
+    if (!attemptConnection()) {
+        *ok = false;
+        return false;
+    }
+
+    GError *error = nullptr;
+
+    SecretCollection *collection = retrieveCollection(collectionName);
+
+    if (!collection) {
+        *ok = false;
+        return false;
+    }
+
+    gboolean locked = secret_collection_get_locked(collection);
+
+    if (!locked) {
+        gboolean success = secret_service_lock_sync(m_service.get(), g_list_append(nullptr, collection), nullptr, nullptr, &error);
+        *ok = wasErrorFree(&error);
+        if (!success) {
+            qCWarning(KWALLETS_LOG) << i18n("Unable to lock collectionName %1", collectionName);
         }
         return success;
     }

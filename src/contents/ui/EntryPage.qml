@@ -52,14 +52,6 @@ Kirigami.ScrollablePage {
             text: App.secretItem.secretValue
             onTextEdited: App.secretItem.secretValue = text
         }
-        QQC.Label {
-            Layout.fillWidth: true
-            text: i18n("Created: %1", Qt.formatDateTime(App.secretItem.creationTime, Locale.LongFormat))
-        }
-        QQC.Label {
-            Layout.fillWidth: true
-            text: i18n("Modified: %1", Qt.formatDateTime(App.secretItem.modificationTime, Locale.LongFormat))
-        }
 
         Repeater {
             model: App.secretItem.attributes.__keys
@@ -74,9 +66,25 @@ Kirigami.ScrollablePage {
                 }
             }
         }
-        QQC.Label {
-            Layout.fillWidth: true
-            text: i18n("Schema: %1", App.secretItem.schemaName)
+
+        RowLayout {
+            QQC.Label {
+                Layout.fillWidth: true
+                text: i18n("Created")
+            }
+            QQC.Label {
+                text: Qt.formatDateTime(App.secretItem.creationTime, Locale.LongFormat)
+            }
+        }
+
+        RowLayout {
+            QQC.Label {
+                Layout.fillWidth: true
+                text: i18n("Modified")
+            }
+            QQC.Label {
+                text: Qt.formatDateTime(App.secretItem.modificationTime, Locale.LongFormat)
+            }
         }
     }
 }

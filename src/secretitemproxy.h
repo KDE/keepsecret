@@ -26,8 +26,6 @@ class SecretItemProxy : public QObject
 
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
-    Q_PROPERTY(QString schemaName READ schemaName NOTIFY schemaNameChanged)
-
 public:
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
@@ -50,9 +48,7 @@ public:
 
     QVariantMap attributes() const;
 
-    QString schemaName() const;
-
-    Q_INVOKABLE void loadItem(const QString &wallet, const QString &folder, const QString &item);
+    Q_INVOKABLE void loadItem(const QString &wallet, const QString &dbusPath);
     Q_INVOKABLE void save();
     Q_INVOKABLE void close();
 
@@ -68,7 +64,6 @@ Q_SIGNALS:
     void labelChanged(const QString &itemName);
     void secretValueChanged(const QString &secretValue);
     void attributesChanged(const QVariantMap &attribures);
-    void schemaNameChanged(const QString &schemaName);
 
 private:
     bool m_needsSave = false;
@@ -81,7 +76,6 @@ private:
     QString m_label;
     QString m_secretValue;
     QVariantMap m_attributes;
-    QString m_schemaName;
 
     SecretItemPtr m_secretItem;
     SecretServiceClient *m_secretServiceClient = nullptr;

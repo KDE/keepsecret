@@ -34,12 +34,22 @@ struct GHashTableDeleter {
     }
 };
 
+struct GListDeleter {
+    void operator()(GList *list) const
+    {
+        if (list) {
+            g_list_free(list);
+        }
+    }
+};
+
 template<typename T>
 using GObjectPtr = std::unique_ptr<T, GObjectDeleter>;
 using SecretServicePtr = GObjectPtr<SecretService>;
 using SecretCollectionPtr = GObjectPtr<SecretCollection>;
 using SecretItemPtr = GObjectPtr<SecretItem>;
 using GHashTablePtr = std::unique_ptr<GHashTable, GHashTableDeleter>;
+using GListPtr = std::unique_ptr<GList, GListDeleter>;
 
 class SecretServiceClient : public QObject
 {
@@ -62,8 +72,10 @@ public:
 
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok);
+    SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
     bool unlockCollection(const QString &collectionName, bool *ok);
+    bool lockCollection(const QString &collectionName, bool *ok);
 
     QString defaultCollection(bool *ok);
     void setDefaultCollection(const QString &collectionName, bool *ok);

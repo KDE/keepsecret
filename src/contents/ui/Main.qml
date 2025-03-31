@@ -107,7 +107,6 @@ Kirigami.ApplicationWindow {
                 }
 
                 pageStack.currentIndex = 1
-                walletContentsPage.state = WalletContentsPage.Loaded
             } else if (pageStack.wideMode) {
                 pageStack.currentIndex = 0
             } else {
