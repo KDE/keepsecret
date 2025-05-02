@@ -4,6 +4,8 @@
 #include "walletmodel.h"
 #include "secretserviceclient.h"
 
+#include <KLocalizedString>
+
 WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
@@ -135,6 +137,15 @@ void WalletModel::loadWallet()
                 if (server) {
                     entry.folder = QString::fromUtf8(server);
                 }
+            } else if (schema && g_strcmp0(schema, "org.freedesktop.Secret.Generic") == 0) {
+                // Retrieve "service" value
+                const char *service = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "service"));
+                if (service) {
+                    entry.folder = QString::fromUtf8(service);
+                }
+            }
+            if (entry.folder.isEmpty()) {
+                entry.folder = i18n("Other");
             }
 
             m_items << entry;

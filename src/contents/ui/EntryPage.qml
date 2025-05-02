@@ -4,6 +4,7 @@
 import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
+import org.kde.kirigamiaddons.formcard as FormCard
 import org.kde.kirigami as Kirigami
 import org.kde.kwallets
 
@@ -32,58 +33,38 @@ Kirigami.ScrollablePage {
     ]
 
     ColumnLayout {
-        QQC.Label {
-            Layout.fillWidth: true
-            text: i18n("Label:")
-        }
-        QQC.TextField {
-            id: labelField
-            Layout.fillWidth: true
-            text: App.secretItem.label
-            onTextEdited: App.secretItem.label = text
-        }
-        QQC.Label {
-            Layout.fillWidth: true
-            text: i18n("Password:")
-        }
-        Kirigami.PasswordField {
-            id: passwordField
-            Layout.fillWidth: true
-            text: App.secretItem.secretValue
-            onTextEdited: App.secretItem.secretValue = text
+        FormCard.FormCard {
+            FormCard.FormTextFieldDelegate {
+                text: App.secretItem.label
+                label: i18n("Label:")
+                onTextEdited: App.secretItem.label = text
+            }
+            FormCard.FormTextFieldDelegate {
+                text: App.secretItem.secretValue
+                label: i18n("Password:")
+                echoMode: TextInput.Password
+                onTextEdited: App.secretItem.secretValue = text
+            }
         }
 
-        Repeater {
-            model: App.secretItem.attributes.__keys
-            delegate: RowLayout {
-                //TODO: hide for kwallet-type entries?
-                QQC.Label {
-                    Layout.fillWidth: true
+        FormCard.FormCard {
+            Repeater {
+                model: App.secretItem.attributes.__keys
+                delegate: FormCard.FormTextDelegate {
                     text: modelData
-                }
-                QQC.Label {
-                    text: App.secretItem.attributes[modelData]
+                    description: App.secretItem.attributes[modelData]
                 }
             }
         }
 
-        RowLayout {
-            QQC.Label {
-                Layout.fillWidth: true
+        FormCard.FormCard {
+            FormCard.FormTextDelegate {
                 text: i18n("Created")
+                description: Qt.formatDateTime(App.secretItem.creationTime, Locale.LongFormat)
             }
-            QQC.Label {
-                text: Qt.formatDateTime(App.secretItem.creationTime, Locale.LongFormat)
-            }
-        }
-
-        RowLayout {
-            QQC.Label {
-                Layout.fillWidth: true
+            FormCard.FormTextDelegate {
                 text: i18n("Modified")
-            }
-            QQC.Label {
-                text: Qt.formatDateTime(App.secretItem.modificationTime, Locale.LongFormat)
+                description: Qt.formatDateTime(App.secretItem.modificationTime, Locale.LongFormat)
             }
         }
     }
