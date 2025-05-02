@@ -87,15 +87,18 @@ Kirigami.ApplicationWindow {
         id: contextDrawer
     }
 
-    pageStack.initialPage: walletListPage
-
+    pageStack {
+        initialPage: walletListPage
+        columnView.columnResizeMode: pageStack.wideMode ? Kirigami.ColumnView.DynamicColumns : Kirigami.ColumnView.SingleColumn
+    }
+/*
    // pageStack.wideMode: pageStack.width >= pageStack.defaultColumnWidth + minimumSidebarWidth * 2
     Binding {
         target: pageStack.contentItem
         property: "columnResizeMode"
         value: pageStack.wideMode ? Kirigami.ColumnView.DynamicColumns : Kirigami.ColumnView.SingleColumn
     }
-
+*/
     WalletListPage {
         id: walletListPage
         implicitWidth: Math.max(minimumSidebarWidth, root.leadingSidebarWidth)

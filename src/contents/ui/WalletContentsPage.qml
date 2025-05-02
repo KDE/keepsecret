@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kitemmodels
 import org.kde.kwallets
 
 Kirigami.ScrollablePage {
@@ -69,20 +70,29 @@ Kirigami.ScrollablePage {
 
     header: QQC.ToolBar {
         visible: searchAction.checked
-        contentItem: QQC.TextField {
+        contentItem: Kirigami.SearchField {
+            id: searchField
             onVisibleChanged: {
                 if (visible) {
                     forceActiveFocus()
+                } else {
+                    text = ""
                 }
             }
-            placeholderText: i18n("Search...")
         }
     }
 
     ListView {
         id: view
         currentIndex: -1
-        model: App.walletModel
+        model: KSortFilterProxyModel {
+            sourceModel: App.walletModel
+            sortRole: Qt.Display
+            sortCaseSensitivity: Qt.CaseInsensitive
+            filterRole: Qt.Display
+            filterString: searchField.text
+            filterCaseSensitivity: Qt.CaseInsensitive
+        }
         onModelChanged: currentIndex = -1
         section.property: "folder"
         section.delegate: QQC.Control {
