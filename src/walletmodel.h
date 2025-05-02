@@ -12,7 +12,6 @@ class SecretServiceClient;
 class WalletModel : public QAbstractListModel
 {
     Q_OBJECT
-    QML_ELEMENT
 
     Q_PROPERTY(QString currentWallet READ currentWallet WRITE setCurrentWallet NOTIFY currentWalletChanged)
 

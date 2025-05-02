@@ -165,19 +165,19 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
         return nullptr;
     }
 
-    /* auto it = m_openCollections.find(name);
-     if (it != m_openCollections.end()) {
-         return it->second.get();
-     }*/
+    auto it = m_openCollections.find(name);
+    if (it != m_openCollections.end()) {
+        return it->second.get();
+    }
 
     GListPtr collections = GListPtr(secret_service_get_collections(m_service.get()));
 
     for (GList *l = collections.get(); l != nullptr; l = l->next) {
-        SecretCollectionPtr colPtr = SecretCollectionPtr(SECRET_COLLECTION(l->data));
-        const gchar *label = secret_collection_get_label(colPtr.get());
+        SecretCollection *coll = SECRET_COLLECTION(l->data);
+        const gchar *label = secret_collection_get_label(coll);
         if (QString::fromUtf8(label) == name) {
-            // m_openCollections.insert(std::make_pair(name, std::move(colPtr)));
-            SecretCollection *collection = colPtr.get();
+            m_openCollections.insert(std::make_pair(name, std::move(coll)));
+            SecretCollection *collection = coll;
             return collection;
         }
     }
@@ -230,9 +230,9 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const Q
 {
     GError *error = nullptr;
 
-    SecretCollectionPtr collection = SecretCollectionPtr(retrieveCollection(collectionName));
+    SecretCollection *collection = retrieveCollection(collectionName);
 
-    GListPtr list = GListPtr(secret_collection_get_items(collection.get()));
+    GListPtr list = GListPtr(secret_collection_get_items(collection));
     if (list) {
         *ok = true;
         for (GList *l = list.get(); l != nullptr; l = l->next) {

@@ -105,7 +105,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
 
         SecretServiceClient::Type type = m_secretServiceClient->itemType(m_secretItem.get(), &ok);
         m_secretValue = QString::fromUtf8(m_secretServiceClient->readEntry(m_secretItem.get(), type, &ok));
-        qWarning() << "XXXX" << type << m_secretValue << dbusPath;
 
         m_attributes.clear();
         GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(m_secretItem.get()));
