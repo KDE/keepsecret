@@ -46,8 +46,7 @@ Kirigami.ApplicationWindow {
 
     Component.onCompleted: {
         App.restoreWindowGeometry(root)
-        print(pageStack.wideMode,width,pageStack.width)
-        if (pageStack.width >= pageStack.defaultColumnWidth * 2 ) {
+        if (width >= pageStack.defaultColumnWidth * 2 ) {
             pageStack.push(walletContentsPage)
         }
     }
