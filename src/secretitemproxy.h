@@ -6,7 +6,6 @@
 #include "secretserviceclient.h"
 #include <QDateTime>
 #include <QObject>
-#include <qt6/QtCore/qcontainerfwd.h>
 
 class SecretServiceClient;
 

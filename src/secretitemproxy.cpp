@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 #include "secretitemproxy.h"
-#include <qt6/QtCore/qstringliteral.h>
 
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)
