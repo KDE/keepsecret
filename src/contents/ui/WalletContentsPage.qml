@@ -87,9 +87,9 @@ Kirigami.ScrollablePage {
         currentIndex: -1
         model: KSortFilterProxyModel {
             sourceModel: App.walletModel
-            sortRole: Qt.Display
+            sortRoleName: "folder"
             sortCaseSensitivity: Qt.CaseInsensitive
-            filterRole: Qt.Display
+            filterRole: Qt.DisplayRole
             filterString: searchField.text
             filterCaseSensitivity: Qt.CaseInsensitive
         }

@@ -130,15 +130,12 @@ void WalletModel::loadWallet()
 
             GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
 
-            const char *schema = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "xdg:schema"));
-            if (schema && g_strcmp0(schema, "org.qt.keychain") == 0) {
-                // Retrieve "server" value
-                const char *server = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "server"));
-                if (server) {
-                    entry.folder = QString::fromUtf8(server);
-                }
-            } else if (schema && g_strcmp0(schema, "org.freedesktop.Secret.Generic") == 0) {
-                // Retrieve "service" value
+            // Retrieve "server" value
+            const char *server = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "server"));
+            if (server) {
+                entry.folder = QString::fromUtf8(server);
+            } else {
+                // If there is no "server", try with "service"
                 const char *service = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "service"));
                 if (service) {
                     entry.folder = QString::fromUtf8(service);

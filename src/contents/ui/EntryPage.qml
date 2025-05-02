@@ -33,6 +33,7 @@ Kirigami.ScrollablePage {
     ]
 
     ColumnLayout {
+        spacing: Kirigami.Units.gridUnit
         FormCard.FormCard {
             FormCard.FormTextFieldDelegate {
                 text: App.secretItem.label
