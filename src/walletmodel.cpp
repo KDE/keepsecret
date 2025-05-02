@@ -39,7 +39,6 @@ bool WalletModel::isLocked() const
     if (!m_secretCollection) {
         return false;
     }
-    qWarning() << "AAAAA" << secret_collection_get_locked(m_secretCollection.get());
     return secret_collection_get_locked(m_secretCollection.get());
 }
 

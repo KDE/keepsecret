@@ -40,6 +40,7 @@ void App::restoreWindowGeometry(QQuickWindow *window, const QString &group) cons
 {
     KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
     KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-") + group);
+
     KWindowConfig::restoreWindowSize(window, windowGroup);
     KWindowConfig::restoreWindowPosition(window, windowGroup);
 
@@ -56,11 +57,15 @@ void App::saveWindowGeometry(QQuickWindow *window, const QString &group) const
     KWindowConfig::saveWindowSize(window, windowGroup);
 
     // Sidebars
-    const qreal leadingSidebarWidth = window->property("leadingSidebarWidth").toReal();
+    const int leadingSidebarWidth = window->property("leadingSidebarWidth").toInt();
     if (leadingSidebarWidth > 0) {
         windowGroup.writeEntry(QStringLiteral("leadingSidebarWidth"), leadingSidebarWidth);
     }
-    windowGroup.writeEntry(QStringLiteral("trailingSidebarWidth"), window->property("trailingSidebarWidth").toString());
+
+    const int trailingSidebarWidth = window->property("trailingSidebarWidth").toInt();
+    if (trailingSidebarWidth > 0) {
+        windowGroup.writeEntry(QStringLiteral("trailingSidebarWidth"), trailingSidebarWidth);
+    }
 
     dataResource.sync();
 }
