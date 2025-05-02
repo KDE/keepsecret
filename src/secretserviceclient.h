@@ -84,6 +84,7 @@ public:
 
     QStringList listEntries(const QString &folder, const QString &collectionName, bool *ok);
 
+    QHash<QString, QString> readMetadata(SecretItem *item, bool *ok);
     QHash<QString, QString> readMetadata(const QString &key, const QString &folder, const QString &collectionName, bool *ok);
 
     void createCollection(const QString &collectionName, bool *ok);
@@ -92,6 +93,10 @@ public:
 
     void deleteFolder(const QString &folder, const QString &collectionName, bool *ok);
 
+    // QByteArray readEntry(SecretItem *item, bool *ok);
+    Type itemType(SecretItem *item, bool *ok);
+
+    QByteArray readEntry(SecretItem *item, const SecretServiceClient::Type type, bool *ok);
     QByteArray readEntry(const QString &key, const Type type, const QString &folder, const QString &collectionName, bool *ok);
 
     void renameEntry(const QString &display_name, const QString &oldKey, const QString &newKey, const QString &folder, const QString &collectionName, bool *ok);

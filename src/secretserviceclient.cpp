@@ -240,6 +240,7 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const Q
             const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item)));
 
             if (path == dbusPath) {
+                secret_item_load_secret_sync(item, nullptr, &error);
                 return SecretItemPtr(item);
             }
         }
@@ -628,6 +629,31 @@ QStringList SecretServiceClient::listEntries(const QString &folder, const QStrin
     return items.values();
 }
 
+QHash<QString, QString> SecretServiceClient::readMetadata(SecretItem *item, bool *ok)
+{
+    if (!item) {
+        *ok = false;
+        return {};
+    }
+
+    QHash<QString, QString> hash;
+
+    GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item));
+
+    if (attributes) {
+        GHashTableIter attrIter;
+        gpointer key, value;
+        g_hash_table_iter_init(&attrIter, attributes.get());
+        while (g_hash_table_iter_next(&attrIter, &key, &value)) {
+            QString keyString = QString::fromUtf8(static_cast<gchar *>(key));
+            QString valueString = QString::fromUtf8(static_cast<gchar *>(value));
+            hash.insert(keyString, valueString);
+        }
+    }
+
+    return hash;
+}
+
 QHash<QString, QString> SecretServiceClient::readMetadata(const QString &key, const QString &folder, const QString &collectionName, bool *ok)
 {
     if (!attemptConnection()) {
@@ -727,6 +753,62 @@ void SecretServiceClient::deleteFolder(const QString &folder, const QString &col
     } else {
         qCWarning(KWALLETS_LOG) << i18n("No entries");
     }
+}
+
+SecretServiceClient::Type SecretServiceClient::itemType(SecretItem *item, bool *ok)
+{
+    const QHash<QString, QString> metadata = readMetadata(item, ok);
+
+    if (!ok) {
+        return Unknown;
+    }
+
+    const QString typeString = metadata.value(QStringLiteral("type"));
+
+    return stringToType(typeString);
+}
+
+QByteArray SecretServiceClient::readEntry(SecretItem *item, const SecretServiceClient::Type type, bool *ok)
+{
+    if (!item) {
+        *ok = false;
+        return {};
+    }
+
+    GError *error = nullptr;
+    QByteArray data;
+
+    // Some providers like KeepassXC lock each item individually, and need to be
+    // unlocked by the user prior being able to access
+    if (secret_item_get_locked(item)) {
+        secret_service_unlock_sync(m_service.get(), g_list_append(nullptr, item), nullptr, nullptr, &error);
+        *ok = wasErrorFree(&error);
+        if (!ok) {
+            qCWarning(KWALLETS_LOG) << i18n("Unable to unlock item");
+            return data;
+        }
+
+        secret_item_load_secret_sync(item, nullptr, &error);
+        *ok = wasErrorFree(&error);
+    }
+
+    SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(item));
+    if (secretValue) {
+        if (type == SecretServiceClient::Binary) {
+            gsize length = 0;
+            const gchar *password = secret_value_get(secretValue.get(), &length);
+            return QByteArray(password, length);
+        }
+
+        const gchar *password = secret_value_get_text(secretValue.get());
+        if (type == SecretServiceClient::Base64) {
+            data = QByteArray::fromBase64(QByteArray(password));
+        } else {
+            data = QByteArray(password);
+        }
+    }
+
+    return data;
 }
 
 QByteArray
