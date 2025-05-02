@@ -104,7 +104,7 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
         m_modificationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_modified(m_secretItem.get()));
         m_label = QString::fromUtf8(secret_item_get_label(m_secretItem.get()));
         // TODO: text vs binary vs map
-        // m_secretValue = QString::fromUtf8(m_secretServiceClient->readEntry(m_itemName, SecretServiceClient::Unknown, m_folder, m_wallet, &ok));
+        m_secretValue = QString::fromUtf8(m_secretServiceClient->readEntry(m_itemName, SecretServiceClient::Unknown, m_folder, m_wallet, &ok));
 
         m_attributes.clear();
         GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(m_secretItem.get()));
