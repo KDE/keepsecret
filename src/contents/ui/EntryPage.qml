@@ -11,7 +11,7 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
-    title: App.secretItem.itemName
+    title: App.secretItem.label
 
     actions: [
         Kirigami.Action {
