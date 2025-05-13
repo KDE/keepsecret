@@ -100,6 +100,7 @@ Kirigami.ApplicationWindow {
 */
     WalletListPage {
         id: walletListPage
+        Kirigami.ColumnView.interactiveResize: true
         implicitWidth: Math.max(minimumSidebarWidth, root.leadingSidebarWidth)
         onCurrentWalletChanged: {
             walletContentsPage.currentEntry = -1
@@ -138,9 +139,10 @@ Kirigami.ApplicationWindow {
         id: entryPage
         implicitWidth: Math.max(minimumSidebarWidth, root.trailingSidebarWidth)
         visible: false
+        Kirigami.ColumnView.interactiveResize: true
         Kirigami.ColumnView.fillWidth: false
     }
-
+/*
     // TODO: a component in Kirigami to attach resize handles directly in ColumnView
     ResizeHandle {
         targetPage: walletListPage
@@ -152,5 +154,5 @@ Kirigami.ApplicationWindow {
         targetPage: entryPage
         onRight: false
         maximumWidth: pageStack.width - pageStack.defaultColumnWidth - walletListPage.width
-    }
+    }*/
 }
