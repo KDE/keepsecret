@@ -7,6 +7,16 @@ SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObje
     : QObject(parent)
     , m_secretServiceClient(secretServiceClient)
 {
+    connect(m_secretServiceClient, &SecretServiceClient::serviceChanged, this, [this] {
+        if (m_dbusPath.isEmpty()) {
+            return;
+        }
+        if (m_secretServiceClient->isAvailable()) {
+            loadItem(m_wallet, m_dbusPath);
+        } else {
+            close();
+        }
+    });
 }
 
 SecretItemProxy::~SecretItemProxy()
@@ -15,7 +25,7 @@ SecretItemProxy::~SecretItemProxy()
 
 bool SecretItemProxy::isValid() const
 {
-    return m_secretItem.get() != nullptr;
+    return m_secretServiceClient->isAvailable() && m_secretItem.get() != nullptr;
 }
 
 bool SecretItemProxy::needsSave() const
@@ -91,6 +101,12 @@ QVariantMap SecretItemProxy::attributes() const
 
 void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
 {
+    m_dbusPath = dbusPath;
+
+    if (!m_secretServiceClient->isAvailable()) {
+        return;
+    }
+
     bool wasValid = isValid();
     bool ok;
 
@@ -168,6 +184,10 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
 
 void SecretItemProxy::save()
 {
+    if (!m_secretServiceClient->isAvailable()) {
+        return;
+    }
+
     bool ok;
     m_secretServiceClient->writeEntry(m_label, m_itemName, m_secretValue.toUtf8(), SecretServiceClient::PlainText, m_folder, m_wallet, &ok);
 

@@ -67,6 +67,7 @@ Q_SIGNALS:
 private:
     bool m_needsSave = false;
     bool m_locked = false;
+    QString m_dbusPath;
     QDateTime m_creationTime;
     QDateTime m_modificationTime;
     QString m_wallet;

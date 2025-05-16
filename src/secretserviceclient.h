@@ -97,7 +97,6 @@ public:
     Type itemType(SecretItem *item, bool *ok);
 
     QByteArray readEntry(SecretItem *item, const SecretServiceClient::Type type, bool *ok);
-    QByteArray readEntry(const QString &key, const Type type, const QString &folder, const QString &collectionName, bool *ok);
 
     void renameEntry(const QString &display_name, const QString &oldKey, const QString &newKey, const QString &folder, const QString &collectionName, bool *ok);
 

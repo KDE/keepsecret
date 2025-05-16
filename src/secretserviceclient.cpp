@@ -811,55 +811,6 @@ QByteArray SecretServiceClient::readEntry(SecretItem *item, const SecretServiceC
     return data;
 }
 
-QByteArray
-SecretServiceClient::readEntry(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return {};
-    }
-
-    GError *error = nullptr;
-    QByteArray data;
-
-    SecretItemPtr item = retrieveItem(key, type, folder, collectionName, ok);
-
-    if (item) {
-        // Some providers like KeepassXC lock each item individually, and need to be
-        // unlocked by the user prior being able to access
-        if (secret_item_get_locked(item.get())) {
-            secret_service_unlock_sync(m_service.get(), g_list_append(nullptr, item.get()), nullptr, nullptr, &error);
-            *ok = wasErrorFree(&error);
-            if (!ok) {
-                qCWarning(KWALLETS_LOG) << i18n("Unable to unlock item");
-                return data;
-            }
-
-            secret_item_load_secret_sync(item.get(), nullptr, &error);
-            *ok = wasErrorFree(&error);
-        }
-
-        SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(item.get()));
-
-        if (secretValue) {
-            if (type == SecretServiceClient::Binary) {
-                gsize length = 0;
-                const gchar *password = secret_value_get(secretValue.get(), &length);
-                return QByteArray(password, length);
-            }
-
-            const gchar *password = secret_value_get_text(secretValue.get());
-            if (type == SecretServiceClient::Base64) {
-                data = QByteArray::fromBase64(QByteArray(password));
-            } else {
-                data = QByteArray(password);
-            }
-        }
-    }
-
-    return data;
-}
-
 void SecretServiceClient::renameEntry(const QString &display_name,
                                       const QString &oldKey,
                                       const QString &newKey,
