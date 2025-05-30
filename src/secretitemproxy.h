@@ -26,10 +26,36 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
 public:
+    enum Operation {
+        None,
+        Loading,
+        Saving,
+        Deleting
+    };
+    Q_ENUM(Operation);
+
+    enum Status {
+        Disconnected,
+        ItemEmpty,
+        ItemLoaded,
+        LoadFailed,
+        SaveFailed,
+        DeleteFailed
+    };
+    Q_ENUM(Status);
+
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
 
     bool isValid() const;
+
+    Status status() const;
+    void setStatus(Status status);
+
+    Operation operation() const;
+    void setOperation(Operation operation);
+
+    // TODO: collapse those in Status
     bool needsSave() const;
     bool isLocked() const;
     QDateTime creationTime() const;
@@ -50,8 +76,11 @@ public:
     Q_INVOKABLE void loadItem(const QString &wallet, const QString &dbusPath);
     Q_INVOKABLE void save();
     Q_INVOKABLE void close();
+    Q_INVOKABLE void deleteItem();
 
 Q_SIGNALS:
+    void statusChanged(Status status);
+    void operationChanged(Operation operation);
     void validChanged(bool valid);
     void needsSaveChanged(bool needsSave);
     void lockedChanged(bool locked);
@@ -67,6 +96,8 @@ Q_SIGNALS:
 private:
     bool m_needsSave = false;
     bool m_locked = false;
+    Status m_status = Disconnected;
+    Operation m_operation = None;
     QString m_dbusPath;
     QDateTime m_creationTime;
     QDateTime m_modificationTime;
