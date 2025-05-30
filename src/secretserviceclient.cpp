@@ -85,17 +85,7 @@ static SecretServiceClient::Type stringToType(const QString &typeName)
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
 {
-    KConfig cfg(QStringLiteral("kwalletrc"));
-    KConfigGroup ksecretGroup(&cfg, QStringLiteral("KSecretD"));
-    m_useKSecretBackend = false; // ksecretGroup.readEntry("Enabled", true);
-
-    if (m_useKSecretBackend) {
-        // Tell libsecret where the secretservice api is
-        qputenv("SECRET_SERVICE_BUS_NAME", "org.kde.secretservicecompat");
-        m_serviceBusName = QStringLiteral("org.kde.secretservicecompat");
-    } else {
-        m_serviceBusName = QStringLiteral("org.freedesktop.secrets");
-    }
+    m_serviceBusName = QStringLiteral("org.freedesktop.secrets");
 
     m_collectionDirtyTimer = new QTimer(this);
     m_collectionDirtyTimer->setSingleShot(true);
@@ -390,11 +380,6 @@ void SecretServiceClient::onSecretItemChanged(const QDBusObjectPath &path)
 void SecretServiceClient::handlePrompt(bool dismissed)
 {
     Q_EMIT promptClosed(!dismissed);
-}
-
-bool SecretServiceClient::useKSecretBackend() const
-{
-    return m_useKSecretBackend;
 }
 
 bool SecretServiceClient::isAvailable() const

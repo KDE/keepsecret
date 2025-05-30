@@ -67,7 +67,6 @@ public:
 
     SecretServiceClient(QObject *parent = nullptr);
 
-    bool useKSecretBackend() const;
     bool isAvailable() const;
 
     SecretCollection *retrieveCollection(const QString &name);
@@ -140,6 +139,5 @@ private:
     QSet<QString> m_dirtyCollections;
     QTimer *m_collectionDirtyTimer;
     QString m_serviceBusName;
-    bool m_useKSecretBackend = false;
     bool m_updateInProgress = false;
 };
