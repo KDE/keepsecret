@@ -8,8 +8,16 @@ WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *pa
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    bool ok;
-    m_wallets = m_secretServiceClient->listCollections(&ok);
+    connect(m_secretServiceClient, &SecretServiceClient::statusChanged, this, [this](SecretServiceClient::Status status) {
+        beginResetModel();
+        if (status == SecretServiceClient::Connected) {
+            bool ok;
+            m_wallets = m_secretServiceClient->listCollections(&ok);
+        } else {
+            m_wallets.clear();
+        }
+        endResetModel();
+    });
 }
 
 WalletsModel::~WalletsModel()

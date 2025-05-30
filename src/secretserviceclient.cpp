@@ -241,22 +241,44 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const Q
     return nullptr;
 }
 
+static void onServiceGetFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
+
+    SecretService *service = secret_service_get_finish(result, &error);
+
+    if (wasErrorFree(&error)) {
+        client->attemptConnectionFinished(service);
+    } else {
+        client->attemptConnectionFinished(nullptr);
+    }
+}
+
+void SecretServiceClient::attemptConnectionFinished(SecretService *service)
+{
+    m_service.reset(service);
+    if (service) {
+        setStatus(SecretServiceClient::Connected);
+    } else {
+        setStatus(SecretServiceClient::Disconnected);
+    }
+}
+
 bool SecretServiceClient::attemptConnection()
 {
     if (m_service) {
         return true;
     }
 
-    GError *error = nullptr;
-    m_service = SecretServicePtr(
-        secret_service_get_sync(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, &error));
+    setStatus(Connecting);
 
-    bool ok = wasErrorFree(&error);
-
-    if (!ok || !m_service) {
-        qCWarning(KWALLETS_LOG) << i18n("Could not connect to Secret Service");
-        return false;
-    }
+    secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this);
+    /*
+        if (!ok || !m_service) {
+            qCWarning(KWALLETS_LOG) << i18n("Could not connect to Secret Service");
+            return false;
+        }*/
 
     return true;
 }
@@ -313,10 +335,12 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
         GError *error = nullptr;
         m_service = SecretServicePtr(
             secret_service_get_sync(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, &error));
+
         available = wasErrorFree(&error);
     }
 
     if (!available) {
+        setStatus(Disconnected);
         m_service.reset();
     }
 
@@ -385,6 +409,21 @@ void SecretServiceClient::handlePrompt(bool dismissed)
 bool SecretServiceClient::isAvailable() const
 {
     return m_service != nullptr;
+}
+
+SecretServiceClient::Status SecretServiceClient::status() const
+{
+    return m_status;
+}
+
+void SecretServiceClient::setStatus(Status status)
+{
+    if (status == m_status) {
+        return;
+    }
+
+    m_status = status;
+    Q_EMIT statusChanged(status);
 }
 
 bool SecretServiceClient::unlockCollection(const QString &collectionName, bool *ok)

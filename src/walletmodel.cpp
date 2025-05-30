@@ -10,6 +10,15 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
+    connect(m_secretServiceClient, &SecretServiceClient::statusChanged, this, [this](SecretServiceClient::Status status) {
+        if (status == SecretServiceClient::Connected) {
+            loadWallet();
+        } else {
+            beginResetModel();
+            m_items.clear();
+            endResetModel();
+        }
+    });
 }
 
 WalletModel::~WalletModel()
@@ -31,7 +40,10 @@ void WalletModel::setCurrentWallet(const QString &wallet)
 
     m_secretCollection = SecretCollectionPtr(m_secretServiceClient->retrieveCollection(wallet));
 
-    loadWallet();
+    // loadWallet();
+    if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
+        loadWallet();
+    }
 
     Q_EMIT(currentWalletChanged(wallet));
 }

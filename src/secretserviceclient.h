@@ -65,9 +65,19 @@ public:
     };
     Q_ENUM(Type);
 
+    enum Status {
+        Disconnected = 0,
+        Connecting,
+        Connected
+    };
+    Q_ENUM(Status);
+
     SecretServiceClient(QObject *parent = nullptr);
 
     bool isAvailable() const;
+
+    Status status() const;
+    void setStatus(Status status);
 
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok);
@@ -109,9 +119,12 @@ public:
 
     void deleteEntry(const QString &key, const QString &folder, const QString &collectionName, bool *ok);
 
+    void attemptConnectionFinished(SecretService *service);
+
 Q_SIGNALS:
     // Emitted when the service availability changed, or the service owner of secretservice has changed to a new one
     void serviceChanged();
+    void statusChanged(Status status);
     void promptClosed(bool accepted);
     void collectionListDirty();
     void collectionDirty(const QString &collection);
@@ -133,6 +146,7 @@ protected Q_SLOTS:
 
 private:
     SecretServicePtr m_service;
+    Status m_status = Disconnected;
     std::map<QString, SecretCollectionPtr> m_openCollections;
     QDBusServiceWatcher *m_serviceWatcher;
     QSet<QString> m_watchedCollections;
