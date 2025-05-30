@@ -100,7 +100,7 @@ Kirigami.ApplicationWindow {
 */
     WalletListPage {
         id: walletListPage
-        Kirigami.ColumnView.interactiveResize: true
+        Kirigami.ColumnView.interactiveResizeEnabled: true
         implicitWidth: Math.max(minimumSidebarWidth, root.leadingSidebarWidth)
         onCurrentWalletChanged: {
             walletContentsPage.currentEntry = -1
@@ -139,7 +139,7 @@ Kirigami.ApplicationWindow {
         id: entryPage
         implicitWidth: Math.max(minimumSidebarWidth, root.trailingSidebarWidth)
         visible: false
-        Kirigami.ColumnView.interactiveResize: true
+        Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.fillWidth: false
     }
 /*
