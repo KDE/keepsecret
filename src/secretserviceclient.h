@@ -75,6 +75,7 @@ public:
     SecretServiceClient(QObject *parent = nullptr);
 
     bool isAvailable() const;
+    SecretService *service() const;
 
     Status status() const;
     void setStatus(Status status);

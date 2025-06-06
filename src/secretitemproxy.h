@@ -30,9 +30,12 @@ public:
         Disconnected,
         Empty,
         Loading,
+        Locked,
         Ready,
-        LoadFailed,
+        Unlocking,
         Saving,
+        LoadFailed,
+        UnlockFailed,
         SaveFailed,
         Deleting,
         DeleteFailed
@@ -66,6 +69,7 @@ public:
     QVariantMap attributes() const;
 
     Q_INVOKABLE void loadItem(const QString &wallet, const QString &dbusPath);
+    Q_INVOKABLE void unlock();
     Q_INVOKABLE void save();
     Q_INVOKABLE void close();
     Q_INVOKABLE void deleteItem();

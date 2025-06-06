@@ -182,7 +182,11 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
             }
             m_attributes[QStringLiteral("__keys")] = keys;
         }
-        setStatus(Ready);
+        if (secret_item_get_locked(m_secretItem.get())) {
+            setStatus(Locked);
+        } else {
+            setStatus(Ready);
+        }
 
     } else {
         m_needsSave = false;
@@ -213,6 +217,30 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
     if (wasValid != ok) {
         Q_EMIT validChanged(ok);
     }
+}
+
+static void onItemUnlocked(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    SecretItemProxy *proxy = (SecretItemProxy *)inst;
+
+    secret_service_unlock_finish((SecretService *)source, result, nullptr, &error);
+
+    if (wasErrorFree(&error)) {
+        proxy->setStatus(SecretItemProxy::UnlockFailed);
+    } else {
+        proxy->setStatus(SecretItemProxy::Ready);
+    }
+}
+
+void SecretItemProxy::unlock()
+{
+    if (!m_secretServiceClient->isAvailable()) {
+        return;
+    }
+
+    setStatus(Unlocking);
+    secret_service_unlock(m_secretServiceClient->service(), g_list_append(nullptr, m_secretItem.get()), nullptr, onItemUnlocked, this);
 }
 
 void SecretItemProxy::save()
@@ -274,7 +302,7 @@ static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer ins
     if (wasErrorFree(&error)) {
         proxy->setStatus(SecretItemProxy::DeleteFailed);
     } else {
-        proxy->setStatus(SecretItemProxy::Ready);
+        proxy->setStatus(SecretItemProxy::Empty);
     }
     proxy->close();
 }

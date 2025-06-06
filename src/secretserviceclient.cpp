@@ -370,6 +370,11 @@ bool SecretServiceClient::isAvailable() const
     return m_service != nullptr;
 }
 
+SecretService *SecretServiceClient::service() const
+{
+    return m_service.get();
+}
+
 SecretServiceClient::Status SecretServiceClient::status() const
 {
     return m_status;
