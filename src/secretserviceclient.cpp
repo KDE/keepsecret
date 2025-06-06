@@ -175,47 +175,6 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
     return nullptr;
 }
 
-SecretItemPtr
-SecretServiceClient::retrieveItem(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok)
-{
-    GError *error = nullptr;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    GHashTablePtr attributes = GHashTablePtr(g_hash_table_new(g_str_hash, g_str_equal));
-    g_hash_table_insert(attributes.get(), g_strdup("server"), g_strdup(folder.toUtf8().constData()));
-    g_hash_table_insert(attributes.get(), g_strdup("user"), g_strdup(key.toUtf8().constData()));
-    if (type != Unknown) {
-        g_hash_table_insert(attributes.get(), g_strdup("type"), g_strdup(typeToString(type).toUtf8().constData()));
-    }
-
-    GListPtr glist = GListPtr(secret_collection_search_sync(collection,
-                                                            qtKeychainSchema(),
-                                                            attributes.get(),
-                                                            static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_LOAD_SECRETS),
-                                                            nullptr,
-                                                            &error));
-
-    *ok = wasErrorFree(&error);
-    if (!*ok) {
-        return nullptr;
-    }
-
-    SecretItem *item = nullptr;
-    if (glist) {
-        GList *iter = glist.get();
-        if (iter != nullptr) {
-            item = static_cast<SecretItem *>(iter->data);
-        }
-
-    } else {
-        qCWarning(KWALLETS_LOG) << i18n("Item not found");
-        *ok = false;
-    }
-
-    return SecretItemPtr(item);
-}
-
 SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok)
 {
     GError *error = nullptr;
@@ -663,38 +622,6 @@ QHash<QString, QString> SecretServiceClient::readMetadata(SecretItem *item, bool
     QHash<QString, QString> hash;
 
     GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item));
-
-    if (attributes) {
-        GHashTableIter attrIter;
-        gpointer key, value;
-        g_hash_table_iter_init(&attrIter, attributes.get());
-        while (g_hash_table_iter_next(&attrIter, &key, &value)) {
-            QString keyString = QString::fromUtf8(static_cast<gchar *>(key));
-            QString valueString = QString::fromUtf8(static_cast<gchar *>(value));
-            hash.insert(keyString, valueString);
-        }
-    }
-
-    return hash;
-}
-
-QHash<QString, QString> SecretServiceClient::readMetadata(const QString &key, const QString &folder, const QString &collectionName, bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return {};
-    }
-
-    QHash<QString, QString> hash;
-
-    SecretItemPtr item = retrieveItem(key, Unknown, folder, collectionName, ok);
-
-    if (!item) {
-        qCWarning(KWALLETS_LOG) << i18n("Entry not found, key: %1, folder: %2", key, folder);
-        return hash;
-    }
-
-    GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
 
     if (attributes) {
         GHashTableIter attrIter;

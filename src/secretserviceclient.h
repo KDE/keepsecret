@@ -80,7 +80,6 @@ public:
     void setStatus(Status status);
 
     SecretCollection *retrieveCollection(const QString &name);
-    SecretItemPtr retrieveItem(const QString &key, const SecretServiceClient::Type type, const QString &folder, const QString &collectionName, bool *ok);
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
     bool unlockCollection(const QString &collectionName, bool *ok);
@@ -94,12 +93,12 @@ public:
     QStringList listEntries(const QString &folder, const QString &collectionName, bool *ok);
 
     QHash<QString, QString> readMetadata(SecretItem *item, bool *ok);
-    QHash<QString, QString> readMetadata(const QString &key, const QString &folder, const QString &collectionName, bool *ok);
 
     void createCollection(const QString &collectionName, bool *ok);
 
     void deleteCollection(const QString &collectionName, bool *ok);
 
+    // TODO move in wallet model
     void deleteFolder(const QString &folder, const QString &collectionName, bool *ok);
 
     // QByteArray readEntry(SecretItem *item, bool *ok);
