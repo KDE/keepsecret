@@ -161,15 +161,6 @@ void WalletModel::loadWallet()
         }
     }
 
-    /*for (const QString &folder : folders) {
-        const QStringList items = m_secretServiceClient->listEntries(folder, m_currentWallet, &ok);
-        for (const QString &item : items) {
-            Entry entry;
-            entry.folder = folder;
-            entry.label = item;
-            m_items << entry;
-        }
-    }*/
     endResetModel();
 }
 

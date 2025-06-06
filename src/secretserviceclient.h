@@ -43,6 +43,15 @@ struct GListDeleter {
     }
 };
 
+struct SecretValueDeleter {
+    void operator()(SecretValue *value) const
+    {
+        if (value) {
+            secret_value_unref(value);
+        }
+    }
+};
+
 template<typename T>
 using GObjectPtr = std::unique_ptr<T, GObjectDeleter>;
 using SecretServicePtr = GObjectPtr<SecretService>;
@@ -50,6 +59,7 @@ using SecretCollectionPtr = GObjectPtr<SecretCollection>;
 using SecretItemPtr = GObjectPtr<SecretItem>;
 using GHashTablePtr = std::unique_ptr<GHashTable, GHashTableDeleter>;
 using GListPtr = std::unique_ptr<GList, GListDeleter>;
+using SecretValuePtr = std::unique_ptr<SecretValue, SecretValueDeleter>;
 
 class SecretServiceClient : public QObject
 {
@@ -83,17 +93,15 @@ public:
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
+    // TODO move in wallet model
     bool unlockCollection(const QString &collectionName, bool *ok);
     bool lockCollection(const QString &collectionName, bool *ok);
 
     QString defaultCollection(bool *ok);
     void setDefaultCollection(const QString &collectionName, bool *ok);
     QStringList listCollections(bool *ok);
+    // TODO move in wallet model
     QStringList listFolders(const QString &collectionName, bool *ok);
-
-    QStringList listEntries(const QString &folder, const QString &collectionName, bool *ok);
-
-    QHash<QString, QString> readMetadata(SecretItem *item, bool *ok);
 
     void createCollection(const QString &collectionName, bool *ok);
 
@@ -102,11 +110,7 @@ public:
     // TODO move in wallet model
     void deleteFolder(const QString &folder, const QString &collectionName, bool *ok);
 
-    // QByteArray readEntry(SecretItem *item, bool *ok);
-    Type itemType(SecretItem *item, bool *ok);
-
-    QByteArray readEntry(SecretItem *item, const SecretServiceClient::Type type, bool *ok);
-
+    // TODO: move in secretitemproxy
     void writeEntry(const QString &itemName,
                     const QString &key,
                     const QByteArray &value,
@@ -116,6 +120,9 @@ public:
                     bool *ok);
 
     void attemptConnectionFinished(SecretService *service);
+
+    static QString typeToString(SecretServiceClient::Type type);
+    static Type stringToType(const QString &typeName);
 
 Q_SIGNALS:
     // Emitted when the service availability changed, or the service owner of secretservice has changed to a new one

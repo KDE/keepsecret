@@ -30,19 +30,6 @@ const SecretSchema *qtKeychainSchema(void)
     return &schema;
 }
 
-// Custom deleters for non GObject things
-
-struct SecretValueDeleter {
-    void operator()(SecretValue *value) const
-    {
-        if (value) {
-            secret_value_unref(value);
-        }
-    }
-};
-
-using SecretValuePtr = std::unique_ptr<SecretValue, SecretValueDeleter>;
-
 static bool wasErrorFree(GError **error)
 {
     if (!*error) {
@@ -53,35 +40,6 @@ static bool wasErrorFree(GError **error)
     *error = nullptr;
     return false;
 }
-
-static QString typeToString(SecretServiceClient::Type type)
-{
-    // Similar to QtKeychain implementation: adds the "map" datatype
-    switch (type) {
-    case SecretServiceClient::Base64:
-        return QStringLiteral("base64");
-    case SecretServiceClient::Binary:
-        return QStringLiteral("binary");
-    case SecretServiceClient::Map:
-        return QStringLiteral("map");
-    default:
-        return QStringLiteral("plaintext");
-    }
-}
-
-static SecretServiceClient::Type stringToType(const QString &typeName)
-{
-    if (typeName == QStringLiteral("binary")) {
-        return SecretServiceClient::Binary;
-    } else if (typeName == QStringLiteral("base64")) {
-        return SecretServiceClient::Base64;
-    } else if (typeName == QStringLiteral("map")) {
-        return SecretServiceClient::Map;
-    } else {
-        return SecretServiceClient::PlainText;
-    }
-}
-
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
 {
@@ -125,6 +83,34 @@ SecretServiceClient::SecretServiceClient(QObject *parent)
                 QStringLiteral("CollectionDeleted"),
                 this,
                 SLOT(onCollectionDeleted(QDBusObjectPath)));
+}
+
+QString SecretServiceClient::typeToString(SecretServiceClient::Type type)
+{
+    // Similar to QtKeychain implementation: adds the "map" datatype
+    switch (type) {
+    case SecretServiceClient::Base64:
+        return QStringLiteral("base64");
+    case SecretServiceClient::Binary:
+        return QStringLiteral("binary");
+    case SecretServiceClient::Map:
+        return QStringLiteral("map");
+    default:
+        return QStringLiteral("plaintext");
+    }
+}
+
+SecretServiceClient::Type SecretServiceClient::stringToType(const QString &typeName)
+{
+    if (typeName == QStringLiteral("binary")) {
+        return SecretServiceClient::Binary;
+    } else if (typeName == QStringLiteral("base64")) {
+        return SecretServiceClient::Base64;
+    } else if (typeName == QStringLiteral("map")) {
+        return SecretServiceClient::Map;
+    } else {
+        return SecretServiceClient::PlainText;
+    }
 }
 
 QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
@@ -189,7 +175,6 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const Q
             const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item)));
 
             if (path == dbusPath) {
-                secret_item_load_secret_sync(item, nullptr, &error);
                 return SecretItemPtr(item);
             }
         }
@@ -570,78 +555,6 @@ QStringList SecretServiceClient::listFolders(const QString &collectionName, bool
     return folders.values();
 }
 
-QStringList SecretServiceClient::listEntries(const QString &folder, const QString &collectionName, bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return {};
-    }
-
-    // TODO: deduplicate
-    QSet<QString> items;
-    GError *error = nullptr;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    if (!collection) {
-        *ok = false;
-        return {};
-    }
-
-    GHashTablePtr attributes = GHashTablePtr(g_hash_table_new(g_str_hash, g_str_equal));
-    g_hash_table_insert(attributes.get(), g_strdup("server"), g_strdup(folder.toUtf8().constData()));
-
-    GListPtr glist = GListPtr(secret_collection_search_sync(collection, qtKeychainSchema(), attributes.get(), SECRET_SEARCH_ALL, nullptr, &error));
-
-    *ok = wasErrorFree(&error);
-    if (!*ok) {
-        return QStringList();
-    }
-
-    if (glist) {
-        for (GList *iter = glist.get(); iter != nullptr; iter = iter->next) {
-            SecretItemPtr item = SecretItemPtr(static_cast<SecretItem *>(iter->data));
-            GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
-
-            if (attributes) {
-                const gchar *value = (const char *)g_hash_table_lookup(attributes.get(), "user");
-                if (value) {
-                    items.insert(QString::fromUtf8(value));
-                }
-            }
-        }
-    } else {
-        qCDebug(KWALLETS_LOG) << i18n("No entries");
-    }
-
-    return items.values();
-}
-
-QHash<QString, QString> SecretServiceClient::readMetadata(SecretItem *item, bool *ok)
-{
-    if (!item) {
-        *ok = false;
-        return {};
-    }
-
-    QHash<QString, QString> hash;
-
-    GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item));
-
-    if (attributes) {
-        GHashTableIter attrIter;
-        gpointer key, value;
-        g_hash_table_iter_init(&attrIter, attributes.get());
-        while (g_hash_table_iter_next(&attrIter, &key, &value)) {
-            QString keyString = QString::fromUtf8(static_cast<gchar *>(key));
-            QString valueString = QString::fromUtf8(static_cast<gchar *>(value));
-            hash.insert(keyString, valueString);
-        }
-    }
-
-    return hash;
-}
-
 void SecretServiceClient::createCollection(const QString &collectionName, bool *ok)
 {
     if (!attemptConnection()) {
@@ -709,62 +622,6 @@ void SecretServiceClient::deleteFolder(const QString &folder, const QString &col
     } else {
         qCWarning(KWALLETS_LOG) << i18n("No entries");
     }
-}
-
-SecretServiceClient::Type SecretServiceClient::itemType(SecretItem *item, bool *ok)
-{
-    const QHash<QString, QString> metadata = readMetadata(item, ok);
-
-    if (!ok) {
-        return Unknown;
-    }
-
-    const QString typeString = metadata.value(QStringLiteral("type"));
-
-    return stringToType(typeString);
-}
-
-QByteArray SecretServiceClient::readEntry(SecretItem *item, const SecretServiceClient::Type type, bool *ok)
-{
-    if (!item) {
-        *ok = false;
-        return {};
-    }
-
-    GError *error = nullptr;
-    QByteArray data;
-
-    // Some providers like KeepassXC lock each item individually, and need to be
-    // unlocked by the user prior being able to access
-    if (secret_item_get_locked(item)) {
-        secret_service_unlock_sync(m_service.get(), g_list_append(nullptr, item), nullptr, nullptr, &error);
-        *ok = wasErrorFree(&error);
-        if (!ok) {
-            qCWarning(KWALLETS_LOG) << i18n("Unable to unlock item");
-            return data;
-        }
-
-        secret_item_load_secret_sync(item, nullptr, &error);
-        *ok = wasErrorFree(&error);
-    }
-
-    SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(item));
-    if (secretValue) {
-        if (type == SecretServiceClient::Binary) {
-            gsize length = 0;
-            const gchar *password = secret_value_get(secretValue.get(), &length);
-            return QByteArray(password, length);
-        }
-
-        const gchar *password = secret_value_get_text(secretValue.get());
-        if (type == SecretServiceClient::Base64) {
-            data = QByteArray::fromBase64(QByteArray(password));
-        } else {
-            data = QByteArray(password);
-        }
-    }
-
-    return data;
 }
 
 void SecretServiceClient::writeEntry(const QString &display_name,

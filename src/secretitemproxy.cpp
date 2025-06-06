@@ -108,25 +108,77 @@ void SecretItemProxy::setLabel(const QString &label)
 
 QString SecretItemProxy::secretValue() const
 {
-    return m_secretValue;
+    return QString::fromUtf8(m_secretValue);
 }
 
 void SecretItemProxy::setSecretValue(const QString &secretValue)
+{
+    const QString stringValue = QString::fromUtf8(m_secretValue);
+    if (secretValue == stringValue) {
+        return;
+    }
+
+    m_secretValue = secretValue.toUtf8();
+    m_needsSave = true;
+
+    Q_EMIT secretValueChanged();
+    Q_EMIT needsSaveChanged(m_needsSave);
+}
+
+void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
 {
     if (secretValue == m_secretValue) {
         return;
     }
 
     m_secretValue = secretValue;
-    m_needsSave = true;
+    m_needsSave = m_status == Ready;
 
-    Q_EMIT secretValueChanged(secretValue);
-    Q_EMIT needsSaveChanged(m_needsSave);
+    Q_EMIT secretValueChanged();
+    if (m_status == Ready) {
+        Q_EMIT needsSaveChanged(m_needsSave);
+    }
 }
 
 QVariantMap SecretItemProxy::attributes() const
 {
     return m_attributes;
+}
+
+SecretServiceClient::Type SecretItemProxy::type() const
+{
+    return m_type;
+}
+
+static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    SecretItemProxy *proxy = (SecretItemProxy *)inst;
+
+    secret_item_load_secret_finish((SecretItem *)source, result, &error);
+
+    if (wasErrorFree(&error)) {
+        SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(proxy->secretItem()));
+        if (secretValue) {
+            if (proxy->type() == SecretServiceClient::Binary) {
+                gsize length = 0;
+                const gchar *password = secret_value_get(secretValue.get(), &length);
+                proxy->setSecretValue(QByteArray(password, length));
+            }
+
+            const gchar *password = secret_value_get_text(secretValue.get());
+            if (proxy->type() == SecretServiceClient::Base64) {
+                proxy->setSecretValue(QByteArray::fromBase64(QByteArray(password)));
+            } else {
+                proxy->setSecretValue(QByteArray(password));
+            }
+            proxy->setStatus(SecretItemProxy::Ready);
+        } else {
+            proxy->setStatus(SecretItemProxy::LoadSecretFailed);
+        }
+    } else {
+        proxy->setStatus(SecretItemProxy::LoadSecretFailed);
+    }
 }
 
 void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
@@ -149,9 +201,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
         m_creationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_created(m_secretItem.get()));
         m_modificationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_modified(m_secretItem.get()));
         m_label = QString::fromUtf8(secret_item_get_label(m_secretItem.get()));
-
-        SecretServiceClient::Type type = m_secretServiceClient->itemType(m_secretItem.get(), &ok);
-        m_secretValue = QString::fromUtf8(m_secretServiceClient->readEntry(m_secretItem.get(), type, &ok));
 
         m_attributes.clear();
         GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(m_secretItem.get()));
@@ -179,13 +228,17 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
                 QString valueString = QString::fromUtf8(static_cast<gchar *>(value));
                 m_attributes.insert(keyString, valueString);
                 keys << keyString;
+                if (keyString == QStringLiteral("type")) {
+                    m_type = m_secretServiceClient->stringToType(valueString);
+                }
             }
             m_attributes[QStringLiteral("__keys")] = keys;
         }
         if (secret_item_get_locked(m_secretItem.get())) {
-            setStatus(Locked);
+            unlock();
         } else {
-            setStatus(Ready);
+            setStatus(LoadingSecret);
+            secret_item_load_secret(m_secretItem.get(), nullptr, onLoadSecretFinish, this);
         }
 
     } else {
@@ -197,7 +250,7 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
         m_folder = QString();
         m_itemName = QString();
         m_label = QString();
-        m_secretValue = QString();
+        m_secretValue = QByteArray();
         m_attributes.clear();
         m_attributes[QStringLiteral("__keys")] = QStringList();
         setStatus(LoadFailed);
@@ -211,7 +264,7 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
     Q_EMIT folderChanged(m_folder);
     Q_EMIT itemNameChanged(m_itemName);
     Q_EMIT labelChanged(m_label);
-    Q_EMIT secretValueChanged(m_secretValue);
+    Q_EMIT secretValueChanged();
     Q_EMIT attributesChanged(m_attributes);
 
     if (wasValid != ok) {
@@ -227,9 +280,9 @@ static void onItemUnlocked(GObject *source, GAsyncResult *result, gpointer inst)
     secret_service_unlock_finish((SecretService *)source, result, nullptr, &error);
 
     if (wasErrorFree(&error)) {
-        proxy->setStatus(SecretItemProxy::UnlockFailed);
-    } else {
         proxy->setStatus(SecretItemProxy::Ready);
+    } else {
+        proxy->setStatus(SecretItemProxy::UnlockFailed);
     }
 }
 
@@ -250,7 +303,7 @@ void SecretItemProxy::save()
     }
 
     bool ok;
-    m_secretServiceClient->writeEntry(m_label, m_itemName, m_secretValue.toUtf8(), SecretServiceClient::PlainText, m_folder, m_wallet, &ok);
+    m_secretServiceClient->writeEntry(m_label, m_itemName, m_secretValue, SecretServiceClient::PlainText, m_folder, m_wallet, &ok);
 
     m_needsSave = !ok;
     if (ok) {
@@ -270,7 +323,7 @@ void SecretItemProxy::close()
     m_folder = QString();
     m_itemName = QString();
     m_label = QString();
-    m_secretValue = QString();
+    m_secretValue = QByteArray();
     m_folder = QString();
     m_attributes.clear();
     m_attributes[QStringLiteral("__keys")] = QStringList();
@@ -285,7 +338,7 @@ void SecretItemProxy::close()
     Q_EMIT folderChanged(m_folder);
     Q_EMIT itemNameChanged(m_itemName);
     Q_EMIT labelChanged(m_label);
-    Q_EMIT secretValueChanged(m_secretValue);
+    Q_EMIT secretValueChanged();
     Q_EMIT attributesChanged(m_attributes);
     Q_EMIT validChanged(false);
 
@@ -300,9 +353,9 @@ static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer ins
     secret_item_delete_finish((SecretItem *)source, result, &error);
 
     if (wasErrorFree(&error)) {
-        proxy->setStatus(SecretItemProxy::DeleteFailed);
-    } else {
         proxy->setStatus(SecretItemProxy::Empty);
+    } else {
+        proxy->setStatus(SecretItemProxy::DeleteFailed);
     }
     proxy->close();
 }
@@ -315,6 +368,11 @@ void SecretItemProxy::deleteItem()
 
     setStatus(Deleting);
     secret_item_delete(m_secretItem.get(), nullptr, onDeleteFinished, this);
+}
+
+SecretItem *SecretItemProxy::secretItem() const
+{
+    return m_secretItem.get();
 }
 
 #include "moc_secretitemproxy.cpp"

@@ -30,11 +30,13 @@ public:
         Disconnected,
         Empty,
         Loading,
+        LoadingSecret,
         Locked,
         Ready,
         Unlocking,
         Saving,
         LoadFailed,
+        LoadSecretFailed,
         UnlockFailed,
         SaveFailed,
         Deleting,
@@ -65,14 +67,19 @@ public:
 
     QString secretValue() const;
     void setSecretValue(const QString &secretValue);
+    void setSecretValue(const QByteArray &secretValue);
 
     QVariantMap attributes() const;
+
+    SecretServiceClient::Type type() const;
 
     Q_INVOKABLE void loadItem(const QString &wallet, const QString &dbusPath);
     Q_INVOKABLE void unlock();
     Q_INVOKABLE void save();
     Q_INVOKABLE void close();
     Q_INVOKABLE void deleteItem();
+
+    SecretItem *secretItem() const;
 
 Q_SIGNALS:
     void statusChanged(Status status);
@@ -85,13 +92,14 @@ Q_SIGNALS:
     void folderChanged(const QString &folder);
     void itemNameChanged(const QString &itemName);
     void labelChanged(const QString &itemName);
-    void secretValueChanged(const QString &secretValue);
+    void secretValueChanged();
     void attributesChanged(const QVariantMap &attribures);
 
 private:
     bool m_needsSave = false;
     bool m_locked = false;
     Status m_status = Disconnected;
+    SecretServiceClient::Type m_type = SecretServiceClient::Unknown;
     QString m_dbusPath;
     QDateTime m_creationTime;
     QDateTime m_modificationTime;
@@ -99,7 +107,7 @@ private:
     QString m_folder;
     QString m_itemName;
     QString m_label;
-    QString m_secretValue;
+    QByteArray m_secretValue;
     QVariantMap m_attributes;
 
     SecretItemPtr m_secretItem;
