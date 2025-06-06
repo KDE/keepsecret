@@ -26,20 +26,15 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
 public:
-    enum Operation {
-        None,
-        Loading,
-        Saving,
-        Deleting
-    };
-    Q_ENUM(Operation);
-
     enum Status {
         Disconnected,
-        ItemEmpty,
-        ItemLoaded,
+        Empty,
+        Loading,
+        Ready,
         LoadFailed,
+        Saving,
         SaveFailed,
+        Deleting,
         DeleteFailed
     };
     Q_ENUM(Status);
@@ -51,9 +46,6 @@ public:
 
     Status status() const;
     void setStatus(Status status);
-
-    Operation operation() const;
-    void setOperation(Operation operation);
 
     // TODO: collapse those in Status
     bool needsSave() const;
@@ -80,7 +72,6 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Status status);
-    void operationChanged(Operation operation);
     void validChanged(bool valid);
     void needsSaveChanged(bool needsSave);
     void lockedChanged(bool locked);
@@ -97,7 +88,6 @@ private:
     bool m_needsSave = false;
     bool m_locked = false;
     Status m_status = Disconnected;
-    Operation m_operation = None;
     QString m_dbusPath;
     QDateTime m_creationTime;
     QDateTime m_modificationTime;

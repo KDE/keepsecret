@@ -2,6 +2,18 @@
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 #include "secretitemproxy.h"
+#include "kwallets_debug.h"
+
+static bool wasErrorFree(GError **error)
+{
+    if (!*error) {
+        return true;
+    }
+    qCWarning(KWALLETS_LOG) << QString::fromUtf8((*error)->message);
+    g_error_free(*error);
+    *error = nullptr;
+    return false;
+}
 
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)
@@ -13,7 +25,7 @@ SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObje
             return;
         }
         if (m_secretServiceClient->isAvailable()) {
-            setStatus(ItemEmpty);
+            setStatus(Empty);
             loadItem(m_wallet, m_dbusPath);
         } else {
             setStatus(Disconnected);
@@ -44,21 +56,6 @@ void SecretItemProxy::setStatus(Status status)
 
     m_status = status;
     Q_EMIT statusChanged(status);
-}
-
-SecretItemProxy::Operation SecretItemProxy::operation() const
-{
-    return m_operation;
-}
-
-void SecretItemProxy::setOperation(SecretItemProxy::Operation operation)
-{
-    if (operation == m_operation) {
-        return;
-    }
-
-    m_operation = operation;
-    Q_EMIT operationChanged(operation);
 }
 
 bool SecretItemProxy::needsSave() const
@@ -134,7 +131,7 @@ QVariantMap SecretItemProxy::attributes() const
 
 void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
 {
-    setOperation(Loading);
+    setStatus(Loading);
     m_dbusPath = dbusPath;
 
     if (!m_secretServiceClient->isAvailable()) {
@@ -185,7 +182,7 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
             }
             m_attributes[QStringLiteral("__keys")] = keys;
         }
-        setStatus(ItemLoaded);
+        setStatus(Ready);
 
     } else {
         m_needsSave = false;
@@ -201,8 +198,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
         m_attributes[QStringLiteral("__keys")] = QStringList();
         setStatus(LoadFailed);
     }
-
-    setOperation(None);
 
     Q_EMIT needsSaveChanged(m_needsSave);
     Q_EMIT lockedChanged(m_locked);
@@ -266,7 +261,7 @@ void SecretItemProxy::close()
     Q_EMIT attributesChanged(m_attributes);
     Q_EMIT validChanged(false);
 
-    setStatus(ItemEmpty);
+    setStatus(Empty);
 }
 
 static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -276,7 +271,11 @@ static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer ins
 
     secret_item_delete_finish((SecretItem *)source, result, &error);
 
-    proxy->setOperation(SecretItemProxy::None);
+    if (wasErrorFree(&error)) {
+        proxy->setStatus(SecretItemProxy::DeleteFailed);
+    } else {
+        proxy->setStatus(SecretItemProxy::Ready);
+    }
     proxy->close();
 }
 
@@ -286,7 +285,7 @@ void SecretItemProxy::deleteItem()
         return;
     }
 
-    setOperation(Deleting);
+    setStatus(Deleting);
     secret_item_delete(m_secretItem.get(), nullptr, onDeleteFinished, this);
 }
 
