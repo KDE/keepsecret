@@ -835,68 +835,6 @@ QByteArray SecretServiceClient::readEntry(SecretItem *item, const SecretServiceC
     return data;
 }
 
-void SecretServiceClient::renameEntry(const QString &display_name,
-                                      const QString &oldKey,
-                                      const QString &newKey,
-                                      const QString &folder,
-                                      const QString &collectionName,
-                                      bool *ok)
-{
-    SecretItemPtr item = retrieveItem(oldKey, Unknown, folder, collectionName, ok);
-
-    if (!*ok) {
-        return;
-    }
-    if (!item) {
-        *ok = false;
-        qCWarning(KWALLETS_LOG) << i18n("Entry to rename not found");
-        return;
-    }
-
-    SecretItemPtr existingItem = retrieveItem(newKey, Unknown, folder, collectionName, ok);
-    if (existingItem) {
-        *ok = false;
-        qCWarning(KWALLETS_LOG) << i18n("Entry named %1 in folder %2 and wallet %3 already exists.", newKey, folder, collectionName);
-        return;
-    }
-
-    QByteArray data;
-
-    Type type = PlainText;
-    GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
-    if (attributes) {
-        const gchar *value = (const char *)g_hash_table_lookup(attributes.get(), "type");
-        if (value) {
-            type = stringToType(QString::fromUtf8(value));
-        }
-    } else {
-        *ok = false;
-        qCWarning(KWALLETS_LOG) << i18n("Entry to rename incomplete");
-        return;
-    }
-
-    SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(item.get()));
-    if (secretValue) {
-        const gchar *password = secret_value_get_text(secretValue.get());
-
-        if (type == Binary) {
-            data = QByteArray::fromBase64(QByteArray(password));
-        } else {
-            data = QByteArray(password);
-        }
-    } else {
-        *ok = false;
-        qCWarning(KWALLETS_LOG) << i18n("Entry to rename incomplete");
-        return;
-    }
-
-    deleteEntry(oldKey, folder, collectionName, ok);
-    if (!*ok) {
-        return;
-    }
-    writeEntry(display_name, newKey, data, type, folder, collectionName, ok);
-}
-
 void SecretServiceClient::writeEntry(const QString &display_name,
                                      const QString &key,
                                      const QByteArray &value,
@@ -950,28 +888,6 @@ void SecretServiceClient::writeEntry(const QString &display_name,
                                                                nullptr,
                                                                &error));
 
-    *ok = wasErrorFree(&error);
-}
-
-void SecretServiceClient::deleteEntry(const QString &key, const QString &folder, const QString &collectionName, bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return;
-    }
-
-    GError *error = nullptr;
-    SecretItemPtr item = retrieveItem(key, Unknown, folder, collectionName, ok);
-    if (!*ok) {
-        return;
-    }
-    if (!item) {
-        *ok = false;
-        qCWarning(KWALLETS_LOG) << i18n("Entry to rename not found");
-        return;
-    }
-    m_updateInProgress = true;
-    secret_item_delete_sync(item.get(), nullptr, &error);
     *ok = wasErrorFree(&error);
 }
 

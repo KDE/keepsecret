@@ -107,8 +107,6 @@ public:
 
     QByteArray readEntry(SecretItem *item, const SecretServiceClient::Type type, bool *ok);
 
-    void renameEntry(const QString &display_name, const QString &oldKey, const QString &newKey, const QString &folder, const QString &collectionName, bool *ok);
-
     void writeEntry(const QString &itemName,
                     const QString &key,
                     const QByteArray &value,
@@ -116,8 +114,6 @@ public:
                     const QString &folder,
                     const QString &collectionName,
                     bool *ok);
-
-    void deleteEntry(const QString &key, const QString &folder, const QString &collectionName, bool *ok);
 
     void attemptConnectionFinished(SecretService *service);
 
