@@ -110,7 +110,7 @@ public:
     // TODO move in wallet model
     void deleteFolder(const QString &folder, const QString &collectionName, bool *ok);
 
-    // TODO: move in secretitemproxy
+    // TODO: move in secretitemproxy, to be splitted in create/setLabel,setSecret,set_attributes, with a bitmask on what has been changed
     void writeEntry(const QString &itemName,
                     const QString &key,
                     const QByteArray &value,
