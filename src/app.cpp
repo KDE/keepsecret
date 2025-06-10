@@ -7,7 +7,6 @@
 #include <KSharedConfig>
 #include <KWindowConfig>
 #include <QQuickWindow>
-#include <qt6/QtCore/qstringliteral.h>
 
 App::App(QObject *parent)
     : QObject(parent)

@@ -5,7 +5,6 @@
 
 #include <QObject>
 #include <QQmlEngine>
-#include <qt6/QtCore/qcontainerfwd.h>
 
 #include "secretitemproxy.h"
 #include "secretserviceclient.h"
