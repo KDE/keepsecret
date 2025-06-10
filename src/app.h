@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <qt6/QtCore/qcontainerfwd.h>
 
 #include "secretitemproxy.h"
 #include "secretserviceclient.h"
@@ -24,6 +25,7 @@ class App : public QObject
     Q_PROPERTY(WalletsModel *walletsModel READ walletsModel CONSTANT)
     Q_PROPERTY(WalletModel *walletModel READ walletModel CONSTANT)
     Q_PROPERTY(SecretItemProxy *secretItem READ secretItem CONSTANT)
+    Q_PROPERTY(QByteArray sidebarState READ sidebarState WRITE setSidebarState NOTIFY sidebarStateChanged)
 
 public:
     App(QObject *parent = nullptr);
@@ -33,12 +35,19 @@ public:
     WalletModel *walletModel() const;
     SecretItemProxy *secretItem() const;
 
+    QByteArray sidebarState() const;
+    void setSidebarState(const QByteArray &state);
+
     // Restore current window geometry
     Q_INVOKABLE void restoreWindowGeometry(QQuickWindow *window, const QString &group = QStringLiteral("main")) const;
     // Save current window geometry
     Q_INVOKABLE void saveWindowGeometry(QQuickWindow *window, const QString &group = QStringLiteral("main")) const;
 
+Q_SIGNALS:
+    void sidebarStateChanged();
+
 private:
+    QByteArray m_sidebarState;
     SecretServiceClient *m_secretServiceClient = nullptr;
     WalletsModel *m_walletsModel = nullptr;
     WalletModel *m_walletModel = nullptr;

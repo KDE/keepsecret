@@ -67,7 +67,16 @@ Kirigami.ApplicationWindow {
             Kirigami.Action {
                 text: i18n("Plus One")
                 icon.name: "list-add"
-                onTriggered: root.counter += 1
+                onTriggered: {
+                    App.sidebarState = pageStack.columnView.saveState()
+                }
+            },
+            Kirigami.Action {
+                text: i18n("Plus One")
+                icon.name: "list-add"
+                onTriggered: {
+                    pageStack.columnView.restoreState(App.sidebarState)
+                }
             },
             Kirigami.Action {
                 text: i18n("About kwallets")

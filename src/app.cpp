@@ -7,6 +7,7 @@
 #include <KSharedConfig>
 #include <KWindowConfig>
 #include <QQuickWindow>
+#include <qt6/QtCore/qstringliteral.h>
 
 App::App(QObject *parent)
     : QObject(parent)
@@ -66,6 +67,22 @@ void App::saveWindowGeometry(QQuickWindow *window, const QString &group) const
     if (trailingSidebarWidth > 0) {
         windowGroup.writeEntry(QStringLiteral("trailingSidebarWidth"), trailingSidebarWidth);
     }
+
+    dataResource.sync();
+}
+
+QByteArray App::sidebarState() const
+{
+    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
+    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+    return QByteArray::fromBase64(windowGroup.readEntry(QStringLiteral("sidebarState"), QString()).toUtf8());
+}
+
+void App::setSidebarState(const QByteArray &state)
+{
+    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
+    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+    windowGroup.writeEntry(QStringLiteral("sidebarState"), state.toBase64());
 
     dataResource.sync();
 }
