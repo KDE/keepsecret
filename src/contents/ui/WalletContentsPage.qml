@@ -11,8 +11,6 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
-    title: App.walletModel.currentWallet
-
     property alias currentEntry: view.currentIndex
     property int state: {
         if (App.walletModel.currentWallet.length === 0) {
@@ -31,6 +29,8 @@ Kirigami.ScrollablePage {
         Empty,
         Loaded
     }
+
+    title: App.walletModel.currentWallet
 
     actions: [
         Kirigami.Action {
@@ -126,6 +126,7 @@ Kirigami.ScrollablePage {
             onClicked: {
                 view.currentIndex = index
                 App.secretItem.loadItem(App.walletModel.currentWallet, model.dbusPath);
+                page.Kirigami.ColumnView.view.currentIndex = 2;
             }
         }
 

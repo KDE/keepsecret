@@ -11,7 +11,7 @@ Kirigami.ScrollablePage {
     id: page
 
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
-    //title: i18n("Wallets")
+    title: Kirigami.Settings.isMobile ? i18n("Wallets") : ""
 
     readonly property string currentWallet: App.walletModel.currentWallet
 
@@ -38,6 +38,7 @@ Kirigami.ScrollablePage {
             onClicked: {
                 App.walletModel.currentWallet = model.display
                 view.currentIndex = index
+                page.Kirigami.ColumnView.view.currentIndex = 1
             }
         }
     }
