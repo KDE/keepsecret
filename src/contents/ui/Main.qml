@@ -18,37 +18,19 @@ Kirigami.ApplicationWindow {
 
     onClosing: App.saveWindowGeometry(root)
 
-    onWidthChanged: {
-        if (!pageStack.wideMode) {
-            return;
-        }
-
-        if (pageStack.width - walletListPage.width - entryPage.width < pageStack.defaultColumnWidth) {
-            let entryPageWidth = pageStack.width - pageStack.defaultColumnWidth - walletListPage.width
-
-            leadingSidebarWidth = Math.max(minimumSidebarWidth, entryPageWidth)
-
-            if (entryPageWidth < minimumSidebarWidth) {
-                trailingSidebarWidth = pageStack.width - pageStack.defaultColumnWidth - entryPage.width
-            }
-        }
-        saveWindowGeometryTimer.restart()
-    }
-
+    onWidthChanged: saveWindowGeometryTimer.restart()
     onHeightChanged: saveWindowGeometryTimer.restart()
     onXChanged: saveWindowGeometryTimer.restart()
     onYChanged: saveWindowGeometryTimer.restart()
 
     property real minimumSidebarWidth: pageStack.defaultColumnWidth / 2
 
-    property real leadingSidebarWidth
-    property real trailingSidebarWidth
-
     Component.onCompleted: {
-        App.restoreWindowGeometry(root)
+        App.restoreWindowGeometry(root);
         if (width >= pageStack.defaultColumnWidth * 2 ) {
-            pageStack.push(walletContentsPage)
+            pageStack.push(walletContentsPage);
         }
+        pageStack.columnView.saveState = App.sidebarState;
     }
 
     // This timer allows to batch update the window size change to reduce
@@ -64,20 +46,6 @@ Kirigami.ApplicationWindow {
     globalDrawer: Kirigami.GlobalDrawer {
         isMenu: !Kirigami.Settings.isMobile
         actions: [
-            Kirigami.Action {
-                text: i18n("Plus One")
-                icon.name: "list-add"
-                onTriggered: {
-                    App.sidebarState = pageStack.columnView.saveState()
-                }
-            },
-            Kirigami.Action {
-                text: i18n("Plus One")
-                icon.name: "list-add"
-                onTriggered: {
-                    pageStack.columnView.restoreState(App.sidebarState)
-                }
-            },
             Kirigami.Action {
                 text: i18n("About kwallets")
                 icon.name: "help-about"
@@ -99,6 +67,13 @@ Kirigami.ApplicationWindow {
         initialPage: walletListPage
         columnView.columnResizeMode: pageStack.wideMode ? Kirigami.ColumnView.DynamicColumns : Kirigami.ColumnView.SingleColumn
     }
+
+    Connections {
+        target: pageStack.columnView
+        function onInteractiveResizeFinished() {print("resizeFinished")
+            App.sidebarState = pageStack.columnView.saveState;
+        }
+    }
 /*
    // pageStack.wideMode: pageStack.width >= pageStack.defaultColumnWidth + minimumSidebarWidth * 2
     Binding {
@@ -110,7 +85,7 @@ Kirigami.ApplicationWindow {
     WalletListPage {
         id: walletListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true
-        implicitWidth: Math.max(minimumSidebarWidth, root.leadingSidebarWidth)
+        Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
         onCurrentWalletChanged: {
             walletContentsPage.currentEntry = -1
             if (currentWallet.length >= 0) {
@@ -146,7 +121,7 @@ Kirigami.ApplicationWindow {
 
     EntryPage {
         id: entryPage
-        implicitWidth: Math.max(minimumSidebarWidth, root.trailingSidebarWidth)
+        Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
         visible: false
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.fillWidth: false
