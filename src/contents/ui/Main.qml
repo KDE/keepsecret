@@ -23,14 +23,15 @@ Kirigami.ApplicationWindow {
     onXChanged: saveWindowGeometryTimer.restart()
     onYChanged: saveWindowGeometryTimer.restart()
 
-    property real minimumSidebarWidth: pageStack.defaultColumnWidth / 2
+    readonly property real minimumSidebarWidth: pageStack.defaultColumnWidth / 2
+    readonly property real maximumSidebarWidth: (width - pageStack.defaultColumnWidth) / 2
 
     Component.onCompleted: {
         App.restoreWindowGeometry(root);
         if (width >= pageStack.defaultColumnWidth * 2 ) {
             pageStack.push(walletContentsPage);
         }
-        pageStack.columnView.saveState = App.sidebarState;
+        pageStack.columnView.savedState = App.sidebarState;
     }
 
     // This timer allows to batch update the window size change to reduce
@@ -66,12 +67,8 @@ Kirigami.ApplicationWindow {
     pageStack {
         initialPage: walletListPage
         columnView.columnResizeMode: pageStack.wideMode ? Kirigami.ColumnView.DynamicColumns : Kirigami.ColumnView.SingleColumn
-    }
-
-    Connections {
-        target: pageStack.columnView
-        function onInteractiveResizeFinished() {print("resizeFinished")
-            App.sidebarState = pageStack.columnView.saveState;
+        columnView.onSavedStateChanged: {
+            App.sidebarState = pageStack.columnView.savedState;
         }
     }
 /*
@@ -86,6 +83,7 @@ Kirigami.ApplicationWindow {
         id: walletListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
+        Kirigami.ColumnView.maximumWidth: maximumSidebarWidth
         onCurrentWalletChanged: {
             walletContentsPage.currentEntry = -1
             if (currentWallet.length >= 0) {
@@ -122,6 +120,7 @@ Kirigami.ApplicationWindow {
     EntryPage {
         id: entryPage
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
+        Kirigami.ColumnView.maximumWidth: maximumSidebarWidth
         visible: false
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.fillWidth: false
