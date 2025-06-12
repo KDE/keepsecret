@@ -20,7 +20,7 @@ Kirigami.ScrollablePage {
             text: i18n("New Wallet")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new wallet")
-            onTriggered: root.counter += 1
+            onTriggered: print("stub")
         }
     ]
 
@@ -33,12 +33,11 @@ Kirigami.ScrollablePage {
             required property int index
             readonly property bool current: App.walletModel.currentWallet === model.display
             width: view.width
-            icon.name: "wallet-closed"
+            icon.name: highlighted && !App.walletModel.locked ? "wallet-open" : "wallet-closed"
             text: model.display
             highlighted: view.currentIndex == index
             onClicked: {
                 App.walletModel.currentWallet = model.display
-              //  view.currentIndex = index
                 page.Kirigami.ColumnView.view.currentIndex = 1
             }
         }
