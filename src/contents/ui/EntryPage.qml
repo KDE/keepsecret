@@ -18,7 +18,7 @@ Kirigami.ScrollablePage {
             text: i18n("Save")
             icon.name: "document-save"
             tooltip: i18n("Save changes")
-            enabled: App.secretItem.needsSave
+            enabled: App.secretItem.status === SecretItemProxy.NeedsSave
             onTriggered: App.secretItem.save()
         },
         Kirigami.Action {

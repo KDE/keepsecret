@@ -54,13 +54,30 @@ void SecretItemProxy::setStatus(Status status)
         return;
     }
 
+    if (m_status == Saving && status == Ready) {
+        m_modificationTime = QDateTime::currentDateTime();
+        Q_EMIT modificationTimeChanged(m_modificationTime);
+    }
+
+    qWarning() << "Setting status" << status;
+
     m_status = status;
     Q_EMIT statusChanged(status);
 }
 
-bool SecretItemProxy::needsSave() const
+SecretItemProxy::SaveOperations SecretItemProxy::saveOperations() const
 {
-    return m_needsSave;
+    return m_saveOperations;
+}
+
+void SecretItemProxy::setSaveOperations(SecretItemProxy::SaveOperations saveOperations)
+{
+    if (saveOperations == m_saveOperations) {
+        return;
+    }
+
+    m_saveOperations = saveOperations;
+    Q_EMIT saveOperationsChanged(saveOperations);
 }
 
 bool SecretItemProxy::isLocked() const
@@ -100,10 +117,9 @@ void SecretItemProxy::setLabel(const QString &label)
     }
 
     m_label = label;
-    m_needsSave = true;
 
     Q_EMIT labelChanged(label);
-    Q_EMIT needsSaveChanged(m_needsSave);
+    setStatus(NeedsSave);
 }
 
 QString SecretItemProxy::secretValue() const
@@ -119,10 +135,9 @@ void SecretItemProxy::setSecretValue(const QString &secretValue)
     }
 
     m_secretValue = secretValue.toUtf8();
-    m_needsSave = true;
 
     Q_EMIT secretValueChanged();
-    Q_EMIT needsSaveChanged(m_needsSave);
+    setStatus(NeedsSave);
 }
 
 void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
@@ -132,12 +147,9 @@ void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
     }
 
     m_secretValue = secretValue;
-    m_needsSave = m_status == Ready;
 
     Q_EMIT secretValueChanged();
-    if (m_status == Ready) {
-        Q_EMIT needsSaveChanged(m_needsSave);
-    }
+    setStatus(NeedsSave);
 }
 
 QVariantMap SecretItemProxy::attributes() const
@@ -196,7 +208,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
     m_secretItem = m_secretServiceClient->retrieveItem(dbusPath, wallet, &ok);
 
     if (ok) {
-        m_needsSave = false;
         m_locked = secret_item_get_locked(m_secretItem.get());
         m_creationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_created(m_secretItem.get()));
         m_modificationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_modified(m_secretItem.get()));
@@ -242,7 +253,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
         }
 
     } else {
-        m_needsSave = false;
         m_locked = false;
         m_creationTime = {};
         m_modificationTime = {};
@@ -256,7 +266,6 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
         setStatus(LoadFailed);
     }
 
-    Q_EMIT needsSaveChanged(m_needsSave);
     Q_EMIT lockedChanged(m_locked);
     Q_EMIT creationTimeChanged(m_creationTime);
     Q_EMIT modificationTimeChanged(m_modificationTime);
@@ -296,26 +305,73 @@ void SecretItemProxy::unlock()
     secret_service_unlock(m_secretServiceClient->service(), g_list_append(nullptr, m_secretItem.get()), nullptr, onItemUnlocked, this);
 }
 
+static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    SecretItemProxy *proxy = (SecretItemProxy *)inst;
+
+    secret_item_set_label_finish((SecretItem *)source, result, &error);
+
+    if (wasErrorFree(&error)) {
+        proxy->setSaveOperations(proxy->saveOperations() & !SecretItemProxy::SavingLabel);
+        if (proxy->saveOperations() == SecretItemProxy::SaveOperationNone) {
+            proxy->setStatus(SecretItemProxy::Ready);
+        }
+    } else {
+        proxy->setStatus(SecretItemProxy::SaveFailed);
+    }
+}
+
+static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    SecretItemProxy *proxy = (SecretItemProxy *)inst;
+
+    secret_item_set_attributes_finish((SecretItem *)source, result, &error);
+
+    if (wasErrorFree(&error)) {
+        proxy->setSaveOperations(proxy->saveOperations() & !SecretItemProxy::SavingAttributes);
+        if (proxy->saveOperations() == SecretItemProxy::SaveOperationNone) {
+            proxy->setStatus(SecretItemProxy::Ready);
+        }
+    } else {
+        proxy->setStatus(SecretItemProxy::SaveFailed);
+    }
+}
+
 void SecretItemProxy::save()
 {
     if (!m_secretServiceClient->isAvailable()) {
         return;
     }
 
-    bool ok;
-    m_secretServiceClient->writeEntry(m_label, m_itemName, m_secretValue, SecretServiceClient::PlainText, m_folder, m_wallet, &ok);
+    secret_item_set_label(m_secretItem.get(), m_label.toUtf8().data(), nullptr, onSetLabelFinished, this);
+    m_saveOperations |= SavingLabel;
 
-    m_needsSave = !ok;
-    if (ok) {
-        m_modificationTime = QDateTime::currentDateTime();
-        Q_EMIT modificationTimeChanged(m_modificationTime);
+    if (m_attributes.contains(QStringLiteral("xdg:schema")) && m_attributes[QStringLiteral("xdg:schema")] == QStringLiteral("org.qt.keychain")) {
+        GHashTable *attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+        for (auto it = m_attributes.constBegin(); it != m_attributes.constEnd(); ++it) {
+            if (it.key() == QStringLiteral("__keys")) {
+                continue;
+            }
+            QByteArray keyBytes = it.key().toUtf8();
+            gchar *key = g_strdup(keyBytes.constData());
+
+            QByteArray valueBytes = it.value().toString().toUtf8();
+            gchar *value = g_strdup(valueBytes.constData());
+
+            g_hash_table_insert(attributes, key, value);
+        }
+
+        secret_item_set_attributes(m_secretItem.get(), SecretServiceClient::qtKeychainSchema(), attributes, nullptr, onSetAttributesFinished, this);
+        m_saveOperations |= SavingAttributes;
+
+        // TODO: save secret
     }
-    Q_EMIT needsSaveChanged(m_needsSave);
 }
 
 void SecretItemProxy::close()
 {
-    m_needsSave = false;
     m_locked = false;
     m_creationTime = {};
     m_modificationTime = {};
@@ -330,7 +386,6 @@ void SecretItemProxy::close()
 
     m_secretItem.reset();
 
-    Q_EMIT needsSaveChanged(m_needsSave);
     Q_EMIT lockedChanged(m_locked);
     Q_EMIT creationTimeChanged(m_creationTime);
     Q_EMIT modificationTimeChanged(m_modificationTime);

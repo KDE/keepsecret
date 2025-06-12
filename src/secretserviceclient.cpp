@@ -17,19 +17,6 @@
 #include <QEventLoop>
 #include <QTimer>
 
-// Copied from
-// https://github.com/frankosterfeld/qtkeychain/blob/main/qtkeychain/libsecret.cpp
-// This is intended to be a data format compatible with QtKeychain
-const SecretSchema *qtKeychainSchema(void)
-{
-    static const SecretSchema schema = {
-        "org.qt.keychain",
-        SECRET_SCHEMA_DONT_MATCH_NAME,
-        {{"user", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"server", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"type", SECRET_SCHEMA_ATTRIBUTE_STRING}}};
-
-    return &schema;
-}
-
 static bool wasErrorFree(GError **error)
 {
     if (!*error) {
@@ -83,6 +70,19 @@ SecretServiceClient::SecretServiceClient(QObject *parent)
                 QStringLiteral("CollectionDeleted"),
                 this,
                 SLOT(onCollectionDeleted(QDBusObjectPath)));
+}
+
+// Copied from
+// https://github.com/frankosterfeld/qtkeychain/blob/main/qtkeychain/libsecret.cpp
+// This is intended to be a data format compatible with QtKeychain
+const SecretSchema *SecretServiceClient::qtKeychainSchema(void)
+{
+    static const SecretSchema schema = {
+        "org.qt.keychain",
+        SECRET_SCHEMA_DONT_MATCH_NAME,
+        {{"user", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"server", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"type", SECRET_SCHEMA_ATTRIBUTE_STRING}}};
+
+    return &schema;
 }
 
 QString SecretServiceClient::typeToString(SecretServiceClient::Type type)
@@ -622,62 +622,6 @@ void SecretServiceClient::deleteFolder(const QString &folder, const QString &col
     } else {
         qCWarning(KWALLETS_LOG) << i18n("No entries");
     }
-}
-
-void SecretServiceClient::writeEntry(const QString &display_name,
-                                     const QString &key,
-                                     const QByteArray &value,
-                                     const SecretServiceClient::Type type,
-                                     const QString &folder,
-                                     const QString &collectionName,
-                                     bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return;
-    }
-
-    GError *error = nullptr;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    QByteArray data;
-    if (type == SecretServiceClient::Base64) {
-        data = value.toBase64();
-    } else {
-        data = value;
-    }
-
-    QString mimeType;
-    if (type == SecretServiceClient::Binary) {
-        mimeType = QStringLiteral("application/octet-stream");
-    } else {
-        mimeType = QStringLiteral("text/plain");
-    }
-
-    SecretValuePtr secretValue = SecretValuePtr(secret_value_new(data.constData(), -1, mimeType.toLatin1().constData()));
-    if (!secretValue) {
-        *ok = false;
-        qCWarning(KWALLETS_LOG) << i18n("Failed to create SecretValue");
-        return;
-    }
-
-    GHashTablePtr attributes = GHashTablePtr(g_hash_table_new(g_str_hash, g_str_equal));
-    g_hash_table_insert(attributes.get(), g_strdup("user"), g_strdup(key.toUtf8().constData()));
-    g_hash_table_insert(attributes.get(), g_strdup("type"), g_strdup(typeToString(type).toUtf8().constData()));
-    g_hash_table_insert(attributes.get(), g_strdup("server"), g_strdup(folder.toUtf8().constData()));
-
-    m_updateInProgress = true;
-    SecretItemPtr item = SecretItemPtr(secret_item_create_sync(collection,
-                                                               qtKeychainSchema(),
-                                                               attributes.get(),
-                                                               display_name.toUtf8().constData(),
-                                                               secretValue.get(),
-                                                               SECRET_ITEM_CREATE_REPLACE,
-                                                               nullptr,
-                                                               &error));
-
-    *ok = wasErrorFree(&error);
 }
 
 #include <moc_secretserviceclient.cpp>

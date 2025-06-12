@@ -6,15 +6,17 @@
 #include "secretserviceclient.h"
 #include <QDateTime>
 #include <QObject>
+#include <qqmlregistration.h>
 
 class SecretServiceClient;
 
 class SecretItemProxy : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
 
+    Q_PROPERTY(SecretItemProxy::Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
-    Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged)
     Q_PROPERTY(bool locked READ isLocked NOTIFY lockedChanged)
     Q_PROPERTY(QDateTime creationTime READ creationTime NOTIFY creationTimeChanged)
     Q_PROPERTY(QDateTime modificationTime READ modificationTime NOTIFY modificationTimeChanged)
@@ -33,6 +35,7 @@ public:
         LoadingSecret,
         Locked,
         Ready,
+        NeedsSave,
         Unlocking,
         Saving,
         LoadFailed,
@@ -44,6 +47,15 @@ public:
     };
     Q_ENUM(Status);
 
+    enum SaveOperation {
+        SaveOperationNone = 0,
+        SavingLabel = 1,
+        SavingSecret = 2,
+        SavingAttributes = 4
+    };
+    Q_ENUM(SaveOperation);
+    Q_DECLARE_FLAGS(SaveOperations, SaveOperation)
+
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
 
@@ -52,8 +64,10 @@ public:
     Status status() const;
     void setStatus(Status status);
 
+    SaveOperations saveOperations() const;
+    void setSaveOperations(SaveOperations saveOperations);
+
     // TODO: collapse those in Status
-    bool needsSave() const;
     bool isLocked() const;
     QDateTime creationTime() const;
     QDateTime modificationTime() const;
@@ -83,8 +97,8 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Status status);
+    void saveOperationsChanged(SaveOperations saveOperations);
     void validChanged(bool valid);
-    void needsSaveChanged(bool needsSave);
     void lockedChanged(bool locked);
     void creationTimeChanged(const QDateTime &time);
     void modificationTimeChanged(const QDateTime &time);
@@ -96,9 +110,9 @@ Q_SIGNALS:
     void attributesChanged(const QVariantMap &attribures);
 
 private:
-    bool m_needsSave = false;
     bool m_locked = false;
     Status m_status = Disconnected;
+    SaveOperations m_saveOperations = SaveOperationNone;
     SecretServiceClient::Type m_type = SecretServiceClient::Unknown;
     QString m_dbusPath;
     QDateTime m_creationTime;
@@ -113,3 +127,5 @@ private:
     SecretItemPtr m_secretItem;
     SecretServiceClient *m_secretServiceClient = nullptr;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(SecretItemProxy::SaveOperations)
