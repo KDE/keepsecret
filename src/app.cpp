@@ -15,6 +15,8 @@ App::App(QObject *parent)
     m_walletsModel = new WalletsModel(m_secretServiceClient, this);
     m_walletModel = new WalletModel(m_secretServiceClient, this);
     m_secretItemProxy = new SecretItemProxy(m_secretServiceClient, this);
+    connect(m_walletModel, &WalletModel::currentWalletChanged, m_walletsModel, &WalletsModel::setCurrentWallet);
+    m_walletsModel->setCurrentWallet(m_walletModel->currentWallet());
 }
 
 App::~App()
@@ -55,20 +57,21 @@ void App::saveWindowGeometry(QQuickWindow *window, const QString &group) const
     dataResource.sync();
 }
 
-QByteArray App::sidebarState() const
+QString App::sidebarState() const
 {
     KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
     KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
-    return windowGroup.readEntry(QStringLiteral("sidebarState"), QString()).toUtf8();
+    return windowGroup.readEntry(QStringLiteral("sidebarState"), QString());
 }
 
-void App::setSidebarState(const QByteArray &state)
+void App::setSidebarState(const QString &state)
 {
     KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
     KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
-    windowGroup.writeEntry(QStringLiteral("sidebarState"), QString::fromUtf8(state));
+    windowGroup.writeEntry(QStringLiteral("sidebarState"), state);
 
     dataResource.sync();
+    Q_EMIT sidebarStateChanged();
 }
 
 #include "moc_app.cpp"

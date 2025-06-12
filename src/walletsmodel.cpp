@@ -17,11 +17,33 @@ WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *pa
             m_wallets.clear();
         }
         endResetModel();
+        Q_EMIT currentIndexChanged();
     });
 }
 
 WalletsModel::~WalletsModel()
 {
+}
+
+QString WalletsModel::currentWallet() const
+{
+    return m_currentWallet;
+}
+
+void WalletsModel::setCurrentWallet(const QString &wallet)
+{
+    if (wallet == m_currentWallet) {
+        return;
+    }
+
+    m_currentWallet = wallet;
+
+    Q_EMIT currentIndexChanged();
+}
+
+int WalletsModel::currentIndex() const
+{
+    return m_wallets.indexOf(m_currentWallet);
 }
 
 int WalletsModel::rowCount(const QModelIndex &parent) const

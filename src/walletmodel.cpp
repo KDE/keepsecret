@@ -4,6 +4,10 @@
 #include "walletmodel.h"
 #include "secretserviceclient.h"
 
+#include <QTimer>
+
+#include <KConfig>
+#include <KConfigGroup>
 #include <KLocalizedString>
 
 WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *parent)
@@ -18,6 +22,12 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
             m_items.clear();
             endResetModel();
         }
+    });
+
+    QTimer::singleShot(0, this, [this]() {
+        KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
+        KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+        setCurrentWallet(windowGroup.readEntry(QStringLiteral("lastOpenWallet"), QString()));
     });
 }
 
@@ -38,12 +48,16 @@ void WalletModel::setCurrentWallet(const QString &wallet)
 
     m_currentWallet = wallet;
 
-    m_secretCollection = SecretCollectionPtr(m_secretServiceClient->retrieveCollection(wallet));
-
     // loadWallet();
     if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
         loadWallet();
     }
+
+    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
+    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+    windowGroup.writeEntry(QStringLiteral("lastOpenWallet"), wallet);
+
+    dataResource.sync();
 
     Q_EMIT(currentWalletChanged(wallet));
 }
@@ -112,6 +126,12 @@ QVariant WalletModel::data(const QModelIndex &index, int role) const
 
 void WalletModel::loadWallet()
 {
+    if (m_secretServiceClient->status() != SecretServiceClient::Connected) {
+        return;
+    }
+
+    m_secretCollection = SecretCollectionPtr(m_secretServiceClient->retrieveCollection(m_currentWallet));
+
     if (!m_secretCollection) {
         return;
     }
