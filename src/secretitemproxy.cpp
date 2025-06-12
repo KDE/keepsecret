@@ -3,6 +3,7 @@
 
 #include "secretitemproxy.h"
 #include "kwallets_debug.h"
+#include "secretserviceclient.h"
 
 static bool wasErrorFree(GError **error)
 {
@@ -171,6 +172,7 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
 
     if (wasErrorFree(&error)) {
         SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(proxy->secretItem()));
+
         if (secretValue) {
             if (proxy->type() == SecretServiceClient::Binary) {
                 gsize length = 0;
@@ -313,7 +315,7 @@ static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer i
     secret_item_set_label_finish((SecretItem *)source, result, &error);
 
     if (wasErrorFree(&error)) {
-        proxy->setSaveOperations(proxy->saveOperations() & !SecretItemProxy::SavingLabel);
+        proxy->setSaveOperations(proxy->saveOperations() & ~SecretItemProxy::SavingLabel);
         if (proxy->saveOperations() == SecretItemProxy::SaveOperationNone) {
             proxy->setStatus(SecretItemProxy::Ready);
         }
@@ -330,7 +332,24 @@ static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpoin
     secret_item_set_attributes_finish((SecretItem *)source, result, &error);
 
     if (wasErrorFree(&error)) {
-        proxy->setSaveOperations(proxy->saveOperations() & !SecretItemProxy::SavingAttributes);
+        proxy->setSaveOperations(proxy->saveOperations() & ~SecretItemProxy::SavingAttributes);
+        if (proxy->saveOperations() == SecretItemProxy::SaveOperationNone) {
+            proxy->setStatus(SecretItemProxy::Ready);
+        }
+    } else {
+        proxy->setStatus(SecretItemProxy::SaveFailed);
+    }
+}
+
+static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    SecretItemProxy *proxy = (SecretItemProxy *)inst;
+
+    secret_item_set_secret_finish((SecretItem *)source, result, &error);
+
+    if (wasErrorFree(&error)) {
+        proxy->setSaveOperations(proxy->saveOperations() & ~SecretItemProxy::SavingSecret);
         if (proxy->saveOperations() == SecretItemProxy::SaveOperationNone) {
             proxy->setStatus(SecretItemProxy::Ready);
         }
@@ -366,7 +385,16 @@ void SecretItemProxy::save()
         secret_item_set_attributes(m_secretItem.get(), SecretServiceClient::qtKeychainSchema(), attributes, nullptr, onSetAttributesFinished, this);
         m_saveOperations |= SavingAttributes;
 
-        // TODO: save secret
+        SecretValuePtr secretValue;
+        if (m_type == SecretServiceClient::Binary) {
+            secretValue.reset(secret_value_new(m_secretValue.data(), m_secretValue.length(), "application/octet-stream"));
+        } else if (m_type == SecretServiceClient::Base64) {
+            secretValue.reset(secret_value_new(m_secretValue.toBase64().data(), m_secretValue.length(), "text/plain"));
+        } else {
+            secretValue.reset(secret_value_new(m_secretValue.data(), m_secretValue.length(), "text/plain"));
+        }
+
+        secret_item_set_secret(m_secretItem.get(), secretValue.get(), nullptr, onSetSecretFinished, this);
     }
 }
 
