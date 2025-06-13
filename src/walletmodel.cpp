@@ -124,6 +124,16 @@ QVariant WalletModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
+static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, gpointer inst)
+{
+    if (g_strcmp0(pspec->name, "items") != 0) {
+        return;
+    }
+    WalletModel *walletModel = (WalletModel *)inst;
+    walletModel->refreshWallet();
+    qWarning() << "NOTIFY?";
+}
+
 void WalletModel::loadWallet()
 {
     if (m_secretServiceClient->status() != SecretServiceClient::Connected) {
@@ -134,6 +144,19 @@ void WalletModel::loadWallet()
 
     if (!m_secretCollection) {
         return;
+    }
+
+    refreshWallet();
+}
+
+void WalletModel::refreshWallet()
+{
+    if (!m_secretCollection) {
+        return;
+    }
+
+    if (m_notifyHandlerId > 0) {
+        g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
     }
 
     beginResetModel();
@@ -159,7 +182,6 @@ void WalletModel::loadWallet()
             entry.label = QString::fromUtf8(secret_item_get_label(item.get()));
             entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item.get())));
             entry.folder = QString();
-
             GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
 
             // Retrieve "server" value
@@ -182,6 +204,7 @@ void WalletModel::loadWallet()
     }
 
     endResetModel();
+    m_notifyHandlerId = g_signal_connect(m_secretCollection.get(), "notify", G_CALLBACK(onCollectionNotify), this);
 }
 
 #include "moc_walletmodel.cpp"

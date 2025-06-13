@@ -143,6 +143,7 @@ protected Q_SLOTS:
 private:
     SecretServicePtr m_service;
     Status m_status = Disconnected;
+    // TODO: remove
     std::map<QString, SecretCollectionPtr> m_openCollections;
     QDBusServiceWatcher *m_serviceWatcher;
     QSet<QString> m_watchedCollections;

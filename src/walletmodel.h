@@ -30,6 +30,8 @@ public:
     QString currentWallet() const;
     void setCurrentWallet(const QString &wallet);
 
+    void refreshWallet();
+
     bool isLocked() const;
     Q_INVOKABLE void lock();
     Q_INVOKABLE void unlock();
@@ -38,13 +40,13 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-protected:
-    void loadWallet();
-
 Q_SIGNALS:
     void currentWalletChanged(const QString &currentWallet);
     bool lockedChanged(bool locked);
     void error(const QString &error);
+
+protected:
+    void loadWallet();
 
 private:
     struct Entry {
@@ -56,4 +58,5 @@ private:
     QList<Entry> m_items;
     SecretCollectionPtr m_secretCollection;
     SecretServiceClient *m_secretServiceClient = nullptr;
+    ulong m_notifyHandlerId = 0;
 };

@@ -152,7 +152,7 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
         SecretCollection *coll = SECRET_COLLECTION(l->data);
         const gchar *label = secret_collection_get_label(coll);
         if (QString::fromUtf8(label) == name) {
-            m_openCollections.insert(std::make_pair(name, std::move(coll)));
+            // m_openCollections.insert(std::make_pair(name, std::move(coll)));
             SecretCollection *collection = coll;
             return collection;
         }
