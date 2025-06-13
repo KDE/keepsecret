@@ -237,7 +237,7 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
 static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
     Q_UNUSED(source);
-
+    // qWarning()<<"AAAAAAA"<<g_dbus_proxy_get_object_path((SecretItem *)source)
     GError *error = nullptr;
     QString message;
     SecretItemProxy *proxy = (SecretItemProxy *)inst;
@@ -252,7 +252,7 @@ static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer
 
 void SecretItemProxy::createItem(const QString &label,
                                  const QByteArray &secret,
-                                 const SecretServiceClient::Type type,
+                                 // const SecretServiceClient::Type type,
                                  const QString &user,
                                  const QString &server,
                                  const QString &wallet)
@@ -260,6 +260,9 @@ void SecretItemProxy::createItem(const QString &label,
     if (!m_secretServiceClient->isAvailable()) {
         return;
     }
+
+    // TODO: make it a paramenter?
+    const SecretServiceClient::Type type = SecretServiceClient::PlainText;
 
     SecretCollection *collection = m_secretServiceClient->retrieveCollection(wallet);
 

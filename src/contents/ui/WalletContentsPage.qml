@@ -38,6 +38,7 @@ Kirigami.ScrollablePage {
             text: i18n("New Entry")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new entry in this wallet")
+            onTriggered: creationDialog.open()
         },
         Kirigami.Action {
             id: searchAction
@@ -79,6 +80,84 @@ Kirigami.ScrollablePage {
                     text = ""
                 }
             }
+        }
+    }
+
+    QQC.Dialog {
+        id: creationDialog
+        modal: true
+        title: i18n("Create a new Item")
+        standardButtons: QQC.Dialog.Ok | QQC.Dialog.Cancel
+
+        function checkOkEnabled() {
+            let button = standardButton(QQC.Dialog.Ok);
+            button.enabled = (labelField.text.length > 0 && passwordField.text.length > 0 &&
+                              userField.text.length > 0 && serverField.text.length > 0);
+        }
+
+        function maybeAccept() {
+            let button = standardButton(QQC.Dialog.Ok);
+            if (button.enabled) {
+                accept();
+            }
+        }
+
+        Component.onCompleted: standardButton(QQC.Dialog.Ok).enabled = false
+
+        contentItem: ColumnLayout {
+            QQC.Label {
+                text: i18n("Label:")
+            }
+            QQC.TextField {
+                id: labelField
+                onVisibleChanged: {
+                    if (visible) {
+                        forceActiveFocus();
+                    }
+                }
+                onTextChanged: creationDialog.checkOkEnabled()
+                onAccepted: creationDialog.maybeAccept()
+            }
+            QQC.Label {
+                text: i18n("Password:")
+            }
+            Kirigami.PasswordField {
+                id: passwordField
+                onTextChanged: creationDialog.checkOkEnabled()
+                onAccepted: creationDialog.maybeAccept()
+            }
+            QQC.Label {
+                text: i18n("User:")
+            }
+            QQC.TextField {
+                id: userField
+                onTextChanged: creationDialog.checkOkEnabled()
+                onAccepted: creationDialog.maybeAccept()
+            }
+            QQC.Label {
+                text: i18n("Server:")
+            }
+            QQC.TextField {
+                id: serverField
+                onTextChanged: creationDialog.checkOkEnabled()
+                onAccepted: creationDialog.maybeAccept()
+            }
+        }
+
+        onAccepted: {
+            console.log("Ok clicked")
+            App.secretItem.createItem(labelField.text,
+                                passwordField.text,
+                                userField.text,
+                                serverField.text,
+                                App.walletModel.currentWallet);
+        }
+        onVisibleChanged: {
+            console.log("resetting")
+            labelField.text = ""
+            passwordField.text = ""
+            userField.text = ""
+            serverField.text = ""
         }
     }
 

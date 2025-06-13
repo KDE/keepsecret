@@ -26,9 +26,7 @@ Kirigami.ScrollablePage {
             icon.name: "delete-symbolic"
             tooltip: i18n("Delete this entry")
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            onTriggered: {
-                print("delete")
-            }
+            onTriggered: App.secretItem.deleteItem()
         }
     ]
 
