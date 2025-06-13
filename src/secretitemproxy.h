@@ -15,9 +15,9 @@ class SecretItemProxy : public QObject
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(SecretItemProxy::Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
-    Q_PROPERTY(bool locked READ isLocked NOTIFY lockedChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QDateTime creationTime READ creationTime NOTIFY creationTimeChanged)
     Q_PROPERTY(QDateTime modificationTime READ modificationTime NOTIFY modificationTimeChanged)
     Q_PROPERTY(QString wallet READ wallet NOTIFY walletChanged)
@@ -28,47 +28,57 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
 public:
-    enum Status {
-        Disconnected,
-        Empty,
-        Loading,
-        LoadingSecret,
-        Locked,
-        Ready,
-        NeedsSave,
-        Unlocking,
-        Saving,
+    enum StatusItem {
+        Disconnected = 0,
+        Connected = 1,
+        Ready = Connected | 2,
+        Locked = Connected | 4,
+        NeedsSave = Ready | 8,
+    };
+    Q_ENUM(StatusItem);
+    Q_DECLARE_FLAGS(Status, StatusItem)
+
+    enum Operation {
+        OperationNone = 0,
+        Creating = 1,
+        Loading = 2,
+        LoadingSecret = Loading | 4,
+        Unlocking = Loading | 8,
+        Saving = 16,
+        SavingLabel = Saving | 32,
+        SavingSecret = Saving | 64,
+        SavingAttributes = Saving | 128,
+        Deleting = 256
+    };
+    Q_ENUM(Operation);
+    Q_DECLARE_FLAGS(Operations, Operation);
+
+    enum Error {
+        NoError = 0,
+        CreationFailed,
         LoadFailed,
         LoadSecretFailed,
         UnlockFailed,
         SaveFailed,
-        Deleting,
         DeleteFailed
     };
-    Q_ENUM(Status);
-
-    enum SaveOperation {
-        SaveOperationNone = 0,
-        SavingLabel = 1,
-        SavingSecret = 2,
-        SavingAttributes = 4
-    };
-    Q_ENUM(SaveOperation);
-    Q_DECLARE_FLAGS(SaveOperations, SaveOperation)
+    Q_ENUM(Error);
 
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
 
-    bool isValid() const;
-
     Status status() const;
     void setStatus(Status status);
 
-    SaveOperations saveOperations() const;
-    void setSaveOperations(SaveOperations saveOperations);
+    Operations operations() const;
+    void setOperations(Operations operations);
+    void setOperation(Operation operation);
+    void clearOperation(Operation operation);
 
-    // TODO: collapse those in Status
-    bool isLocked() const;
+    Error error() const;
+    QString errorMessage() const;
+    void setError(Error error, const QString &message);
+
     QDateTime creationTime() const;
     QDateTime modificationTime() const;
 
@@ -87,6 +97,12 @@ public:
 
     SecretServiceClient::Type type() const;
 
+    Q_INVOKABLE void createItem(const QString &label,
+                                const QByteArray &secret,
+                                const SecretServiceClient::Type type,
+                                const QString &user,
+                                const QString &server,
+                                const QString &wallet);
     Q_INVOKABLE void loadItem(const QString &wallet, const QString &dbusPath);
     Q_INVOKABLE void unlock();
     Q_INVOKABLE void save();
@@ -97,9 +113,9 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Status status);
-    void saveOperationsChanged(SaveOperations saveOperations);
-    void validChanged(bool valid);
-    void lockedChanged(bool locked);
+    void operationsChanged(Operations operations);
+    void errorChanged(Error error);
+    void errorMessageChanged(const QString &errorMessage);
     void creationTimeChanged(const QDateTime &time);
     void modificationTimeChanged(const QDateTime &time);
     void walletChanged(const QString &wallet);
@@ -110,9 +126,10 @@ Q_SIGNALS:
     void attributesChanged(const QVariantMap &attribures);
 
 private:
-    bool m_locked = false;
     Status m_status = Disconnected;
-    SaveOperations m_saveOperations = SaveOperationNone;
+    Operations m_operations = OperationNone;
+    Error m_error = NoError;
+    QString m_errorMessage;
     SecretServiceClient::Type m_type = SecretServiceClient::Unknown;
     QString m_dbusPath;
     QDateTime m_creationTime;
@@ -128,4 +145,5 @@ private:
     SecretServiceClient *m_secretServiceClient = nullptr;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(SecretItemProxy::SaveOperations)
+Q_DECLARE_OPERATORS_FOR_FLAGS(SecretItemProxy::Status)
+Q_DECLARE_OPERATORS_FOR_FLAGS(SecretItemProxy::Operations)
