@@ -87,22 +87,22 @@ Kirigami.ScrollablePage {
         id: creationDialog
         modal: true
         title: i18n("Create a new Item")
-        standardButtons: QQC.Dialog.Ok | QQC.Dialog.Cancel
+        standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
 
-        function checkOkEnabled() {
-            let button = standardButton(QQC.Dialog.Ok);
+        function checkSaveEnabled() {
+            let button = standardButton(QQC.Dialog.Save);
             button.enabled = (labelField.text.length > 0 && passwordField.text.length > 0 &&
                               userField.text.length > 0 && serverField.text.length > 0);
         }
 
         function maybeAccept() {
-            let button = standardButton(QQC.Dialog.Ok);
+            let button = standardButton(QQC.Dialog.Save);
             if (button.enabled) {
                 accept();
             }
         }
 
-        Component.onCompleted: standardButton(QQC.Dialog.Ok).enabled = false
+        Component.onCompleted: standardButton(QQC.Dialog.Save).enabled = false
 
         contentItem: ColumnLayout {
             QQC.Label {
@@ -115,7 +115,7 @@ Kirigami.ScrollablePage {
                         forceActiveFocus();
                     }
                 }
-                onTextChanged: creationDialog.checkOkEnabled()
+                onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
             QQC.Label {
@@ -123,7 +123,7 @@ Kirigami.ScrollablePage {
             }
             Kirigami.PasswordField {
                 id: passwordField
-                onTextChanged: creationDialog.checkOkEnabled()
+                onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
             QQC.Label {
@@ -131,7 +131,7 @@ Kirigami.ScrollablePage {
             }
             QQC.TextField {
                 id: userField
-                onTextChanged: creationDialog.checkOkEnabled()
+                onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
             QQC.Label {
@@ -139,7 +139,7 @@ Kirigami.ScrollablePage {
             }
             QQC.TextField {
                 id: serverField
-                onTextChanged: creationDialog.checkOkEnabled()
+                onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
         }

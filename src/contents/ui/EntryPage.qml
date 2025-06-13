@@ -26,9 +26,21 @@ Kirigami.ScrollablePage {
             icon.name: "delete-symbolic"
             tooltip: i18n("Delete this entry")
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            onTriggered: App.secretItem.deleteItem()
+            onTriggered: deleteDialog.open()
         }
     ]
+
+    QQC.Dialog {
+        id: deleteDialog
+        modal: true
+        header: null
+        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
+        contentItem: QQC.Label {
+            text: i18n("Are you sure you want to delete the entry “%1”?", App.secretItem.label)
+            wrapMode: Text.WordWrap
+        }
+        onAccepted: App.secretItem.deleteItem()
+    }
 
     // TODO: Future Form layout things are needed like that, as can't even have a show password button in FormTextFieldDelegate
     component FormItem: Kirigami.HeaderFooterLayout {
