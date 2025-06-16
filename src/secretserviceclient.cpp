@@ -22,28 +22,13 @@ SecretServiceClient::SecretServiceClient(QObject *parent)
 {
     m_serviceBusName = QStringLiteral("org.freedesktop.secrets");
 
-    m_collectionDirtyTimer = new QTimer(this);
-    m_collectionDirtyTimer->setSingleShot(true);
-    m_collectionDirtyTimer->setInterval(100);
-    connect(m_collectionDirtyTimer, &QTimer::timeout, this, [this]() {
-        for (const QString &collection : std::as_const(m_dirtyCollections)) {
-            Q_EMIT collectionDirty(collection);
-        }
-        m_dirtyCollections.clear();
-    });
-
     m_serviceWatcher = new QDBusServiceWatcher(m_serviceBusName, QDBusConnection::sessionBus(), QDBusServiceWatcher::WatchForOwnerChange, this);
 
     connect(m_serviceWatcher, &QDBusServiceWatcher::serviceOwnerChanged, this, &SecretServiceClient::onServiceOwnerChanged);
 
     // Unconditionally try to connect to the service without checking it exists:
     // it will try to dbus-activate it if not running
-    if (attemptConnection()) {
-        bool ok = false;
-        for (const QString &collection : listCollections(&ok)) {
-            watchCollection(collection, &ok);
-        }
-    }
+    attemptConnection();
 
     QDBusConnection bus = QDBusConnection::sessionBus();
 
@@ -224,45 +209,6 @@ bool SecretServiceClient::attemptConnection()
     return true;
 }
 
-void SecretServiceClient::watchCollection(const QString &collectionName, bool *ok)
-{
-    if (m_watchedCollections.contains(collectionName)) {
-        *ok = true;
-        return;
-    }
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    GObjectPtr<GDBusProxy> proxy = GObjectPtr<GDBusProxy>(G_DBUS_PROXY(collection));
-    const QString path = QString::fromUtf8(g_strdup(g_dbus_proxy_get_object_path(proxy.get())));
-    if (path.isEmpty()) {
-        *ok = false;
-        return;
-    }
-
-    QDBusConnection::sessionBus().connect(m_serviceBusName,
-                                          path,
-                                          QStringLiteral("org.freedesktop.Secret.Collection"),
-                                          QStringLiteral("ItemChanged"),
-                                          this,
-                                          SLOT(onSecretItemChanged(QDBusObjectPath)));
-    QDBusConnection::sessionBus().connect(m_serviceBusName,
-                                          path,
-                                          QStringLiteral("org.freedesktop.Secret.Collection"),
-                                          QStringLiteral("ItemCreated"),
-                                          this,
-                                          SLOT(onSecretItemChanged(QDBusObjectPath)));
-    QDBusConnection::sessionBus().connect(m_serviceBusName,
-                                          path,
-                                          QStringLiteral("org.freedesktop.Secret.Collection"),
-                                          QStringLiteral("ItemDeleted"),
-                                          this,
-                                          SLOT(onSecretItemChanged(QDBusObjectPath)));
-
-    m_watchedCollections.insert(collectionName);
-    *ok = true;
-}
-
 void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner)
 {
     Q_UNUSED(serviceName);
@@ -270,22 +216,15 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
 
     bool available = !newOwner.isEmpty();
 
-    if (available && !m_service) {
-        GError *error = nullptr;
-        QString message;
-        m_service = SecretServicePtr(
-            secret_service_get_sync(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, &error));
-
-        available = wasErrorFree(&error, message);
-    }
-
-    if (!available) {
-        setStatus(Disconnected);
-        m_service.reset();
-    }
+    setStatus(Disconnected);
+    m_service.reset();
 
     qDebug() << "Secret Service availability changed:" << (available ? "Available" : "Unavailable");
     Q_EMIT serviceChanged();
+
+    if (available) {
+        attemptConnection();
+    }
 }
 
 void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
@@ -309,36 +248,6 @@ void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
     // Only emitting collectionListDirty here as we can't know the actual label
     // of the collection as is already deleted
     Q_EMIT collectionListDirty();
-}
-
-void SecretServiceClient::onSecretItemChanged(const QDBusObjectPath &path)
-{
-    if (!attemptConnection()) {
-        return;
-    }
-
-    // Don't trigger a reload if we did changes ourselves
-    if (m_updateInProgress) {
-        m_updateInProgress = false;
-        return;
-    }
-
-    QStringList pieces = path.path().split(QStringLiteral("/"), Qt::SkipEmptyParts);
-
-    // 6 items: /org/freedesktop/secrets/collection/collectionName/itemName
-    if (pieces.length() != 6) {
-        return;
-    }
-    pieces.pop_back();
-    const QString collectionPath = QStringLiteral("/") % pieces.join(QStringLiteral("/"));
-
-    const QString label = collectionLabelForPath(QDBusObjectPath(collectionPath));
-    if (label.isEmpty()) {
-        return;
-    }
-
-    m_dirtyCollections.insert(label);
-    m_collectionDirtyTimer->start();
 }
 
 void SecretServiceClient::handlePrompt(bool dismissed)
@@ -518,7 +427,6 @@ void SecretServiceClient::deleteCollection(const QString &collectionName, bool *
     SecretCollection *collection = retrieveCollection(collectionName);
 
     *ok = secret_collection_delete_sync(collection, nullptr, &error);
-    m_watchedCollections.remove(collectionName);
 
     *ok = *ok && wasErrorFree(&error, message);
     if (ok) {

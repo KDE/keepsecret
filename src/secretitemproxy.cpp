@@ -7,18 +7,6 @@
 
 #include <KLocalizedString>
 
-static bool wasErrorFree(GError **error, QString &message)
-{
-    if (!*error) {
-        return true;
-    }
-    message = QString::fromUtf8((*error)->message);
-    qCWarning(KWALLETS_LOG) << message;
-    g_error_free(*error);
-    *error = nullptr;
-    return false;
-}
-
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)
     , m_secretServiceClient(secretServiceClient)
@@ -208,7 +196,7 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
 
     QString message;
 
-    if (wasErrorFree(&error, message)) {
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
         SecretValuePtr secretValue = SecretValuePtr(secret_item_get_secret(proxy->secretItem()));
 
         if (secretValue) {
@@ -244,7 +232,7 @@ static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer
 
     secret_item_create_finish(result, &error);
 
-    if (!wasErrorFree(&error, message)) {
+    if (!SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setError(SecretItemProxy::CreationFailed, message);
     }
     proxy->clearOperation(SecretItemProxy::Creating);
@@ -394,7 +382,7 @@ static void onItemUnlockFinished(GObject *source, GAsyncResult *result, gpointer
 
     secret_service_unlock_finish((SecretService *)source, result, nullptr, &error);
 
-    if (!wasErrorFree(&error, message)) {
+    if (!SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setError(SecretItemProxy::UnlockFailed, message);
     }
 
@@ -419,7 +407,7 @@ static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer i
 
     secret_item_set_label_finish((SecretItem *)source, result, &error);
 
-    if (!wasErrorFree(&error, message)) {
+    if (!SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setError(SecretItemProxy::SaveFailed, message);
     }
 
@@ -434,7 +422,7 @@ static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpoin
 
     secret_item_set_attributes_finish((SecretItem *)source, result, &error);
 
-    if (!wasErrorFree(&error, message)) {
+    if (!SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setError(SecretItemProxy::SaveFailed, message);
     }
 
@@ -449,7 +437,7 @@ static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer 
 
     secret_item_set_secret_finish((SecretItem *)source, result, &error);
 
-    if (!wasErrorFree(&error, message)) {
+    if (!SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setError(SecretItemProxy::SaveFailed, message);
     }
 
@@ -532,7 +520,7 @@ static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer ins
 
     secret_item_delete_finish((SecretItem *)source, result, &error);
 
-    if (wasErrorFree(&error, message)) {
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setStatus(SecretItemProxy::Connected);
     } else {
         proxy->setError(SecretItemProxy::DeleteFailed, message);

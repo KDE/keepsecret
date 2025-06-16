@@ -244,6 +244,7 @@ QVariant WalletModel::data(const QModelIndex &index, int role) const
 
 static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, gpointer inst)
 {
+    Q_UNUSED(collection)
     if (g_strcmp0(pspec->name, "items") != 0) {
         return;
     }
@@ -280,7 +281,6 @@ void WalletModel::refreshWallet()
 
     setStatus(Connected);
     beginResetModel();
-    bool ok;
     m_items.clear();
 
     if (secret_collection_get_locked(m_secretCollection.get())) {

@@ -121,13 +121,11 @@ Q_SIGNALS:
     void statusChanged(Status status);
     void promptClosed(bool accepted);
     void collectionListDirty();
-    void collectionDirty(const QString &collection);
     void collectionCreated(const QString &collection);
     void collectionDeleted(const QString &collection);
 
 protected:
     bool attemptConnection();
-    void watchCollection(const QString &collectionName, bool *ok);
     void onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner);
 
     QString collectionLabelForPath(const QDBusObjectPath &path);
@@ -136,15 +134,11 @@ protected Q_SLOTS:
     void handlePrompt(bool dismissed);
     void onCollectionCreated(const QDBusObjectPath &path);
     void onCollectionDeleted(const QDBusObjectPath &path);
-    void onSecretItemChanged(const QDBusObjectPath &path);
 
 private:
     SecretServicePtr m_service;
     Status m_status = Disconnected;
     QDBusServiceWatcher *m_serviceWatcher;
-    QSet<QString> m_watchedCollections;
-    QSet<QString> m_dirtyCollections;
-    QTimer *m_collectionDirtyTimer;
     QString m_serviceBusName;
     bool m_updateInProgress = false;
 };
