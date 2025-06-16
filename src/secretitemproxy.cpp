@@ -216,13 +216,13 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
                 gsize length = 0;
                 const gchar *password = secret_value_get(secretValue.get(), &length);
                 proxy->setSecretValue(QByteArray(password, length));
-            }
-
-            const gchar *password = secret_value_get_text(secretValue.get());
-            if (proxy->type() == SecretServiceClient::Base64) {
-                proxy->setSecretValue(QByteArray::fromBase64(QByteArray(password)));
             } else {
-                proxy->setSecretValue(QByteArray(password));
+                const gchar *password = secret_value_get_text(secretValue.get());
+                if (proxy->type() == SecretServiceClient::Base64) {
+                    proxy->setSecretValue(QByteArray::fromBase64(QByteArray(password)));
+                } else {
+                    proxy->setSecretValue(QByteArray(password));
+                }
             }
             proxy->setStatus(SecretItemProxy::Ready);
         } else {
