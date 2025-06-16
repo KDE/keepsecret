@@ -15,15 +15,19 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     , m_secretServiceClient(secretServiceClient)
 {
     connect(m_secretServiceClient, &SecretServiceClient::statusChanged, this, [this](SecretServiceClient::Status status) {
+        setError(NoError, QString());
         if (status == SecretServiceClient::Connected) {
+            setStatus(Connected);
             loadWallet();
         } else {
+            setStatus(Disconnected);
             beginResetModel();
             m_items.clear();
             endResetModel();
         }
     });
 
+    // FIXME: needed the timer?
     QTimer::singleShot(0, this, [this]() {
         KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
         KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
@@ -33,6 +37,73 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
 
 WalletModel::~WalletModel()
 {
+}
+
+WalletModel::Status WalletModel::status() const
+{
+    return m_status;
+}
+
+void WalletModel::setStatus(WalletModel::Status status)
+{
+    if (status == m_status) {
+        return;
+    }
+
+    qWarning() << "WalletModel: Setting status" << status;
+
+    m_status = status;
+    Q_EMIT statusChanged(status);
+}
+
+WalletModel::Operations WalletModel::operations() const
+{
+    return m_operations;
+}
+
+void WalletModel::setOperations(WalletModel::Operations operations)
+{
+    if (operations == m_operations) {
+        return;
+    }
+
+    qWarning() << "WalletModel: Setting operations" << operations;
+
+    m_operations = operations;
+    Q_EMIT operationsChanged(operations);
+}
+
+void WalletModel::setOperation(WalletModel::Operation operation)
+{
+    setOperations(m_operations | operation);
+}
+
+void WalletModel::clearOperation(WalletModel::Operation operation)
+{
+    setOperations(m_operations & ~operation);
+}
+
+WalletModel::Error WalletModel::error() const
+{
+    return m_error;
+}
+
+QString WalletModel::errorMessage() const
+{
+    return m_errorMessage;
+}
+
+void WalletModel::setError(WalletModel::Error error, const QString &errorMessage)
+{
+    if (error != m_error) {
+        m_error = error;
+        Q_EMIT errorChanged(error);
+    }
+
+    if (errorMessage != m_errorMessage) {
+        m_errorMessage = errorMessage;
+        Q_EMIT errorMessageChanged(errorMessage);
+    }
 }
 
 QString WalletModel::currentWallet() const
@@ -46,9 +117,12 @@ void WalletModel::setCurrentWallet(const QString &wallet)
         return;
     }
 
+    if (m_notifyHandlerId > 0) {
+        g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
+    }
+
     m_currentWallet = wallet;
 
-    // loadWallet();
     if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
         loadWallet();
     }
@@ -62,28 +136,24 @@ void WalletModel::setCurrentWallet(const QString &wallet)
     Q_EMIT(currentWalletChanged(wallet));
 }
 
-bool WalletModel::isLocked() const
-{
-    if (!m_secretCollection) {
-        return false;
-    }
-    return secret_collection_get_locked(m_secretCollection.get());
-}
-
 void WalletModel::lock()
 {
     bool ok;
     m_secretServiceClient->lockCollection(m_currentWallet, &ok);
-    loadWallet();
-    Q_EMIT lockedChanged(isLocked());
+    if (ok) {
+        setStatus(Locked);
+    }
+    refreshWallet();
 }
 
 void WalletModel::unlock()
 {
     bool ok;
     m_secretServiceClient->unlockCollection(m_currentWallet, &ok);
-    loadWallet();
-    Q_EMIT lockedChanged(isLocked());
+    if (ok) {
+        setStatus(m_status & (~Locked | Connected));
+    }
+    refreshWallet();
 }
 
 QHash<int, QByteArray> WalletModel::roleNames() const
@@ -131,7 +201,6 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
     }
     WalletModel *walletModel = (WalletModel *)inst;
     walletModel->refreshWallet();
-    qWarning() << "NOTIFY?";
 }
 
 void WalletModel::loadWallet()
@@ -159,16 +228,24 @@ void WalletModel::refreshWallet()
         g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
     }
 
+    setError(NoError, QString());
+
+    setStatus(Connected);
     beginResetModel();
     bool ok;
-    const QStringList folders = m_secretServiceClient->listFolders(m_currentWallet, &ok);
     m_items.clear();
+
+    if (secret_collection_get_locked(m_secretCollection.get())) {
+        setStatus(Locked);
+        endResetModel();
+        return;
+    }
 
     GError *error = nullptr;
     secret_collection_load_items_sync(m_secretCollection.get(), nullptr, &error);
 
     if (error) {
-        Q_EMIT WalletModel::error(QString::fromUtf8(error->message));
+        setError(LoadFailed, QString::fromUtf8(error->message));
         g_error_free(error);
         endResetModel();
         return;
@@ -201,6 +278,11 @@ void WalletModel::refreshWallet()
 
             m_items << entry;
         }
+        if (m_items.length() > 0) {
+            setStatus(Ready);
+        }
+    } else {
+        setError(LoadFailed, i18n("Unable to load Entries."));
     }
 
     endResetModel();

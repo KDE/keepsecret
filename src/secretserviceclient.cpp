@@ -141,18 +141,12 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
         return nullptr;
     }
 
-    auto it = m_openCollections.find(name);
-    if (it != m_openCollections.end()) {
-        return it->second.get();
-    }
-
     GListPtr collections = GListPtr(secret_service_get_collections(m_service.get()));
 
     for (GList *l = collections.get(); l != nullptr; l = l->next) {
         SecretCollection *coll = SECRET_COLLECTION(l->data);
         const gchar *label = secret_collection_get_label(coll);
         if (QString::fromUtf8(label) == name) {
-            // m_openCollections.insert(std::make_pair(name, std::move(coll)));
             SecretCollection *collection = coll;
             return collection;
         }
@@ -272,8 +266,6 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
     Q_UNUSED(oldOwner);
 
     bool available = !newOwner.isEmpty();
-
-    m_openCollections.clear();
 
     if (available && !m_service) {
         GError *error = nullptr;
@@ -581,7 +573,6 @@ void SecretServiceClient::deleteCollection(const QString &collectionName, bool *
     SecretCollection *collection = retrieveCollection(collectionName);
 
     *ok = secret_collection_delete_sync(collection, nullptr, &error);
-    m_openCollections.erase(collectionName);
     m_watchedCollections.remove(collectionName);
 
     *ok = *ok && wasErrorFree(&error);

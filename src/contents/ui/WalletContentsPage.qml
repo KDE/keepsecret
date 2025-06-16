@@ -12,23 +12,6 @@ Kirigami.ScrollablePage {
     id: page
 
     property alias currentEntry: view.currentIndex
-    property int state: {
-        if (App.walletModel.currentWallet.length === 0) {
-            return WalletContentsPage.NoWallet
-        } else if (App.walletModel.locked) {
-            return WalletContentsPage.Locked
-        } else if (view.count === 0) {
-            return WalletContentsPage.Empty
-        }
-        return WalletContentsPage.Loaded
-    }
-
-    enum State {
-        NoWallet,
-        Locked,
-        Empty,
-        Loaded
-    }
 
     title: App.walletModel.currentWallet
 
@@ -38,6 +21,7 @@ Kirigami.ScrollablePage {
             text: i18n("New Entry")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new entry in this wallet")
+            enabled: App.walletModel.status === WalletModel.Ready
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
@@ -45,15 +29,17 @@ Kirigami.ScrollablePage {
             text: i18n("Search")
             icon.name: "search-symbolic"
             tooltip: i18n("Search entries in this wallet")
+            enabled: App.walletModel.status === WalletModel.Ready
             checkable: true
         },
         Kirigami.Action {
             id: lockAction
-            text: App.walletModel.locked ? i18n("Unlock") : i18n("Lock")
-            icon.name: App.walletModel.locked ? "unlock-symbolic" : "lock-symbolic"
-            tooltip: App.walletModel.locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
+            text: App.walletModel.status === WalletModel.Locked? i18n("Unlock") : i18n("Lock")
+            icon.name: App.walletModel.status === WalletModel.Locked? "unlock-symbolic" : "lock-symbolic"
+            tooltip: App.walletModel.status === WalletModel.Locked? i18n("Unlock this wallet") : i18n("Lock this wallet")
+            enabled: App.walletModel.status !== WalletModel.Disconnected
             onTriggered: {
-                if (App.walletModel.locked) {
+                if (App.walletModel.status === WalletModel.Locked) {
                     App.walletModel.unlock()
                 } else {
                     App.walletModel.lock()
@@ -213,30 +199,30 @@ Kirigami.ScrollablePage {
             anchors.centerIn: parent
             visible: view.count === 0
             icon.name: {
-                switch (page.state) {
-                case WalletContentsPage.Locked:
+                switch (App.walletModel.status) {
+                case WalletModel.Locked:
                     return "folder-locked"
-                case WalletContentsPage.Empty:
+                case WalletModel.Connected:
                     return "wallet-closed"
                 default:
                     return ""
                 }
             }
             text: {
-                switch (page.state) {
-                case WalletContentsPage.Locked:
+                switch (App.walletModel.status) {
+                case WalletModel.Locked:
                     return i18n("Wallet is locked")
-                case WalletContentsPage.Empty:
+                case WalletModel.Connected:
                     return i18n("Wallet is empty")
                 default:
                     return ""
                 }
             }
             helpfulAction: {
-                switch (page.state) {
-                case WalletContentsPage.Locked:
+                switch (App.walletModel.status) {
+                case WalletModel.Locked:
                     return lockAction
-                case WalletContentsPage.Empty:
+                case WalletModel.Connected:
                     return newAction
                 default:
                     return null
