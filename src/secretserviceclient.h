@@ -82,6 +82,13 @@ public:
     };
     Q_ENUM(Status);
 
+    enum Error {
+        NoError = 0,
+        ConnectionFailed,
+        SetDefaultFailed // TODO: move to WalletModel
+    };
+    Q_ENUM(Error);
+
     SecretServiceClient(QObject *parent = nullptr);
 
     static const SecretSchema *qtKeychainSchema(void);
@@ -94,21 +101,22 @@ public:
     Status status() const;
     void setStatus(Status status);
 
+    Error error() const;
+    QString errorMessage() const;
+    void setError(Error error, const QString &message);
+
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
+    // TODO move in wallet model
     QString defaultCollection(bool *ok);
     void setDefaultCollection(const QString &collectionName);
-    QStringList listCollections(bool *ok);
-    // TODO move in wallet model
-    QStringList listFolders(const QString &collectionName, bool *ok);
-
-    void createCollection(const QString &collectionName, bool *ok);
-
-    void deleteCollection(const QString &collectionName, bool *ok);
-
-    // TODO move in wallet model
     void deleteFolder(const QString &folder, const QString &collectionName, bool *ok);
+
+    // TODO move in Wallets model
+    QStringList listCollections(bool *ok);
+    void createCollection(const QString &collectionName, bool *ok);
+    void deleteCollection(const QString &collectionName, bool *ok);
 
     void attemptConnectionFinished(SecretService *service);
 
@@ -119,6 +127,8 @@ Q_SIGNALS:
     // Emitted when the service availability changed, or the service owner of secretservice has changed to a new one
     void serviceChanged();
     void statusChanged(Status status);
+    void errorChanged(Error error);
+    void errorMessageChanged(const QString &errorMessage);
     void promptClosed(bool accepted);
     void collectionListDirty();
     void collectionCreated(const QString &collection);
@@ -138,6 +148,8 @@ protected Q_SLOTS:
 private:
     SecretServicePtr m_service;
     Status m_status = Disconnected;
+    Error m_error = NoError;
+    QString m_errorMessage;
     QDBusServiceWatcher *m_serviceWatcher;
     QString m_serviceBusName;
     bool m_updateInProgress = false;

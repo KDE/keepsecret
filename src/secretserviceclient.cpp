@@ -273,6 +273,29 @@ void SecretServiceClient::setStatus(Status status)
     Q_EMIT statusChanged(status);
 }
 
+SecretServiceClient::Error SecretServiceClient::error() const
+{
+    return m_error;
+}
+
+QString SecretServiceClient::errorMessage() const
+{
+    return m_errorMessage;
+}
+
+void SecretServiceClient::setError(SecretServiceClient::Error error, const QString &errorMessage)
+{
+    if (error != m_error) {
+        m_error = error;
+        Q_EMIT errorChanged(error);
+    }
+
+    if (errorMessage != m_errorMessage) {
+        m_errorMessage = errorMessage;
+        Q_EMIT errorMessageChanged(errorMessage);
+    }
+}
+
 QString SecretServiceClient::defaultCollection(bool *ok)
 {
     if (!isAvailable()) {
@@ -320,7 +343,7 @@ static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result
     secret_service_set_alias_finish((SecretService *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        // TODO: setError
+        client->setError(SecretServiceClient::SetDefaultFailed, message);
     }
 }
 
@@ -361,42 +384,6 @@ QStringList SecretServiceClient::listCollections(bool *ok)
 
     *ok = true;
     return collections;
-}
-
-QStringList SecretServiceClient::listFolders(const QString &collectionName, bool *ok)
-{
-    if (!isAvailable()) {
-        *ok = false;
-        return {};
-    }
-
-    QSet<QString> folders;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    if (!collection) {
-        *ok = false;
-        return {};
-    }
-    GListPtr glist = GListPtr(secret_collection_get_items(collection));
-
-    if (glist) {
-        for (GList *iter = glist.get(); iter != nullptr; iter = iter->next) {
-            SecretItem *item = static_cast<SecretItem *>(iter->data);
-
-            GHashTable *attributes = secret_item_get_attributes(item);
-            if (attributes) {
-                const gchar *value = (const char *)g_hash_table_lookup(attributes, "server");
-                if (value) {
-                    folders.insert(QString::fromUtf8(value));
-                }
-            }
-        }
-    } else {
-        qCDebug(KWALLETS_LOG) << i18n("No entries");
-    }
-    *ok = true;
-    return folders.values();
 }
 
 void SecretServiceClient::createCollection(const QString &collectionName, bool *ok)
