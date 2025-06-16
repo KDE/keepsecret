@@ -102,7 +102,7 @@ SecretServiceClient::Type SecretServiceClient::stringToType(const QString &typeN
 
 QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         return {};
     }
     QDBusInterface collectionInterface(m_serviceBusName, path.path(), QStringLiteral("org.freedesktop.Secret.Collection"), QDBusConnection::sessionBus());
@@ -124,7 +124,7 @@ QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
 
 SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         return nullptr;
     }
 
@@ -144,8 +144,6 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
 
 SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok)
 {
-    GError *error = nullptr;
-
     SecretCollection *collection = retrieveCollection(collectionName);
 
     GListPtr list = GListPtr(secret_collection_get_items(collection));
@@ -200,11 +198,6 @@ bool SecretServiceClient::attemptConnection()
     setStatus(Connecting);
 
     secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this);
-    /*
-        if (!ok || !m_service) {
-            qCWarning(KWALLETS_LOG) << i18n("Could not connect to Secret Service");
-            return false;
-        }*/
 
     return true;
 }
@@ -241,7 +234,7 @@ void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
 void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
 {
     Q_UNUSED(path);
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         return;
     }
 
@@ -282,7 +275,7 @@ void SecretServiceClient::setStatus(Status status)
 
 QString SecretServiceClient::defaultCollection(bool *ok)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         *ok = false;
         return QString();
     }
@@ -318,26 +311,33 @@ QString SecretServiceClient::defaultCollection(bool *ok)
     return label;
 }
 
-void SecretServiceClient::setDefaultCollection(const QString &collectionName, bool *ok)
+static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
-    if (!attemptConnection()) {
-        *ok = false;
+    GError *error = nullptr;
+    QString message;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
+
+    secret_service_set_alias_finish((SecretService *)source, result, &error);
+
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        // TODO: setError
+    }
+}
+
+void SecretServiceClient::setDefaultCollection(const QString &collectionName)
+{
+    if (!isAvailable()) {
         return;
     }
 
-    GError *error = nullptr;
-    QString message;
-
     SecretCollection *collection = retrieveCollection(collectionName);
 
-    *ok = secret_service_set_alias_sync(m_service.get(), "default", collection, nullptr, &error);
-
-    *ok = *ok && wasErrorFree(&error, message);
+    secret_service_set_alias(m_service.get(), "default", collection, nullptr, onSetDefaultCollectionFinished, this);
 }
 
 QStringList SecretServiceClient::listCollections(bool *ok)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         *ok = false;
         return QStringList();
     }
@@ -365,7 +365,7 @@ QStringList SecretServiceClient::listCollections(bool *ok)
 
 QStringList SecretServiceClient::listFolders(const QString &collectionName, bool *ok)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         *ok = false;
         return {};
     }
@@ -401,7 +401,7 @@ QStringList SecretServiceClient::listFolders(const QString &collectionName, bool
 
 void SecretServiceClient::createCollection(const QString &collectionName, bool *ok)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         *ok = false;
         return;
     }
@@ -416,7 +416,7 @@ void SecretServiceClient::createCollection(const QString &collectionName, bool *
 
 void SecretServiceClient::deleteCollection(const QString &collectionName, bool *ok)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         *ok = false;
         return;
     }
@@ -436,7 +436,7 @@ void SecretServiceClient::deleteCollection(const QString &collectionName, bool *
 
 void SecretServiceClient::deleteFolder(const QString &folder, const QString &collectionName, bool *ok)
 {
-    if (!attemptConnection()) {
+    if (!isAvailable()) {
         *ok = false;
         return;
     }

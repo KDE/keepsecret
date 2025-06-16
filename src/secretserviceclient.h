@@ -98,7 +98,7 @@ public:
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
     QString defaultCollection(bool *ok);
-    void setDefaultCollection(const QString &collectionName, bool *ok);
+    void setDefaultCollection(const QString &collectionName);
     QStringList listCollections(bool *ok);
     // TODO move in wallet model
     QStringList listFolders(const QString &collectionName, bool *ok);
