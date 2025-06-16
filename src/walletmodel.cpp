@@ -136,24 +136,72 @@ void WalletModel::setCurrentWallet(const QString &wallet)
     Q_EMIT(currentWalletChanged(wallet));
 }
 
+static void onServiceLockFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    QString message;
+    WalletModel *model = (WalletModel *)inst;
+    GList *locked = nullptr;
+
+    secret_service_lock_finish((SecretService *)source, result, &locked, &error);
+
+    g_list_free(locked);
+
+    model->clearOperation(WalletModel::Locking);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        model->setStatus(WalletModel::Locked);
+        model->refreshWallet();
+    } else {
+        model->setError(WalletModel::LockFailed, message);
+    }
+}
+
 void WalletModel::lock()
 {
-    bool ok;
-    m_secretServiceClient->lockCollection(m_currentWallet, &ok);
-    if (ok) {
-        setStatus(Locked);
+    if (m_status == Locked) {
+        return;
     }
-    refreshWallet();
+
+    if (m_secretServiceClient->status() != SecretServiceClient::Connected || !m_secretCollection) {
+        return;
+    }
+
+    setOperation(Locking);
+    secret_service_lock(m_secretServiceClient->service(), g_list_append(nullptr, m_secretCollection.get()), nullptr, onServiceLockFinished, this);
+}
+
+static void onServiceUnlockFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    QString message;
+    WalletModel *model = (WalletModel *)inst;
+    GList *unlocked = nullptr;
+
+    secret_service_unlock_finish((SecretService *)source, result, &unlocked, &error);
+
+    g_list_free(unlocked);
+
+    model->clearOperation(WalletModel::Unlocking);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        model->setStatus(WalletModel::Connected);
+        model->refreshWallet();
+    } else {
+        model->setError(WalletModel::UnlockFailed, message);
+    }
 }
 
 void WalletModel::unlock()
 {
-    bool ok;
-    m_secretServiceClient->unlockCollection(m_currentWallet, &ok);
-    if (ok) {
-        setStatus(m_status & (~Locked | Connected));
+    if (m_status != Locked) {
+        return;
     }
-    refreshWallet();
+
+    if (m_secretServiceClient->status() != SecretServiceClient::Connected || !m_secretCollection) {
+        return;
+    }
+
+    setOperation(Unlocking);
+    secret_service_unlock(m_secretServiceClient->service(), g_list_append(nullptr, m_secretCollection.get()), nullptr, onServiceUnlockFinished, this);
 }
 
 QHash<int, QByteArray> WalletModel::roleNames() const

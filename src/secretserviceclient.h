@@ -86,6 +86,8 @@ public:
 
     static const SecretSchema *qtKeychainSchema(void);
 
+    static bool wasErrorFree(GError **error, QString &message);
+
     bool isAvailable() const;
     SecretService *service() const;
 
@@ -94,10 +96,6 @@ public:
 
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
-
-    // TODO move in wallet model
-    bool unlockCollection(const QString &collectionName, bool *ok);
-    bool lockCollection(const QString &collectionName, bool *ok);
 
     QString defaultCollection(bool *ok);
     void setDefaultCollection(const QString &collectionName, bool *ok);

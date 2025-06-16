@@ -17,16 +17,6 @@
 #include <QEventLoop>
 #include <QTimer>
 
-static bool wasErrorFree(GError **error)
-{
-    if (!*error) {
-        return true;
-    }
-    qCWarning(KWALLETS_LOG) << QString::fromUtf8((*error)->message);
-    g_error_free(*error);
-    *error = nullptr;
-    return false;
-}
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
 {
@@ -83,6 +73,18 @@ const SecretSchema *SecretServiceClient::qtKeychainSchema(void)
         {{"user", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"server", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"type", SECRET_SCHEMA_ATTRIBUTE_STRING}}};
 
     return &schema;
+}
+
+bool SecretServiceClient::wasErrorFree(GError **error, QString &message)
+{
+    if (!*error) {
+        return true;
+    }
+    message = QString::fromUtf8((*error)->message);
+    qCWarning(KWALLETS_LOG) << message;
+    g_error_free(*error);
+    *error = nullptr;
+    return false;
 }
 
 QString SecretServiceClient::typeToString(SecretServiceClient::Type type)
@@ -182,11 +184,12 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const Q
 static void onServiceGetFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
     GError *error = nullptr;
+    QString message;
     SecretServiceClient *client = (SecretServiceClient *)inst;
 
     SecretService *service = secret_service_get_finish(result, &error);
 
-    if (wasErrorFree(&error)) {
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
         client->attemptConnectionFinished(service);
     } else {
         client->attemptConnectionFinished(nullptr);
@@ -269,10 +272,11 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
 
     if (available && !m_service) {
         GError *error = nullptr;
+        QString message;
         m_service = SecretServicePtr(
             secret_service_get_sync(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, &error));
 
-        available = wasErrorFree(&error);
+        available = wasErrorFree(&error, message);
     }
 
     if (!available) {
@@ -367,68 +371,6 @@ void SecretServiceClient::setStatus(Status status)
     Q_EMIT statusChanged(status);
 }
 
-bool SecretServiceClient::unlockCollection(const QString &collectionName, bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return false;
-    }
-
-    GError *error = nullptr;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    if (!collection) {
-        *ok = false;
-        return false;
-    }
-
-    watchCollection(collectionName, ok);
-
-    gboolean locked = secret_collection_get_locked(collection);
-
-    if (locked) {
-        gboolean success = secret_service_unlock_sync(m_service.get(), g_list_append(nullptr, collection), nullptr, nullptr, &error);
-        *ok = wasErrorFree(&error);
-        if (!success) {
-            qCWarning(KWALLETS_LOG) << i18n("Unable to unlock collectionName %1", collectionName);
-        }
-        return success;
-    }
-
-    return true;
-}
-
-bool SecretServiceClient::lockCollection(const QString &collectionName, bool *ok)
-{
-    if (!attemptConnection()) {
-        *ok = false;
-        return false;
-    }
-
-    GError *error = nullptr;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    if (!collection) {
-        *ok = false;
-        return false;
-    }
-
-    gboolean locked = secret_collection_get_locked(collection);
-
-    if (!locked) {
-        gboolean success = secret_service_lock_sync(m_service.get(), g_list_append(nullptr, collection), nullptr, nullptr, &error);
-        *ok = wasErrorFree(&error);
-        if (!success) {
-            qCWarning(KWALLETS_LOG) << i18n("Unable to lock collectionName %1", collectionName);
-        }
-        return success;
-    }
-
-    return true;
-}
-
 QString SecretServiceClient::defaultCollection(bool *ok)
 {
     if (!attemptConnection()) {
@@ -475,12 +417,13 @@ void SecretServiceClient::setDefaultCollection(const QString &collectionName, bo
     }
 
     GError *error = nullptr;
+    QString message;
 
     SecretCollection *collection = retrieveCollection(collectionName);
 
     *ok = secret_service_set_alias_sync(m_service.get(), "default", collection, nullptr, &error);
 
-    *ok = *ok && wasErrorFree(&error);
+    *ok = *ok && wasErrorFree(&error, message);
 }
 
 QStringList SecretServiceClient::listCollections(bool *ok)
@@ -555,10 +498,11 @@ void SecretServiceClient::createCollection(const QString &collectionName, bool *
     }
 
     GError *error = nullptr;
+    QString message;
 
     secret_collection_create_sync(m_service.get(), collectionName.toUtf8().data(), nullptr, SECRET_COLLECTION_CREATE_NONE, nullptr, &error);
 
-    *ok = wasErrorFree(&error);
+    *ok = wasErrorFree(&error, message);
 }
 
 void SecretServiceClient::deleteCollection(const QString &collectionName, bool *ok)
@@ -569,13 +513,14 @@ void SecretServiceClient::deleteCollection(const QString &collectionName, bool *
     }
 
     GError *error = nullptr;
+    QString message;
 
     SecretCollection *collection = retrieveCollection(collectionName);
 
     *ok = secret_collection_delete_sync(collection, nullptr, &error);
     m_watchedCollections.remove(collectionName);
 
-    *ok = *ok && wasErrorFree(&error);
+    *ok = *ok && wasErrorFree(&error, message);
     if (ok) {
         Q_EMIT collectionDeleted(collectionName);
     }
@@ -589,6 +534,7 @@ void SecretServiceClient::deleteFolder(const QString &folder, const QString &col
     }
 
     GError *error = nullptr;
+    QString message;
 
     SecretCollection *collection = retrieveCollection(collectionName);
 
@@ -597,7 +543,7 @@ void SecretServiceClient::deleteFolder(const QString &folder, const QString &col
 
     GListPtr glist = GListPtr(secret_collection_search_sync(collection, qtKeychainSchema(), attributes.get(), SECRET_SEARCH_ALL, nullptr, &error));
 
-    *ok = wasErrorFree(&error);
+    *ok = wasErrorFree(&error, message);
     if (!*ok) {
         return;
     }
@@ -607,7 +553,7 @@ void SecretServiceClient::deleteFolder(const QString &folder, const QString &col
             SecretItem *item = static_cast<SecretItem *>(iter->data);
             m_updateInProgress = true;
             secret_item_delete_sync(item, nullptr, &error);
-            *ok = wasErrorFree(&error);
+            *ok = wasErrorFree(&error, message);
             g_object_unref(item);
         }
     } else {
