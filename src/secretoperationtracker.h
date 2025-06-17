@@ -28,22 +28,22 @@ public:
 
     enum Operation {
         OperationNone = 0,
-        Creating = 1,
-        Loading = 2,
-        Unlocking = Loading | 4,
-        Locking = 16,
-        Deleting = 32
+        CollectionCreating = 1,
+        CollectionLoading = 2,
+        CollectionUnlocking = 4,
+        CollectionLocking = 16,
+        CollectionDeleting = 32
     };
     Q_ENUM(Operation);
     Q_DECLARE_FLAGS(Operations, Operation);
 
     enum Error {
         NoError = 0,
-        CreationFailed,
-        LoadFailed,
-        UnlockFailed,
-        LockFailed,
-        DeleteFailed
+        ItemCreationFailed,
+        CollectionLoadFailed,
+        CollectionUnlockFailed,
+        CollectionLockFailed,
+        CollectionDeleteFailed
     };
     Q_ENUM(Error);
 
