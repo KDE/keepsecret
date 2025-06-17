@@ -238,6 +238,7 @@ void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
     }
 
     loadCollections();
+    Q_EMIT collectionCreated(path);
 }
 
 void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
@@ -248,6 +249,7 @@ void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
     }
 
     loadCollections();
+    Q_EMIT collectionDeleted(path);
 }
 
 void SecretServiceClient::onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties)
@@ -418,26 +420,30 @@ void SecretServiceClient::setDefaultCollection(const QString &collectionName)
     secret_service_set_alias(m_service.get(), "default", collection, nullptr, onSetDefaultCollectionFinished, this);
 }
 
-QStringList SecretServiceClient::listCollections()
+QList<SecretServiceClient::CollectionEntry> SecretServiceClient::listCollections()
 {
-    if (!isAvailable()) {
-        return QStringList();
-    }
+    QList<CollectionEntry> collections;
 
-    QStringList collections;
+    if (!isAvailable()) {
+        return collections;
+    }
 
     GListPtr glist = GListPtr(secret_service_get_collections(m_service.get()));
 
     if (glist) {
         for (GList *iter = glist.get(); iter != nullptr; iter = iter->next) {
+            CollectionEntry entry;
             SecretCollection *collection = SECRET_COLLECTION(iter->data);
             const gchar *rawLabel = secret_collection_get_label(collection);
-            const QString label = QString::fromUtf8(rawLabel);
-            if (!label.isEmpty()) {
-                collections.append(label);
-            }
+
+            entry.name = QString::fromUtf8(rawLabel);
+            entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(collection)));
+            entry.locked = secret_collection_get_locked(collection);
+
+            collections << entry;
         }
     } else {
+        // FIXME: this else is probably useless
         setError(LoadCollectionsFailed, i18n("No collections"));
     }
 
@@ -470,6 +476,80 @@ void SecretServiceClient::loadCollections()
     setOperation(LoadingCollections);
 
     secret_service_load_collections(m_service.get(), nullptr, onLoadCollectionsFinished, this);
+}
+
+static void onLockCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    QString message;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
+    GList *locked = nullptr;
+
+    secret_service_lock_finish((SecretService *)source, result, &locked, &error);
+
+    g_list_free(locked);
+
+    client->clearOperation(SecretServiceClient::LockingCollection);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->loadCollections();
+    } else {
+        client->setError(SecretServiceClient::LockCollectionFailed, message);
+    }
+}
+
+void SecretServiceClient::lockCollection(const QString &collectionPath)
+{
+    if (!isAvailable()) {
+        return;
+    }
+
+    SecretCollectionPtr collection;
+    // TODO dbus path
+    collection.reset(retrieveCollection(collectionPath));
+
+    if (!collection) {
+        return;
+    }
+
+    setOperation(LockingCollection);
+    secret_service_lock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onLockCollectionFinished, this);
+}
+
+static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    QString message;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
+    GList *unlocked = nullptr;
+
+    secret_service_unlock_finish((SecretService *)source, result, &unlocked, &error);
+
+    g_list_free(unlocked);
+
+    client->clearOperation(SecretServiceClient::UnlockingCollection);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->loadCollections();
+    } else {
+        client->setError(SecretServiceClient::UnlockCollectionFailed, message);
+    }
+}
+
+void SecretServiceClient::unlockCollection(const QString &collectionPath)
+{
+    if (!isAvailable()) {
+        return;
+    }
+
+    SecretCollectionPtr collection;
+    // TODO dbus path
+    collection.reset(retrieveCollection(collectionPath));
+
+    if (!collection) {
+        return;
+    }
+
+    setOperation(UnlockingCollection);
+    secret_service_unlock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onUnlockCollectionFinished, this);
 }
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)

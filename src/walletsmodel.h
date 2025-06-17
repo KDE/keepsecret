@@ -15,6 +15,12 @@ class WalletsModel : public QAbstractListModel
     Q_PROPERTY(int currentIndex READ currentIndex NOTIFY currentIndexChanged)
 
 public:
+    enum Roles {
+        DbusPathRole = Qt::UserRole + 1,
+        LockedRole
+    };
+    Q_ENUM(Roles)
+
     WalletsModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~WalletsModel();
 
@@ -23,6 +29,7 @@ public:
 
     int currentIndex() const;
 
+    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
@@ -34,6 +41,6 @@ protected:
 
 private:
     SecretServiceClient *m_secretServiceClient = nullptr;
-    QStringList m_wallets;
+    QList<SecretServiceClient::CollectionEntry> m_wallets;
     QString m_currentWallet;
 };

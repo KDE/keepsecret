@@ -93,26 +93,37 @@ Kirigami.ScrollablePage {
 
     QQC.Menu {
         id: contextMenu
-        property string collection
-        QQC.MenuItem {
-            text: i18n("Set as Default")
-            enabled: App.secretService.defaultCollection !== contextMenu.collection
-            onClicked: App.secretService.defaultCollection = contextMenu.collection
+        property var model: {
+            "display": "",
+            "dbusPath": "",
+            "locked": false
         }
         QQC.MenuItem {
-            text: i18n("Lock")
-            icon.name: "lock-symbolic"
-            onClicked: print("Wallet delete Not implemented yet")
+            text: i18n("Set as Default")
+            enabled: App.secretService.defaultCollection !== contextMenu.model.display
+            onClicked: App.secretService.defaultCollection = contextMenu.model.display
+        }
+        QQC.MenuItem {
+            text: contextMenu.model.locked ? i18n("Unlock") : i18n("Lock")
+            icon.name: contextMenu.model.locked ? "unlock-symbolic" : "lock-symbolic"
+            onClicked: {
+                if (contextMenu.model.locked) {
+                    App.secretService.unlockCollection(contextMenu.model.display)
+                } else {
+                    App.secretService.lockCollection(contextMenu.model.display)
+                }
+            }
         }
         QQC.MenuItem {
             text: i18n("Delete")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
-                deletionDialog.collection = contextMenu.collection;
+                deletionDialog.collection = contextMenu.model.display;
                 deletionDialog.open();
             }
         }
     }
+
     ListView {
         id: view
         currentIndex: App.walletsModel.currentIndex
@@ -127,17 +138,37 @@ Kirigami.ScrollablePage {
             text: model.display
             highlighted: view.currentIndex == index
             font.bold: App.secretService.defaultCollection === model.display
+
             onClicked: {
                 App.walletModel.currentWallet = model.display
                 page.Kirigami.ColumnView.view.currentIndex = 1
             }
+
             TapHandler {
                 acceptedButtons: Qt.RightButton
                 onPressedChanged: {
                     if (pressed) {
-                        contextMenu.collection = model.display
+                        contextMenu.model = model
                         contextMenu.popup(delegate)
                     }
+                }
+            }
+
+            Kirigami.Icon {
+                anchors {
+                    right: parent.right
+                    top: parent.top
+                    bottom: parent.bottom
+                    margins: Kirigami.Units.mediumSpacing
+                }
+                color: delegate.highlighted || delegate.down
+                        ? Kirigami.Theme.highlightedTextColor
+                        : (delegate.enabled ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor)
+                width: Kirigami.Units.iconSizes.small
+                visible: model.locked
+                source: "object-locked-symbolic"
+                TapHandler {
+                    onTapped: App.secretService.unlockCollection(model.display)
                 }
             }
         }

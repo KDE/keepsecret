@@ -94,8 +94,10 @@ public:
         LoadingCollections = 2,
         ReadingDefault = 4,
         WritingDefault = 8,
-        CreatingCollection = 16,
-        DeletingCollection = 32
+        LockingCollection = 16,
+        UnlockingCollection = 32,
+        CreatingCollection = 64,
+        DeletingCollection = 128
     };
     Q_ENUM(Operation);
     Q_DECLARE_FLAGS(Operations, Operation);
@@ -105,9 +107,17 @@ public:
         ConnectionFailed,
         ReadDefaultFailed,
         SetDefaultFailed,
-        LoadCollectionsFailed
+        LoadCollectionsFailed,
+        UnlockCollectionFailed,
+        LockCollectionFailed
     };
     Q_ENUM(Error);
+
+    struct CollectionEntry {
+        QString name;
+        QString dbusPath;
+        bool locked;
+    };
 
     SecretServiceClient(QObject *parent = nullptr);
 
@@ -130,14 +140,19 @@ public:
     QString errorMessage() const;
     void setError(Error error, const QString &message);
 
+    // TODO: use the dbus path instead of the name, so we a re sure it's unique
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
     QString defaultCollection();
     void setDefaultCollection(const QString &collectionName);
 
-    QStringList listCollections();
+    QList<CollectionEntry> listCollections();
     void loadCollections();
+
+    Q_INVOKABLE void lockCollection(const QString &collectionPath);
+    Q_INVOKABLE void unlockCollection(const QString &collectionPath);
+
     Q_INVOKABLE void createCollection(const QString &collectionName);
     Q_INVOKABLE void deleteCollection(const QString &collectionName);
 
@@ -159,6 +174,8 @@ Q_SIGNALS:
     void promptClosed(bool accepted);
     void collectionListDirty();
     void defaultCollectionChanged(const QString &collection);
+    void collectionCreated(const QDBusObjectPath &path);
+    void collectionDeleted(const QDBusObjectPath &path);
 
 protected:
     bool attemptConnection();

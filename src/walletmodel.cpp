@@ -27,6 +27,10 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
         }
     });
 
+    connect(m_secretServiceClient, &SecretServiceClient::collectionDeleted, this, [this](const QDBusObjectPath &path) {
+        // TODO
+    });
+
     // FIXME: needed the timer?
     QTimer::singleShot(0, this, [this]() {
         KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);

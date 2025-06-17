@@ -34,7 +34,24 @@ void WalletsModel::setCurrentWallet(const QString &wallet)
 
 int WalletsModel::currentIndex() const
 {
-    return m_wallets.indexOf(m_currentWallet);
+    int i = 0;
+    for (const SecretServiceClient::CollectionEntry &entry : m_wallets) {
+        if (entry.name == m_currentWallet) {
+            return i;
+        }
+        ++i;
+    }
+
+    return -1;
+}
+
+QHash<int, QByteArray> WalletsModel::roleNames() const
+{
+    QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
+    roleNames[DbusPathRole] = "dbusPath";
+    roleNames[LockedRole] = "locked";
+
+    return roleNames;
 }
 
 int WalletsModel::rowCount(const QModelIndex &parent) const
@@ -52,7 +69,17 @@ QVariant WalletsModel::data(const QModelIndex &index, int role) const
         return {};
     }
 
-    return m_wallets[index.row()];
+    const SecretServiceClient::CollectionEntry &entry = m_wallets[index.row()];
+    switch (role) {
+    case Qt::DisplayRole:
+        return entry.name;
+    case DbusPathRole:
+        return entry.dbusPath;
+    case LockedRole:
+        return entry.locked;
+    default:
+        return QVariant();
+    }
 }
 
 void WalletsModel::reloadWallets()
