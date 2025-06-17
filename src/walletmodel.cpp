@@ -248,6 +248,7 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
     if (g_strcmp0(pspec->name, "items") != 0) {
         return;
     }
+    qWarning() << "NOTIFY";
     WalletModel *walletModel = (WalletModel *)inst;
     walletModel->refreshWallet();
 }

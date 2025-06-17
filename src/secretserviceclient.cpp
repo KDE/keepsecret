@@ -45,6 +45,14 @@ SecretServiceClient::SecretServiceClient(QObject *parent)
                 QStringLiteral("CollectionDeleted"),
                 this,
                 SLOT(onCollectionDeleted(QDBusObjectPath)));
+
+    // React to properties change
+    bus.connect(m_serviceBusName,
+                QStringLiteral("/org/freedesktop/secrets"),
+                QStringLiteral("org.freedesktop.DBus.Properties"),
+                QStringLiteral("PropertiesChanged"),
+                this, // receiver
+                SLOT(onPropertiesChanged(QString, QVariantMap, QStringList)));
 }
 
 // Copied from
@@ -184,6 +192,8 @@ void SecretServiceClient::attemptConnectionFinished(SecretService *service)
     m_service.reset(service);
     if (service) {
         setStatus(SecretServiceClient::Connected);
+        clearOperation(Connecting);
+        readDefaultCollection();
     } else {
         setStatus(SecretServiceClient::Disconnected);
     }
@@ -195,7 +205,7 @@ bool SecretServiceClient::attemptConnection()
         return true;
     }
 
-    setStatus(Connecting);
+    setOperation(Connecting);
 
     secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this);
 
@@ -243,6 +253,16 @@ void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
     Q_EMIT collectionListDirty();
 }
 
+void SecretServiceClient::onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties)
+{
+    Q_UNUSED(invalidatedProperties)
+
+    if (interface == QStringLiteral("org.freedesktop.Secret.Service")) {
+        readDefaultCollection();
+        Q_EMIT collectionsChanged();
+    }
+}
+
 void SecretServiceClient::handlePrompt(bool dismissed)
 {
     Q_EMIT promptClosed(!dismissed);
@@ -273,6 +293,33 @@ void SecretServiceClient::setStatus(Status status)
     Q_EMIT statusChanged(status);
 }
 
+SecretServiceClient::Operations SecretServiceClient::operations() const
+{
+    return m_operations;
+}
+
+void SecretServiceClient::setOperations(SecretServiceClient::Operations operations)
+{
+    if (operations == m_operations) {
+        return;
+    }
+
+    qWarning() << "SecretServiceClient: Setting operations" << operations;
+
+    m_operations = operations;
+    Q_EMIT operationsChanged(operations);
+}
+
+void SecretServiceClient::setOperation(SecretServiceClient::Operation operation)
+{
+    setOperations(m_operations | operation);
+}
+
+void SecretServiceClient::clearOperation(SecretServiceClient::Operation operation)
+{
+    setOperations(m_operations & ~operation);
+}
+
 SecretServiceClient::Error SecretServiceClient::error() const
 {
     return m_error;
@@ -296,11 +343,17 @@ void SecretServiceClient::setError(SecretServiceClient::Error error, const QStri
     }
 }
 
-QString SecretServiceClient::defaultCollection(bool *ok)
+QString SecretServiceClient::defaultCollection()
+{
+    return m_defaultCollection;
+}
+
+void SecretServiceClient::readDefaultCollection()
 {
     if (!isAvailable()) {
-        *ok = false;
-        return QString();
+        m_defaultCollection.clear();
+        Q_EMIT defaultCollectionChanged(m_defaultCollection);
+        return;
     }
 
     QString label = QStringLiteral("kdewallet");
@@ -311,27 +364,34 @@ QString SecretServiceClient::defaultCollection(bool *ok)
                                     QDBusConnection::sessionBus());
 
     if (!serviceInterface.isValid()) {
-        qCWarning(KWALLETS_LOG) << "Failed to connect to the DBus SecretService object";
-        *ok = false;
-        return label;
+        setError(ConnectionFailed, i18n("Failed to connect to the DBus SecretService object"));
+        m_defaultCollection.clear();
+        Q_EMIT defaultCollectionChanged(m_defaultCollection);
+        return;
     }
 
-    QDBusReply<QDBusObjectPath> reply = serviceInterface.call(QStringLiteral("ReadAlias"), QStringLiteral("default"));
+    setOperation(ReadingDefault);
+    QDBusPendingCall call = serviceInterface.asyncCall(QStringLiteral("ReadAlias"), QStringLiteral("default"));
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
 
-    if (!reply.isValid()) {
-        qCWarning(KWALLETS_LOG) << "Error reading label:" << reply.error().message();
-        *ok = false;
-        return label;
-    }
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *call) {
+        QDBusPendingReply<QDBusObjectPath> reply = *call;
 
-    label = collectionLabelForPath(reply.value());
+        const QString oldDefaultCollection = m_defaultCollection;
 
-    if (label.isEmpty()) {
-        *ok = false;
-        return QStringLiteral("kdewallet");
-    }
+        if (reply.isError()) {
+            setError(ReadDefaultFailed, reply.error().message());
+            m_defaultCollection.clear();
+        } else {
+            m_defaultCollection = collectionLabelForPath(reply.value());
+        }
 
-    return label;
+        call->deleteLater();
+        clearOperation(ReadingDefault);
+        if (oldDefaultCollection != m_defaultCollection) {
+            Q_EMIT defaultCollectionChanged(m_defaultCollection);
+        }
+    });
 }
 
 static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -345,6 +405,8 @@ static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result
     if (SecretServiceClient::wasErrorFree(&error, message)) {
         client->setError(SecretServiceClient::SetDefaultFailed, message);
     }
+    client->clearOperation(SecretServiceClient::WritingDefault);
+    client->readDefaultCollection();
 }
 
 void SecretServiceClient::setDefaultCollection(const QString &collectionName)
@@ -355,6 +417,7 @@ void SecretServiceClient::setDefaultCollection(const QString &collectionName)
 
     SecretCollection *collection = retrieveCollection(collectionName);
 
+    setOperation(WritingDefault);
     secret_service_set_alias(m_service.get(), "default", collection, nullptr, onSetDefaultCollectionFinished, this);
 }
 
@@ -418,41 +481,6 @@ void SecretServiceClient::deleteCollection(const QString &collectionName, bool *
     *ok = *ok && wasErrorFree(&error, message);
     if (ok) {
         Q_EMIT collectionDeleted(collectionName);
-    }
-}
-
-void SecretServiceClient::deleteFolder(const QString &folder, const QString &collectionName, bool *ok)
-{
-    if (!isAvailable()) {
-        *ok = false;
-        return;
-    }
-
-    GError *error = nullptr;
-    QString message;
-
-    SecretCollection *collection = retrieveCollection(collectionName);
-
-    GHashTablePtr attributes = GHashTablePtr(g_hash_table_new(g_str_hash, g_str_equal));
-    g_hash_table_insert(attributes.get(), g_strdup("server"), g_strdup(folder.toUtf8().constData()));
-
-    GListPtr glist = GListPtr(secret_collection_search_sync(collection, qtKeychainSchema(), attributes.get(), SECRET_SEARCH_ALL, nullptr, &error));
-
-    *ok = wasErrorFree(&error, message);
-    if (!*ok) {
-        return;
-    }
-
-    if (glist) {
-        for (GList *iter = glist.get(); iter != nullptr; iter = iter->next) {
-            SecretItem *item = static_cast<SecretItem *>(iter->data);
-            m_updateInProgress = true;
-            secret_item_delete_sync(item, nullptr, &error);
-            *ok = wasErrorFree(&error, message);
-            g_object_unref(item);
-        }
-    } else {
-        qCWarning(KWALLETS_LOG) << i18n("No entries");
     }
 }
 

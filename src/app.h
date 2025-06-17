@@ -21,6 +21,7 @@ class App : public QObject
     QML_ELEMENT
     QML_SINGLETON
 
+    Q_PROPERTY(SecretServiceClient *secretService READ secretService CONSTANT)
     Q_PROPERTY(WalletsModel *walletsModel READ walletsModel CONSTANT)
     Q_PROPERTY(WalletModel *walletModel READ walletModel CONSTANT)
     Q_PROPERTY(SecretItemProxy *secretItem READ secretItem CONSTANT)
@@ -30,6 +31,7 @@ public:
     App(QObject *parent = nullptr);
     ~App();
 
+    SecretServiceClient *secretService() const;
     WalletsModel *walletsModel() const;
     WalletModel *walletModel() const;
     SecretItemProxy *secretItem() const;

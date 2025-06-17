@@ -8,6 +8,7 @@
 
 #include <QDBusObjectPath>
 #include <QObject>
+#include <QQmlEngine>
 
 #include <libsecret/secret.h>
 
@@ -64,6 +65,12 @@ using SecretValuePtr = std::unique_ptr<SecretValue, SecretValueDeleter>;
 class SecretServiceClient : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString defaultCollection READ defaultCollection WRITE setDefaultCollection NOTIFY defaultCollectionChanged)
 
 public:
     enum Type {
@@ -77,15 +84,24 @@ public:
 
     enum Status {
         Disconnected = 0,
-        Connecting,
         Connected
     };
     Q_ENUM(Status);
 
+    enum Operation {
+        OperationNone = 0,
+        Connecting = 1,
+        ReadingDefault = 2,
+        WritingDefault = 4
+    };
+    Q_ENUM(Operation);
+    Q_DECLARE_FLAGS(Operations, Operation);
+
     enum Error {
         NoError = 0,
         ConnectionFailed,
-        SetDefaultFailed // TODO: move to WalletModel
+        ReadDefaultFailed,
+        SetDefaultFailed
     };
     Q_ENUM(Error);
 
@@ -101,6 +117,11 @@ public:
     Status status() const;
     void setStatus(Status status);
 
+    Operations operations() const;
+    void setOperations(Operations operations);
+    void setOperation(Operation operation);
+    void clearOperation(Operation operation);
+
     Error error() const;
     QString errorMessage() const;
     void setError(Error error, const QString &message);
@@ -108,31 +129,34 @@ public:
     SecretCollection *retrieveCollection(const QString &name);
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
 
-    // TODO move in wallet model
-    QString defaultCollection(bool *ok);
+    QString defaultCollection();
     void setDefaultCollection(const QString &collectionName);
-    void deleteFolder(const QString &folder, const QString &collectionName, bool *ok);
 
     // TODO move in Wallets model
     QStringList listCollections(bool *ok);
     void createCollection(const QString &collectionName, bool *ok);
     void deleteCollection(const QString &collectionName, bool *ok);
 
-    void attemptConnectionFinished(SecretService *service);
-
     static QString typeToString(SecretServiceClient::Type type);
     static Type stringToType(const QString &typeName);
+
+    // Functions for the static libsecret handlers
+    void readDefaultCollection();
+    void attemptConnectionFinished(SecretService *service);
 
 Q_SIGNALS:
     // Emitted when the service availability changed, or the service owner of secretservice has changed to a new one
     void serviceChanged();
     void statusChanged(Status status);
+    void operationsChanged(Operations operations);
     void errorChanged(Error error);
     void errorMessageChanged(const QString &errorMessage);
+    void collectionsChanged();
     void promptClosed(bool accepted);
     void collectionListDirty();
     void collectionCreated(const QString &collection);
     void collectionDeleted(const QString &collection);
+    void defaultCollectionChanged(const QString &collection);
 
 protected:
     bool attemptConnection();
@@ -144,13 +168,18 @@ protected Q_SLOTS:
     void handlePrompt(bool dismissed);
     void onCollectionCreated(const QDBusObjectPath &path);
     void onCollectionDeleted(const QDBusObjectPath &path);
+    void onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);
 
 private:
     SecretServicePtr m_service;
     Status m_status = Disconnected;
+    Operations m_operations = OperationNone;
     Error m_error = NoError;
     QString m_errorMessage;
-    QDBusServiceWatcher *m_serviceWatcher;
     QString m_serviceBusName;
-    bool m_updateInProgress = false;
+    QDBusServiceWatcher *m_serviceWatcher;
+
+    QString m_defaultCollection;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(SecretServiceClient::Operations)

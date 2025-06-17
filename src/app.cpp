@@ -23,6 +23,11 @@ App::~App()
 {
 }
 
+SecretServiceClient *App::secretService() const
+{
+    return m_secretServiceClient;
+}
+
 WalletsModel *App::walletsModel() const
 {
     return m_walletsModel;
