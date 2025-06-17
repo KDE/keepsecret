@@ -18,28 +18,59 @@ class SecretOperationTracker : public QObject
 
 public:
     enum StatusItem {
-        Disconnected = 0,
-        Connected = 1,
-        Ready = Connected | 2,
-        Locked = Connected | 4
+        ServiceDisconnected = 0,
+        ServiceConnected = 1 << 1,
+
+        ItemReady = 1 << 2,
+        ItemLocked = 1 << 3,
+        ItemNeedsSave = 1 << 4,
+
+        CollectionReady = 1 << 5,
+        CollectionLocked = 1 << 6
     };
     Q_ENUM(StatusItem);
     Q_DECLARE_FLAGS(Status, StatusItem)
 
     enum Operation {
         OperationNone = 0,
-        CollectionCreating = 1,
-        CollectionLoading = 2,
-        CollectionUnlocking = 4,
-        CollectionLocking = 16,
-        CollectionDeleting = 32
+        ServiceConnecting = 1 << 1,
+        ServiceLoadingCollections = 1 << 2,
+        ServiceReadingDefaultCollection = 1 << 3,
+        ServiceWritingDefaultCollection = 1 << 4,
+
+        ItemCreating = 1 << 5,
+        ItemLoading = 1 << 6,
+        ItemLoadingSecret = 1 << 7,
+        ItemUnlocking = ItemLoading | 1 << 8,
+        ItemSaving = 1 << 9,
+        ItemSavingLabel = ItemSaving | 1 << 10,
+        ItemSavingSecret = ItemSaving | 1 << 11,
+        ItemSavingAttributes = ItemSaving | 1 << 12,
+        ItemDeleting = 1 << 13
+
+            CollectionCreating = 1 << 14,
+        CollectionLoading = 1 << 15,
+        CollectionUnlocking = 1 << 16,
+        CollectionLocking = 1 << 17,
+        CollectionDeleting = 1 << 18
     };
     Q_ENUM(Operation);
     Q_DECLARE_FLAGS(Operations, Operation);
 
     enum Error {
         NoError = 0,
+        ServiceConnectionFailed,
+        ServiceReadDefaultCollectionFailed,
+        ServiceSetDefaultCollectionFailed,
+
         ItemCreationFailed,
+        ItemLoadFailed,
+        ItemLoadSecretFailed,
+        ItemUnlockFailed,
+        ItemSaveFailed,
+        ItemDeleteFailed,
+
+        CollectionCreationFailed,
         CollectionLoadFailed,
         CollectionUnlockFailed,
         CollectionLockFailed,
