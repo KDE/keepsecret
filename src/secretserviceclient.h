@@ -92,7 +92,9 @@ public:
         OperationNone = 0,
         Connecting = 1,
         ReadingDefault = 2,
-        WritingDefault = 4
+        WritingDefault = 4,
+        CreatingCollection = 8,
+        DeletingCollection = 16
     };
     Q_ENUM(Operation);
     Q_DECLARE_FLAGS(Operations, Operation);

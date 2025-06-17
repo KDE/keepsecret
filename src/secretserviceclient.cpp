@@ -449,18 +449,50 @@ QStringList SecretServiceClient::listCollections(bool *ok)
     return collections;
 }
 
+static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    QString message;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
+
+    secret_collection_create_finish(result, &error);
+
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::SetDefaultFailed, message);
+    }
+    client->clearOperation(SecretServiceClient::CreatingCollection);
+    client->readDefaultCollection();
+}
+
 void SecretServiceClient::createCollection(const QString &collectionName)
 {
     if (!isAvailable()) {
         return;
     }
 
+    setOperation(CreatingCollection);
+    secret_collection_create(m_service.get(),
+                             collectionName.toUtf8().data(),
+                             nullptr,
+                             SECRET_COLLECTION_CREATE_NONE,
+                             nullptr,
+                             onCreateCollectionFinished,
+                             this);
+}
+
+static void onDeleteCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
     GError *error = nullptr;
     QString message;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
 
-    secret_collection_create_sync(m_service.get(), collectionName.toUtf8().data(), nullptr, SECRET_COLLECTION_CREATE_NONE, nullptr, &error);
+    secret_collection_delete_finish((SecretCollection *)source, result, &error);
 
-    wasErrorFree(&error, message);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::SetDefaultFailed, message);
+    }
+    client->clearOperation(SecretServiceClient::DeletingCollection);
+    client->readDefaultCollection();
 }
 
 void SecretServiceClient::deleteCollection(const QString &collectionName)
@@ -469,16 +501,10 @@ void SecretServiceClient::deleteCollection(const QString &collectionName)
         return;
     }
 
-    GError *error = nullptr;
-    QString message;
-
     SecretCollection *collection = retrieveCollection(collectionName);
 
-    secret_collection_delete_sync(collection, nullptr, &error);
-
-    if (wasErrorFree(&error, message)) {
-        Q_EMIT collectionDeleted(collectionName);
-    }
+    setOperation(DeletingCollection);
+    secret_collection_delete(collection, nullptr, onDeleteCollectionFinished, this);
 }
 
 #include <moc_secretserviceclient.cpp>
