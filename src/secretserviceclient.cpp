@@ -449,10 +449,9 @@ QStringList SecretServiceClient::listCollections(bool *ok)
     return collections;
 }
 
-void SecretServiceClient::createCollection(const QString &collectionName, bool *ok)
+void SecretServiceClient::createCollection(const QString &collectionName)
 {
     if (!isAvailable()) {
-        *ok = false;
         return;
     }
 
@@ -461,13 +460,12 @@ void SecretServiceClient::createCollection(const QString &collectionName, bool *
 
     secret_collection_create_sync(m_service.get(), collectionName.toUtf8().data(), nullptr, SECRET_COLLECTION_CREATE_NONE, nullptr, &error);
 
-    *ok = wasErrorFree(&error, message);
+    wasErrorFree(&error, message);
 }
 
-void SecretServiceClient::deleteCollection(const QString &collectionName, bool *ok)
+void SecretServiceClient::deleteCollection(const QString &collectionName)
 {
     if (!isAvailable()) {
-        *ok = false;
         return;
     }
 
@@ -476,10 +474,9 @@ void SecretServiceClient::deleteCollection(const QString &collectionName, bool *
 
     SecretCollection *collection = retrieveCollection(collectionName);
 
-    *ok = secret_collection_delete_sync(collection, nullptr, &error);
+    secret_collection_delete_sync(collection, nullptr, &error);
 
-    *ok = *ok && wasErrorFree(&error, message);
-    if (ok) {
+    if (wasErrorFree(&error, message)) {
         Q_EMIT collectionDeleted(collectionName);
     }
 }

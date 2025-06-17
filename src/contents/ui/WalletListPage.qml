@@ -20,9 +20,67 @@ Kirigami.ScrollablePage {
             text: i18n("New Wallet")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new wallet")
-            onTriggered: print("stub")
+            onTriggered: creationDialog.open()
         }
     ]
+
+    QQC.Dialog {
+        id: creationDialog
+        modal: true
+        title: i18n("Create a new Wallet")
+        standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
+
+        function checkSaveEnabled() {
+            let button = standardButton(QQC.Dialog.Save);
+            button.enabled = collectionNameField.text.length > 0;
+        }
+
+        function maybeAccept() {
+            let button = standardButton(QQC.Dialog.Save);
+            if (button.enabled) {
+                accept();
+            }
+        }
+
+        Component.onCompleted: standardButton(QQC.Dialog.Save).enabled = false
+
+        contentItem: ColumnLayout {
+            QQC.Label {
+                text: i18n("Wallet name:")
+            }
+            QQC.TextField {
+                id: collectionNameField
+                Layout.fillWidth: true
+                onVisibleChanged: {
+                    if (visible) {
+                        forceActiveFocus();
+                    }
+                }
+                onTextChanged: creationDialog.checkSaveEnabled()
+                onAccepted: creationDialog.maybeAccept()
+            }
+        }
+
+        onAccepted: App.secretService.createCollection(collectionNameField.text)
+        onVisibleChanged: {
+            console.log("resetting")
+            collectionNameField.text = ""
+        }
+    }
+
+    QQC.Dialog {
+        id: deletionDialog
+        modal: true
+        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
+        property string collection
+
+        contentItem: QQC.Label {
+            text: i18n("Are you sure you want to delete the wallet “%1”?", deletionDialog.collection)
+            wrapMode: Text.WordWrap
+        }
+
+        onAccepted: App.secretService.deleteCollection(deletionDialog.collection)
+    }
 
     QQC.Menu {
         id: contextMenu
@@ -40,7 +98,10 @@ Kirigami.ScrollablePage {
         QQC.MenuItem {
             text: i18n("Delete")
             icon.name: "usermenu-delete-symbolic"
-            onClicked: print("Wallet delete Not implemented yet")
+            onClicked: {
+                deletionDialog.collection = contextMenu.collection;
+                deletionDialog.open();
+            }
         }
     }
     ListView {

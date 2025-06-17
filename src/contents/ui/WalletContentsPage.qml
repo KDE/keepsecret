@@ -51,7 +51,7 @@ Kirigami.ScrollablePage {
             icon.name: "delete-symbolic"
             tooltip: i18n("Delete this wallet")
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            onTriggered: root.counter += 1
+            onTriggered: deletionDialog.open()
         }
     ]
 
@@ -96,6 +96,7 @@ Kirigami.ScrollablePage {
             }
             QQC.TextField {
                 id: labelField
+                Layout.fillWidth: true
                 onVisibleChanged: {
                     if (visible) {
                         forceActiveFocus();
@@ -109,6 +110,7 @@ Kirigami.ScrollablePage {
             }
             Kirigami.PasswordField {
                 id: passwordField
+                Layout.fillWidth: true
                 onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
@@ -117,6 +119,7 @@ Kirigami.ScrollablePage {
             }
             QQC.TextField {
                 id: userField
+                Layout.fillWidth: true
                 onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
@@ -125,13 +128,13 @@ Kirigami.ScrollablePage {
             }
             QQC.TextField {
                 id: serverField
+                Layout.fillWidth: true
                 onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
         }
 
         onAccepted: {
-            console.log("Ok clicked")
             App.secretItem.createItem(labelField.text,
                                 passwordField.text,
                                 userField.text,
@@ -139,12 +142,24 @@ Kirigami.ScrollablePage {
                                 App.walletModel.currentWallet);
         }
         onVisibleChanged: {
-            console.log("resetting")
             labelField.text = ""
             passwordField.text = ""
             userField.text = ""
             serverField.text = ""
         }
+    }
+
+    QQC.Dialog {
+        id: deletionDialog
+        modal: true
+        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
+
+        contentItem: QQC.Label {
+            text: i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.currentWallet)
+            wrapMode: Text.WordWrap
+        }
+
+        onAccepted: App.secretService.deleteCollection(App.walletModel.currentWallet)
     }
 
     ListView {

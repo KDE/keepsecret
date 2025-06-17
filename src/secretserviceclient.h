@@ -134,8 +134,8 @@ public:
 
     // TODO move in Wallets model
     QStringList listCollections(bool *ok);
-    void createCollection(const QString &collectionName, bool *ok);
-    void deleteCollection(const QString &collectionName, bool *ok);
+    Q_INVOKABLE void createCollection(const QString &collectionName);
+    Q_INVOKABLE void deleteCollection(const QString &collectionName);
 
     static QString typeToString(SecretServiceClient::Type type);
     static Type stringToType(const QString &typeName);
