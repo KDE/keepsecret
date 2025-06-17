@@ -237,8 +237,7 @@ void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
         return;
     }
 
-    Q_EMIT collectionCreated(label);
-    Q_EMIT collectionListDirty();
+    loadCollections();
 }
 
 void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
@@ -248,9 +247,7 @@ void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
         return;
     }
 
-    // Only emitting collectionListDirty here as we can't know the actual label
-    // of the collection as is already deleted
-    Q_EMIT collectionListDirty();
+    loadCollections();
 }
 
 void SecretServiceClient::onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties)
@@ -421,10 +418,9 @@ void SecretServiceClient::setDefaultCollection(const QString &collectionName)
     secret_service_set_alias(m_service.get(), "default", collection, nullptr, onSetDefaultCollectionFinished, this);
 }
 
-QStringList SecretServiceClient::listCollections(bool *ok)
+QStringList SecretServiceClient::listCollections()
 {
     if (!isAvailable()) {
-        *ok = false;
         return QStringList();
     }
 
@@ -442,11 +438,38 @@ QStringList SecretServiceClient::listCollections(bool *ok)
             }
         }
     } else {
-        qCDebug(KWALLETS_LOG) << i18n("No collections");
+        setError(LoadCollectionsFailed, i18n("No collections"));
     }
 
-    *ok = true;
     return collections;
+}
+
+static void onLoadCollectionsFinished(GObject *source, GAsyncResult *result, gpointer inst)
+{
+    GError *error = nullptr;
+    QString message;
+    SecretServiceClient *client = (SecretServiceClient *)inst;
+
+    secret_service_load_collections_finish((SecretService *)source, result, &error);
+
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::LoadCollectionsFailed, message);
+    }
+
+    client->clearOperation(SecretServiceClient::LoadingCollections);
+    qWarning() << "onLoadCollectionsFinished";
+    Q_EMIT client->collectionListDirty();
+}
+
+void SecretServiceClient::loadCollections()
+{
+    if (!isAvailable()) {
+        return;
+    }
+
+    setOperation(LoadingCollections);
+
+    secret_service_load_collections(m_service.get(), nullptr, onLoadCollectionsFinished, this);
 }
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -462,6 +485,7 @@ static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gp
     }
     client->clearOperation(SecretServiceClient::CreatingCollection);
     client->readDefaultCollection();
+    client->loadCollections();
 }
 
 void SecretServiceClient::createCollection(const QString &collectionName)

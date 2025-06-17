@@ -91,10 +91,11 @@ public:
     enum Operation {
         OperationNone = 0,
         Connecting = 1,
-        ReadingDefault = 2,
-        WritingDefault = 4,
-        CreatingCollection = 8,
-        DeletingCollection = 16
+        LoadingCollections = 2,
+        ReadingDefault = 4,
+        WritingDefault = 8,
+        CreatingCollection = 16,
+        DeletingCollection = 32
     };
     Q_ENUM(Operation);
     Q_DECLARE_FLAGS(Operations, Operation);
@@ -103,7 +104,8 @@ public:
         NoError = 0,
         ConnectionFailed,
         ReadDefaultFailed,
-        SetDefaultFailed
+        SetDefaultFailed,
+        LoadCollectionsFailed
     };
     Q_ENUM(Error);
 
@@ -134,8 +136,8 @@ public:
     QString defaultCollection();
     void setDefaultCollection(const QString &collectionName);
 
-    // TODO move in Wallets model
-    QStringList listCollections(bool *ok);
+    QStringList listCollections();
+    void loadCollections();
     Q_INVOKABLE void createCollection(const QString &collectionName);
     Q_INVOKABLE void deleteCollection(const QString &collectionName);
 
@@ -156,8 +158,6 @@ Q_SIGNALS:
     void collectionsChanged();
     void promptClosed(bool accepted);
     void collectionListDirty();
-    void collectionCreated(const QString &collection);
-    void collectionDeleted(const QString &collection);
     void defaultCollectionChanged(const QString &collection);
 
 protected:

@@ -154,9 +154,18 @@ Kirigami.ScrollablePage {
         modal: true
         standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
 
-        contentItem: QQC.Label {
-            text: i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.currentWallet)
-            wrapMode: Text.WordWrap
+        Component.onCompleted: standardButton(QQC.Dialog.Yes).enabled = false
+
+        contentItem: ColumnLayout {
+            QQC.Label {
+                text: i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.currentWallet)
+                wrapMode: Text.WordWrap
+            }
+            QQC.CheckBox {
+                id: deletionConfirmation
+                text: i18n("I understand that all the items will be permanently deleted")
+                onCheckedChanged: deletionDialog.standardButton(QQC.Dialog.Yes).enabled = checked
+            }
         }
 
         onAccepted: App.secretService.deleteCollection(App.walletModel.currentWallet)

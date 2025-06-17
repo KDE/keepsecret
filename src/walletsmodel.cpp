@@ -8,17 +8,8 @@ WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *pa
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    connect(m_secretServiceClient, &SecretServiceClient::statusChanged, this, [this](SecretServiceClient::Status status) {
-        beginResetModel();
-        if (status == SecretServiceClient::Connected) {
-            bool ok;
-            m_wallets = m_secretServiceClient->listCollections(&ok);
-        } else {
-            m_wallets.clear();
-        }
-        endResetModel();
-        Q_EMIT currentIndexChanged();
-    });
+    connect(m_secretServiceClient, &SecretServiceClient::statusChanged, this, &WalletsModel::reloadWallets);
+    connect(m_secretServiceClient, &SecretServiceClient::collectionListDirty, this, &WalletsModel::reloadWallets);
 }
 
 WalletsModel::~WalletsModel()
@@ -62,6 +53,17 @@ QVariant WalletsModel::data(const QModelIndex &index, int role) const
     }
 
     return m_wallets[index.row()];
+}
+
+void WalletsModel::reloadWallets()
+{
+    beginResetModel();
+    m_wallets.clear();
+    if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
+        m_wallets = m_secretServiceClient->listCollections();
+    }
+    endResetModel();
+    Q_EMIT currentIndexChanged();
 }
 
 #include "moc_walletsmodel.cpp"

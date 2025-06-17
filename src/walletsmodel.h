@@ -29,6 +29,9 @@ public:
 Q_SIGNALS:
     void currentIndexChanged();
 
+protected:
+    void reloadWallets();
+
 private:
     SecretServiceClient *m_secretServiceClient = nullptr;
     QStringList m_wallets;
