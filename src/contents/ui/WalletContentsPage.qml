@@ -15,6 +15,9 @@ Kirigami.ScrollablePage {
 
     title: App.walletModel.currentWallet
 
+    // FIXME: why int?
+    property int status: App.walletModel.status
+
     actions: [
         Kirigami.Action {
             id: newAction

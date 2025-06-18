@@ -115,6 +115,11 @@ Kirigami.ApplicationWindow {
                 pageStack.pop(walletContentsPage)
             }
         }
+        onStatusChanged: {
+            if (status != WalletModel.Ready) {
+                pageStack.pop(walletContentsPage)
+            }
+        }
     }
 
     EntryPage {
