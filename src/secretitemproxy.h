@@ -24,6 +24,8 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QString itemName READ itemName NOTIFY itemNameChanged)
     Q_PROPERTY(QString label READ label WRITE setLabel NOTIFY labelChanged)
     Q_PROPERTY(QString secretValue READ secretValue WRITE setSecretValue NOTIFY secretValueChanged)
+    Q_PROPERTY(SecretServiceClient::Type type READ type NOTIFY typeChanged)
+    Q_PROPERTY(QString formattedBinarySecret READ formattedBinarySecret NOTIFY secretValueChanged);
 
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
@@ -93,6 +95,8 @@ public:
     void setSecretValue(const QString &secretValue);
     void setSecretValue(const QByteArray &secretValue);
 
+    QString formattedBinarySecret() const;
+
     QVariantMap attributes() const;
 
     SecretServiceClient::Type type() const;
@@ -123,6 +127,7 @@ Q_SIGNALS:
     void itemNameChanged(const QString &itemName);
     void labelChanged(const QString &itemName);
     void secretValueChanged();
+    void typeChanged(SecretServiceClient::Type type);
     void attributesChanged(const QVariantMap &attribures);
 
 private:

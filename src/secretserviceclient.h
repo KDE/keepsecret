@@ -66,6 +66,7 @@ class SecretServiceClient : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("Cannot create elements of type SecretServiceClient")
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)

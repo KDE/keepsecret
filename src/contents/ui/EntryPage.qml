@@ -62,6 +62,9 @@ Kirigami.ScrollablePage {
     ColumnLayout {
         spacing: Kirigami.Units.gridUnit
         FormCard.FormCard {
+            Text { //TODO: remove
+                text: "Type" + App.secretItem.type
+            }
             FormItem {
                 label: i18n("Label:")
                 contentItem: Kirigami.ActionTextField {
@@ -76,11 +79,29 @@ Kirigami.ScrollablePage {
                 }
             }
             FormItem {
+                visible: App.secretItem.type !== SecretServiceClient.Binary
                 label: i18n("Password:")
                 contentItem: Kirigami.PasswordField {
                     id: passwordField
                     text: App.secretItem.secretValue
                     onTextEdited: App.secretItem.secretValue = text
+                }
+            }
+            FormItem {
+                visible: App.secretItem.type === SecretServiceClient.Binary
+                contentItem: ColumnLayout {
+                    QQC.CheckBox {
+                        id: showBinaryCheck
+                        Layout.fillWidth: true
+                        text: i18n("Show Binary Secret")
+                    }
+                    QQC.Label {
+                        Layout.fillWidth: true
+                        visible: showBinaryCheck.checked
+                        text: App.secretItem.formattedBinarySecret
+                        font.family: "monospace"
+                        wrapMode: Text.WordWrap
+                    }
                 }
             }
         }

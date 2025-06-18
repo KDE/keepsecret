@@ -177,6 +177,23 @@ void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
     setStatus(NeedsSave);
 }
 
+QString SecretItemProxy::formattedBinarySecret() const
+{
+    QString formatted;
+    int i = 0;
+    const QString hex = QString::fromUtf8(m_secretValue.toHex());
+
+    for (auto &c : hex) {
+        formatted.append(c);
+        if ((i + 1) % 8 == 0) {
+            formatted.append(QLatin1Char(' '));
+        }
+        ++i;
+    }
+
+    return formatted;
+}
+
 QVariantMap SecretItemProxy::attributes() const
 {
     return m_attributes;
@@ -359,6 +376,7 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
         m_itemName = QString();
         m_label = QString();
         m_secretValue = QByteArray();
+        m_type = SecretServiceClient::PlainText;
         m_attributes.clear();
         m_attributes[QStringLiteral("__keys")] = QStringList();
         setError(LoadFailed, QStringLiteral("Failed to load the secret item"));
@@ -371,6 +389,7 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
     Q_EMIT itemNameChanged(m_itemName);
     Q_EMIT labelChanged(m_label);
     Q_EMIT secretValueChanged();
+    Q_EMIT typeChanged(m_type);
     Q_EMIT attributesChanged(m_attributes);
 }
 
@@ -503,6 +522,7 @@ void SecretItemProxy::close()
     m_itemName = QString();
     m_label = QString();
     m_secretValue = QByteArray();
+    m_type = SecretServiceClient::PlainText;
     m_folder = QString();
     m_attributes.clear();
     m_attributes[QStringLiteral("__keys")] = QStringList();
@@ -516,6 +536,7 @@ void SecretItemProxy::close()
     Q_EMIT itemNameChanged(m_itemName);
     Q_EMIT labelChanged(m_label);
     Q_EMIT secretValueChanged();
+    Q_EMIT typeChanged(m_type);
     Q_EMIT attributesChanged(m_attributes);
 
     setStatus(Connected);
