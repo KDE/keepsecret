@@ -191,6 +191,9 @@ QString SecretItemProxy::formattedBinarySecret() const
         ++i;
     }
 
+    formatted.append(QStringLiteral(" \n\n"));
+    formatted.append(QString::fromLatin1(m_secretValue));
+
     return formatted;
 }
 
@@ -500,16 +503,17 @@ void SecretItemProxy::save()
         setOperation(SavingAttributes);
 
         SecretValuePtr secretValue;
-        if (m_type == SecretServiceClient::Binary) {
-            secretValue.reset(secret_value_new(m_secretValue.data(), m_secretValue.length(), "application/octet-stream"));
-        } else if (m_type == SecretServiceClient::Base64) {
+        if (m_type == SecretServiceClient::Base64) {
             secretValue.reset(secret_value_new(m_secretValue.toBase64().data(), m_secretValue.length(), "text/plain"));
         } else {
             secretValue.reset(secret_value_new(m_secretValue.data(), m_secretValue.length(), "text/plain"));
         }
 
-        secret_item_set_secret(m_secretItem.get(), secretValue.get(), nullptr, onSetSecretFinished, this);
-        setOperation(SavingSecret);
+        // Saving binary secrets not supported yet
+        if (m_type != SecretServiceClient::Binary) {
+            secret_item_set_secret(m_secretItem.get(), secretValue.get(), nullptr, onSetSecretFinished, this);
+            setOperation(SavingSecret);
+        }
     }
 }
 

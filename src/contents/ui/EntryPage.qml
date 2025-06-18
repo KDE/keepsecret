@@ -63,7 +63,7 @@ Kirigami.ScrollablePage {
         spacing: Kirigami.Units.gridUnit
         FormCard.FormCard {
             Text { //TODO: remove
-                text: "Type" + App.secretItem.type
+                text: "Type " + App.secretItem.type
             }
             FormItem {
                 label: i18n("Label:")
@@ -98,9 +98,9 @@ Kirigami.ScrollablePage {
                     QQC.Label {
                         Layout.fillWidth: true
                         visible: showBinaryCheck.checked
-                        text: App.secretItem.formattedBinarySecret
+                        text: visible ? App.secretItem.formattedBinarySecret : ""
                         font.family: "monospace"
-                        wrapMode: Text.WordWrap
+                        wrapMode: Text.Wrap
                     }
                 }
             }
