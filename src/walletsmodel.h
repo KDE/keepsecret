@@ -24,8 +24,8 @@ public:
     WalletsModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~WalletsModel();
 
-    QString currentWallet() const;
-    void setCurrentWallet(const QString &wallet);
+    QString collectionPath() const;
+    void setCollectionPath(const QString &collectionPath);
 
     int currentIndex() const;
 
@@ -42,5 +42,5 @@ protected:
 private:
     SecretServiceClient *m_secretServiceClient = nullptr;
     QList<SecretServiceClient::CollectionEntry> m_wallets;
-    QString m_currentWallet;
+    QString m_currentCollectionPath;
 };

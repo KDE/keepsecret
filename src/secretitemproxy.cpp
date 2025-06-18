@@ -225,7 +225,6 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
 static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
     Q_UNUSED(source);
-    // qWarning()<<"AAAAAAA"<<g_dbus_proxy_get_object_path((SecretItem *)source)
     GError *error = nullptr;
     QString message;
     SecretItemProxy *proxy = (SecretItemProxy *)inst;
@@ -243,8 +242,9 @@ void SecretItemProxy::createItem(const QString &label,
                                  // const SecretServiceClient::Type type,
                                  const QString &user,
                                  const QString &server,
-                                 const QString &wallet)
+                                 const QString &collectionPath)
 {
+    qWarning() << label << secret << user << server << collectionPath;
     if (!m_secretServiceClient->isAvailable()) {
         return;
     }
@@ -252,7 +252,7 @@ void SecretItemProxy::createItem(const QString &label,
     // TODO: make it a paramenter?
     const SecretServiceClient::Type type = SecretServiceClient::PlainText;
 
-    SecretCollection *collection = m_secretServiceClient->retrieveCollection(wallet);
+    SecretCollection *collection = m_secretServiceClient->retrieveCollection(collectionPath);
 
     QByteArray data;
     if (type == SecretServiceClient::Base64) {
@@ -292,9 +292,9 @@ void SecretItemProxy::createItem(const QString &label,
     setOperation(Creating);
 }
 
-void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
+void SecretItemProxy::loadItem(const QString &collectionPath, const QString &itemPath)
 {
-    m_dbusPath = dbusPath;
+    m_dbusPath = itemPath;
 
     if (!m_secretServiceClient->isAvailable()) {
         return;
@@ -302,7 +302,7 @@ void SecretItemProxy::loadItem(const QString &wallet, const QString &dbusPath)
 
     bool ok;
 
-    m_secretItem = m_secretServiceClient->retrieveItem(dbusPath, wallet, &ok);
+    m_secretItem = m_secretServiceClient->retrieveItem(itemPath, collectionPath, &ok);
 
     if (ok) {
         if (secret_item_get_locked(m_secretItem.get())) {
@@ -412,6 +412,9 @@ static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer i
     }
 
     proxy->clearOperation(SecretItemProxy::SavingLabel);
+    if (!(proxy->operations() & SecretItemProxy::Saving)) {
+        proxy->setStatus(proxy->status() & ~SecretItemProxy::NeedsSave);
+    }
 }
 
 static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -427,6 +430,9 @@ static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpoin
     }
 
     proxy->clearOperation(SecretItemProxy::SavingAttributes);
+    if (!(proxy->operations() & SecretItemProxy::Saving)) {
+        proxy->setStatus(proxy->status() & ~SecretItemProxy::NeedsSave);
+    }
 }
 
 static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -442,6 +448,9 @@ static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer 
     }
 
     proxy->clearOperation(SecretItemProxy::SavingSecret);
+    if (!(proxy->operations() & SecretItemProxy::Saving)) {
+        proxy->setStatus(proxy->status() & ~SecretItemProxy::NeedsSave);
+    }
 }
 
 void SecretItemProxy::save()
@@ -520,9 +529,7 @@ static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer ins
 
     secret_item_delete_finish((SecretItem *)source, result, &error);
 
-    if (SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setStatus(SecretItemProxy::Connected);
-    } else {
+    if (!SecretServiceClient::wasErrorFree(&error, message)) {
         proxy->setError(SecretItemProxy::DeleteFailed, message);
     }
     proxy->close();

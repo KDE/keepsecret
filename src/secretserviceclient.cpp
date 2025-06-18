@@ -130,7 +130,7 @@ QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
     return reply.toString();
 }
 
-SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
+SecretCollection *SecretServiceClient::retrieveCollection(const QString &collectionPath)
 {
     if (!isAvailable()) {
         return nullptr;
@@ -140,8 +140,8 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
 
     for (GList *l = collections.get(); l != nullptr; l = l->next) {
         SecretCollection *coll = SECRET_COLLECTION(l->data);
-        const gchar *label = secret_collection_get_label(coll);
-        if (QString::fromUtf8(label) == name) {
+        const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
+        if (path == collectionPath) {
             SecretCollection *collection = coll;
             return collection;
         }
@@ -150,9 +150,9 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &name)
     return nullptr;
 }
 
-SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok)
+SecretItemPtr SecretServiceClient::retrieveItem(const QString &itemPath, const QString &collectionPath, bool *ok)
 {
-    SecretCollection *collection = retrieveCollection(collectionName);
+    SecretCollection *collection = retrieveCollection(collectionPath);
 
     GListPtr list = GListPtr(secret_collection_get_items(collection));
     if (list) {
@@ -161,7 +161,7 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &dbusPath, const Q
             SecretItem *item = static_cast<SecretItem *>(l->data);
             const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item)));
 
-            if (path == dbusPath) {
+            if (path == itemPath) {
                 return SecretItemPtr(item);
             }
         }
@@ -382,7 +382,7 @@ void SecretServiceClient::readDefaultCollection()
             setError(ReadDefaultFailed, reply.error().message());
             m_defaultCollection.clear();
         } else {
-            m_defaultCollection = collectionLabelForPath(reply.value());
+            m_defaultCollection = reply.value().path();
         }
 
         call->deleteLater();
@@ -408,13 +408,13 @@ static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result
     client->readDefaultCollection();
 }
 
-void SecretServiceClient::setDefaultCollection(const QString &collectionName)
+void SecretServiceClient::setDefaultCollection(const QString &collectionPath)
 {
     if (!isAvailable()) {
         return;
     }
 
-    SecretCollection *collection = retrieveCollection(collectionName);
+    SecretCollection *collection = retrieveCollection(collectionPath);
 
     setOperation(WritingDefault);
     secret_service_set_alias(m_service.get(), "default", collection, nullptr, onSetDefaultCollectionFinished, this);
@@ -599,13 +599,13 @@ static void onDeleteCollectionFinished(GObject *source, GAsyncResult *result, gp
     client->readDefaultCollection();
 }
 
-void SecretServiceClient::deleteCollection(const QString &collectionName)
+void SecretServiceClient::deleteCollection(const QString &collectionPath)
 {
     if (!isAvailable()) {
         return;
     }
 
-    SecretCollection *collection = retrieveCollection(collectionName);
+    SecretCollection *collection = retrieveCollection(collectionPath);
 
     setOperation(DeletingCollection);
     secret_collection_delete(collection, nullptr, onDeleteCollectionFinished, this);

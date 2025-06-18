@@ -15,8 +15,8 @@ App::App(QObject *parent)
     m_walletsModel = new WalletsModel(m_secretServiceClient, this);
     m_walletModel = new WalletModel(m_secretServiceClient, this);
     m_secretItemProxy = new SecretItemProxy(m_secretServiceClient, this);
-    connect(m_walletModel, &WalletModel::currentWalletChanged, m_walletsModel, &WalletsModel::setCurrentWallet);
-    m_walletsModel->setCurrentWallet(m_walletModel->currentWallet());
+    connect(m_walletModel, &WalletModel::collectionPathChanged, m_walletsModel, &WalletsModel::setCollectionPath);
+    m_walletsModel->setCollectionPath(m_walletModel->collectionPath());
 }
 
 App::~App()

@@ -102,8 +102,8 @@ public:
                                 // const SecretServiceClient::Type type,
                                 const QString &user,
                                 const QString &server,
-                                const QString &wallet);
-    Q_INVOKABLE void loadItem(const QString &wallet, const QString &dbusPath);
+                                const QString &collectionPath);
+    Q_INVOKABLE void loadItem(const QString &collectionPath, const QString &itemPath);
     Q_INVOKABLE void unlock();
     Q_INVOKABLE void save();
     Q_INVOKABLE void close();

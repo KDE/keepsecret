@@ -28,14 +28,16 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     });
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionDeleted, this, [this](const QDBusObjectPath &path) {
-        // TODO
+        if (path.path() == m_currentCollectionPath) {
+            setCollectionPath(QString());
+        }
     });
 
     // FIXME: needed the timer?
     QTimer::singleShot(0, this, [this]() {
         KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
         KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
-        setCurrentWallet(windowGroup.readEntry(QStringLiteral("lastOpenWallet"), QString()));
+        setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
     });
 }
 
@@ -110,14 +112,23 @@ void WalletModel::setError(WalletModel::Error error, const QString &errorMessage
     }
 }
 
-QString WalletModel::currentWallet() const
+QString WalletModel::collectionName() const
 {
-    return m_currentWallet;
+    if (m_secretServiceClient->status() != SecretServiceClient::Connected || !m_secretCollection) {
+        return QString();
+    }
+
+    return QString::fromUtf8(secret_collection_get_label(m_secretCollection.get()));
 }
 
-void WalletModel::setCurrentWallet(const QString &wallet)
+QString WalletModel::collectionPath() const
 {
-    if (wallet == m_currentWallet) {
+    return m_currentCollectionPath;
+}
+
+void WalletModel::setCollectionPath(const QString &collectionPath)
+{
+    if (collectionPath == m_currentCollectionPath) {
         return;
     }
 
@@ -125,19 +136,24 @@ void WalletModel::setCurrentWallet(const QString &wallet)
         g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
     }
 
-    m_currentWallet = wallet;
+    m_currentCollectionPath = collectionPath;
 
-    if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
+    if (collectionPath.isEmpty()) {
+        beginResetModel();
+        m_items.clear();
+        endResetModel();
+    } else if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
         loadWallet();
     }
 
     KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
     KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
-    windowGroup.writeEntry(QStringLiteral("lastOpenWallet"), wallet);
+    windowGroup.writeEntry(QStringLiteral("CurrentCollectionPath"), collectionPath);
 
     dataResource.sync();
 
-    Q_EMIT(currentWalletChanged(wallet));
+    Q_EMIT collectionPathChanged(m_currentCollectionPath);
+    Q_EMIT collectionNameChanged(collectionName());
 }
 
 static void onServiceLockFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -263,7 +279,7 @@ void WalletModel::loadWallet()
         return;
     }
 
-    m_secretCollection = SecretCollectionPtr(m_secretServiceClient->retrieveCollection(m_currentWallet));
+    m_secretCollection = SecretCollectionPtr(m_secretServiceClient->retrieveCollection(m_currentCollectionPath));
 
     if (!m_secretCollection) {
         return;

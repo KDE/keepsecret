@@ -13,7 +13,7 @@ Kirigami.ScrollablePage {
 
     property alias currentEntry: view.currentIndex
 
-    title: App.walletModel.currentWallet
+    title: App.walletModel.collectionName
 
     // FIXME: why int?
     property int status: App.walletModel.status
@@ -24,7 +24,7 @@ Kirigami.ScrollablePage {
             text: i18n("New Entry")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new entry in this wallet")
-            enabled: App.walletModel.status === WalletModel.Ready
+            enabled: App.walletModel.status & WalletModel.Connected
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
@@ -142,7 +142,7 @@ Kirigami.ScrollablePage {
                                 passwordField.text,
                                 userField.text,
                                 serverField.text,
-                                App.walletModel.currentWallet);
+                                App.walletModel.collectionPath);
         }
         onVisibleChanged: {
             labelField.text = ""
@@ -161,7 +161,7 @@ Kirigami.ScrollablePage {
 
         contentItem: ColumnLayout {
             QQC.Label {
-                text: i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.currentWallet)
+                text: i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.collectionName)
                 wrapMode: Text.WordWrap
             }
             QQC.CheckBox {
@@ -171,7 +171,7 @@ Kirigami.ScrollablePage {
             }
         }
 
-        onAccepted: App.secretService.deleteCollection(App.walletModel.currentWallet)
+        onAccepted: App.secretService.deleteCollection(App.walletModel.collectionPath)
     }
 
     ListView {
@@ -217,7 +217,7 @@ Kirigami.ScrollablePage {
             highlighted: view.currentIndex == index
             onClicked: {
                 view.currentIndex = index
-                App.secretItem.loadItem(App.walletModel.currentWallet, model.dbusPath);
+                App.secretItem.loadItem(App.walletModel.collectionPath, model.dbusPath);
                 page.Kirigami.ColumnView.view.currentIndex = 2;
             }
         }

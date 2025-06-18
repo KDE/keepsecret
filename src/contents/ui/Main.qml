@@ -84,9 +84,9 @@ Kirigami.ApplicationWindow {
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
         Kirigami.ColumnView.maximumWidth: maximumSidebarWidth
-        onCurrentWalletChanged: {
+        onCollectionPathChanged: {
             walletContentsPage.currentEntry = -1
-            if (currentWallet.length >= 0) {
+            if (collectionPath.length >= 0) {
                 if (pageStack.depth < 2) {
                     pageStack.push(walletContentsPage)
                 }

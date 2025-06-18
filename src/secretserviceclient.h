@@ -141,20 +141,25 @@ public:
     void setError(Error error, const QString &message);
 
     // TODO: use the dbus path instead of the name, so we a re sure it's unique
-    SecretCollection *retrieveCollection(const QString &name);
-    SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionName, bool *ok);
+    SecretCollection *retrieveCollection(const QString &collectionPath);
+    // TODO: move in secretitemproxy?
+    SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionPath, bool *ok);
 
     QString defaultCollection();
-    void setDefaultCollection(const QString &collectionName);
+    void setDefaultCollection(const QString &collectionPath);
 
     QList<CollectionEntry> listCollections();
     void loadCollections();
 
+    // collectionPath is the dbus path of the collection
     Q_INVOKABLE void lockCollection(const QString &collectionPath);
+    // collectionPath is the dbus path of the collection
     Q_INVOKABLE void unlockCollection(const QString &collectionPath);
 
+    // collectionName is the user-visible label of the collection, they might be non unique
     Q_INVOKABLE void createCollection(const QString &collectionName);
-    Q_INVOKABLE void deleteCollection(const QString &collectionName);
+    // collectionPath is the dbus path of the collection
+    Q_INVOKABLE void deleteCollection(const QString &collectionPath);
 
     static QString typeToString(SecretServiceClient::Type type);
     static Type stringToType(const QString &typeName);

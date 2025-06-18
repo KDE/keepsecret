@@ -13,7 +13,7 @@ Kirigami.ScrollablePage {
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
     title: Kirigami.Settings.isMobile ? i18n("Wallets") : ""
 
-    readonly property string currentWallet: App.walletModel.currentWallet
+    readonly property string collectionPath: App.walletModel.collectionPath
 
     actions: [
         Kirigami.Action {
@@ -100,17 +100,17 @@ Kirigami.ScrollablePage {
         }
         QQC.MenuItem {
             text: i18n("Set as Default")
-            enabled: App.secretService.defaultCollection !== contextMenu.model.display
-            onClicked: App.secretService.defaultCollection = contextMenu.model.display
+            enabled: App.secretService.defaultCollection !== contextMenu.model.dbusPath
+            onClicked: App.secretService.defaultCollection = contextMenu.model.dbusPath
         }
         QQC.MenuItem {
             text: contextMenu.model.locked ? i18n("Unlock") : i18n("Lock")
             icon.name: contextMenu.model.locked ? "unlock-symbolic" : "lock-symbolic"
             onClicked: {
                 if (contextMenu.model.locked) {
-                    App.secretService.unlockCollection(contextMenu.model.display)
+                    App.secretService.unlockCollection(contextMenu.model.dbusPath)
                 } else {
-                    App.secretService.lockCollection(contextMenu.model.display)
+                    App.secretService.lockCollection(contextMenu.model.dbusPath)
                 }
             }
         }
@@ -118,7 +118,7 @@ Kirigami.ScrollablePage {
             text: i18n("Delete")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
-                deletionDialog.collection = contextMenu.model.display;
+                deletionDialog.collection = contextMenu.model.dbusPath;
                 deletionDialog.open();
             }
         }
@@ -132,15 +132,14 @@ Kirigami.ScrollablePage {
             id: delegate
             required property var model
             required property int index
-            readonly property bool current: App.walletModel.currentWallet === model.display
             width: view.width
             icon.name: highlighted && !App.walletModel.locked ? "wallet-open" : "wallet-closed"
             text: model.display
             highlighted: view.currentIndex == index
-            font.bold: App.secretService.defaultCollection === model.display
+            font.bold: App.secretService.defaultCollection === model.dbusPath
 
             onClicked: {
-                App.walletModel.currentWallet = model.display
+                App.walletModel.collectionPath = model.dbusPath
                 page.Kirigami.ColumnView.view.currentIndex = 1
             }
 
@@ -168,7 +167,7 @@ Kirigami.ScrollablePage {
                 visible: model.locked
                 source: "object-locked-symbolic"
                 TapHandler {
-                    onTapped: App.secretService.unlockCollection(model.display)
+                    onTapped: App.secretService.unlockCollection(model.dbusPath)
                 }
             }
         }

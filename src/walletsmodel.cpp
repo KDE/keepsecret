@@ -16,18 +16,18 @@ WalletsModel::~WalletsModel()
 {
 }
 
-QString WalletsModel::currentWallet() const
+QString WalletsModel::collectionPath() const
 {
-    return m_currentWallet;
+    return m_currentCollectionPath;
 }
 
-void WalletsModel::setCurrentWallet(const QString &wallet)
+void WalletsModel::setCollectionPath(const QString &collectionPath)
 {
-    if (wallet == m_currentWallet) {
+    if (collectionPath == m_currentCollectionPath) {
         return;
     }
 
-    m_currentWallet = wallet;
+    m_currentCollectionPath = collectionPath;
 
     Q_EMIT currentIndexChanged();
 }
@@ -36,7 +36,7 @@ int WalletsModel::currentIndex() const
 {
     int i = 0;
     for (const SecretServiceClient::CollectionEntry &entry : m_wallets) {
-        if (entry.name == m_currentWallet) {
+        if (entry.dbusPath == m_currentCollectionPath) {
             return i;
         }
         ++i;

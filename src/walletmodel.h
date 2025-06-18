@@ -17,7 +17,8 @@ class WalletModel : public QAbstractListModel
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
-    Q_PROPERTY(QString currentWallet READ currentWallet WRITE setCurrentWallet NOTIFY currentWalletChanged)
+    Q_PROPERTY(QString collectionName READ collectionName NOTIFY collectionNameChanged)
+    Q_PROPERTY(QString collectionPath READ collectionPath WRITE setCollectionPath NOTIFY collectionPathChanged)
 
 public:
     enum StatusItem {
@@ -71,8 +72,10 @@ public:
     QString errorMessage() const;
     void setError(Error error, const QString &message);
 
-    QString currentWallet() const;
-    void setCurrentWallet(const QString &wallet);
+    QString collectionName() const;
+
+    QString collectionPath() const;
+    void setCollectionPath(const QString &collectionPath);
 
     void refreshWallet();
 
@@ -88,7 +91,8 @@ Q_SIGNALS:
     void operationsChanged(Operations operations);
     void errorChanged(Error error);
     void errorMessageChanged(const QString &errorMessage);
-    void currentWalletChanged(const QString &currentWallet);
+    void collectionNameChanged(const QString &name);
+    void collectionPathChanged(const QString &collectionPath);
     bool lockedChanged(bool locked);
 
 protected:
@@ -104,7 +108,7 @@ private:
         QString dbusPath;
         QString folder;
     };
-    QString m_currentWallet;
+    QString m_currentCollectionPath;
     QList<Entry> m_items;
     SecretCollectionPtr m_secretCollection;
     SecretServiceClient *m_secretServiceClient = nullptr;
