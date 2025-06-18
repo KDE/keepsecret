@@ -140,7 +140,6 @@ public:
     QString errorMessage() const;
     void setError(Error error, const QString &message);
 
-    // TODO: use the dbus path instead of the name, so we a re sure it's unique
     SecretCollection *retrieveCollection(const QString &collectionPath);
     // TODO: move in secretitemproxy?
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionPath, bool *ok);
@@ -181,6 +180,8 @@ Q_SIGNALS:
     void defaultCollectionChanged(const QString &collection);
     void collectionCreated(const QDBusObjectPath &path);
     void collectionDeleted(const QDBusObjectPath &path);
+    void collectionLocked(const QDBusObjectPath &path);
+    void collectionUnlocked(const QDBusObjectPath &path);
 
 protected:
     bool attemptConnection();

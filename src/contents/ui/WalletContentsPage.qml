@@ -228,28 +228,26 @@ Kirigami.ScrollablePage {
             icon.name: {
                 switch (App.walletModel.status) {
                 case WalletModel.Locked:
-                    return "folder-locked"
-                case WalletModel.Connected:
-                    return "wallet-closed"
+                    return "object-locked"
                 default:
-                    return ""
+                    return "wallet-closed"
                 }
             }
             text: {
                 switch (App.walletModel.status) {
                 case WalletModel.Locked:
                     return i18n("Wallet is locked")
-                case WalletModel.Connected:
+                case WalletModel.Ready:
                     return i18n("Wallet is empty")
                 default:
-                    return ""
+                    return i18n("Select a wallet to open from the list")
                 }
             }
             helpfulAction: {
                 switch (App.walletModel.status) {
                 case WalletModel.Locked:
                     return lockAction
-                case WalletModel.Connected:
+                case WalletModel.Ready:
                     return newAction
                 default:
                     return null

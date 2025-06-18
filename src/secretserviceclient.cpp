@@ -487,11 +487,19 @@ static void onLockCollectionFinished(GObject *source, GAsyncResult *result, gpoi
 
     secret_service_lock_finish((SecretService *)source, result, &locked, &error);
 
+    QString path;
+    // FIXME: can there me more than one unlocked at once?
+    for (GList *l = locked; l != nullptr; l = l->next) {
+        SecretCollection *coll = SECRET_COLLECTION(l->data);
+        path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
+        break;
+    }
     g_list_free(locked);
 
     client->clearOperation(SecretServiceClient::LockingCollection);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
         client->loadCollections();
+        Q_EMIT client->collectionLocked(QDBusObjectPath(path));
     } else {
         client->setError(SecretServiceClient::LockCollectionFailed, message);
     }
@@ -524,11 +532,19 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
 
     secret_service_unlock_finish((SecretService *)source, result, &unlocked, &error);
 
+    QString path;
+    // FIXME: can there me more than one unlocked at once?
+    for (GList *l = unlocked; l != nullptr; l = l->next) {
+        SecretCollection *coll = SECRET_COLLECTION(l->data);
+        path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
+        break;
+    }
     g_list_free(unlocked);
 
     client->clearOperation(SecretServiceClient::UnlockingCollection);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
         client->loadCollections();
+        Q_EMIT client->collectionUnlocked(QDBusObjectPath(path));
     } else {
         client->setError(SecretServiceClient::UnlockCollectionFailed, message);
     }

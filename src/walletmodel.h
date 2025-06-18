@@ -34,9 +34,7 @@ public:
         OperationNone = 0,
         Creating = 1,
         Loading = 2,
-        Unlocking = Loading | 4,
-        Locking = 16,
-        Deleting = 32
+        Deleting = 4
     };
     Q_ENUM(Operation);
     Q_DECLARE_FLAGS(Operations, Operation);
