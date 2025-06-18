@@ -191,7 +191,8 @@ Kirigami.ScrollablePage {
             width: view.width
             contentItem: RowLayout {
                 Kirigami.Icon {
-                    source: "folder"
+                    source: section
+                    fallback: "folder"
                     implicitWidth: Kirigami.Units.iconSizes.smallMedium
                     implicitHeight: implicitWidth
                 }
