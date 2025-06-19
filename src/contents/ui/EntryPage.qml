@@ -59,12 +59,50 @@ Kirigami.ScrollablePage {
     }
 
 
+
+    component MapNewField: RowLayout {
+        id: tableRow
+        visible: showMapValuesCheck.checked
+        property bool fieldAdditionDone
+        QQC.TextField {
+            Layout.fillWidth: true
+            onTextChanged: {
+                let index = tableRow.parent.dynamicFields.indexOf(tableRow);
+                if (text.length > 0 && index >= 0 && index == tableRow.parent.dynamicFields.length - 1) {
+                    print(mapNewFieldComponent)
+                    let field = mapNewFieldComponent.createObject(tableRow.parent)
+                    tableRow.parent.dynamicFields.push(field)
+                    tableRow.parent.dynamicFieldsChanged()
+                }
+            }
+        }
+        QQC.TextField {
+            visible: showMapValuesCheck.checked
+            Layout.fillWidth: true
+        }
+        QQC.Button {
+            enabled: tableRow.parent.dynamicFields.indexOf(tableRow) < tableRow.parent.dynamicFields.length - 1
+            icon.name: "delete-symbolic"
+            QQC.ToolTip.delay: Kirigami.Units.toolTipDelay
+            QQC.ToolTip.visible: hovered
+            QQC.ToolTip.text: i18n("Remove Row")
+            onClicked: tableRow.destroy()
+        }
+        Component.onDestruction: {
+            let index = tableRow.parent.dynamicFields.indexOf(tableRow);
+            if (index < 0) {
+                return;
+            }
+            tableRow.parent.dynamicFields.splice(index, 1);
+            tableRow.parent.dynamicFieldsChanged()
+        }
+    }
+
+    property Component mapNewFieldComponent: Component { MapNewField {} }
+
     ColumnLayout {
         spacing: Kirigami.Units.gridUnit
         FormCard.FormCard {
-            Text { //TODO: remove
-                text: "Type " + App.secretItem.type
-            }
             FormItem {
                 label: i18n("Label:")
                 contentItem: Kirigami.ActionTextField {
@@ -79,7 +117,7 @@ Kirigami.ScrollablePage {
                 }
             }
             FormItem {
-                visible: App.secretItem.type !== SecretServiceClient.Binary
+                visible: App.secretItem.type !== SecretServiceClient.Binary && App.secretItem.type !== SecretServiceClient.Map
                 label: i18n("Password:")
                 contentItem: Kirigami.PasswordField {
                     id: passwordField
@@ -101,6 +139,43 @@ Kirigami.ScrollablePage {
                         text: visible ? App.secretItem.formattedBinarySecret : ""
                         font.family: "monospace"
                         wrapMode: Text.Wrap
+                    }
+                }
+            }
+            FormItem {
+                visible: App.secretItem.type === SecretServiceClient.Map
+                contentItem: ColumnLayout {
+                    QQC.CheckBox {
+                        id: showMapValuesCheck
+                        Layout.fillWidth: true
+                        text: i18n("Show Secret Values")
+                    }
+                    Repeater {
+                        model: App.secretItem.secretValueMapKeys
+                        RowLayout {
+                            id: tableRow
+                            QQC.TextField {
+                                Layout.fillWidth: true
+                                text: modelData
+                            }
+                            QQC.TextField {
+                                visible: showMapValuesCheck.checked
+                                Layout.fillWidth: true
+                                text: App.secretItem.secretValueMap[modelData]
+                            }
+                            QQC.Button {
+                                icon.name: "delete-symbolic"
+                                QQC.ToolTip.delay: Kirigami.Units.toolTipDelay
+                                QQC.ToolTip.visible: hovered
+                                QQC.ToolTip.text: i18n("Remove Row")
+                                onClicked: tableRow.visible = false;
+                            }
+                        }
+                    }
+                    property var dynamicFields: []
+                    MapNewField {
+                        id: firstDynamicField
+                        Component.onCompleted: firstDynamicField.parent.dynamicFields.push(firstDynamicField)
                     }
                 }
             }

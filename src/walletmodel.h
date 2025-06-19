@@ -13,6 +13,7 @@ class WalletModel : public QAbstractListModel
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("Cannot create elements of type WalletModel")
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)

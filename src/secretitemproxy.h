@@ -14,6 +14,7 @@ class SecretItemProxy : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("Cannot create elements of type SecretItemProxy")
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
@@ -25,7 +26,9 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QString label READ label WRITE setLabel NOTIFY labelChanged)
     Q_PROPERTY(QString secretValue READ secretValue WRITE setSecretValue NOTIFY secretValueChanged)
     Q_PROPERTY(SecretServiceClient::Type type READ type NOTIFY typeChanged)
-    Q_PROPERTY(QString formattedBinarySecret READ formattedBinarySecret NOTIFY secretValueChanged);
+    Q_PROPERTY(QString formattedBinarySecret READ formattedBinarySecret NOTIFY secretValueChanged)
+    Q_PROPERTY(QVariantMap secretValueMap READ secretValueMap NOTIFY secretValueChanged)
+    Q_PROPERTY(QStringList secretValueMapKeys READ secretValueMapKeys NOTIFY secretValueChanged)
 
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
@@ -96,6 +99,8 @@ public:
     void setSecretValue(const QByteArray &secretValue);
 
     QString formattedBinarySecret() const;
+    QVariantMap secretValueMap() const;
+    QStringList secretValueMapKeys() const;
 
     QVariantMap attributes() const;
 
@@ -144,6 +149,7 @@ private:
     QString m_itemName;
     QString m_label;
     QByteArray m_secretValue;
+    QVariantMap m_secretValueMap;
     QVariantMap m_attributes;
 
     SecretItemPtr m_secretItem;
