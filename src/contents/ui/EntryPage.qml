@@ -62,9 +62,11 @@ Kirigami.ScrollablePage {
 
     component MapNewField: RowLayout {
         id: tableRow
+        property alias key: keyField.text
+        property alias value: valueField.text
         visible: showMapValuesCheck.checked
-        property bool fieldAdditionDone
         QQC.TextField {
+            id: keyField
             Layout.fillWidth: true
             onTextChanged: {
                 let index = tableRow.parent.dynamicFields.indexOf(tableRow);
@@ -77,6 +79,7 @@ Kirigami.ScrollablePage {
             }
         }
         QQC.TextField {
+            id: valueField
             visible: showMapValuesCheck.checked
             Layout.fillWidth: true
         }
@@ -145,6 +148,17 @@ Kirigami.ScrollablePage {
             FormItem {
                 visible: App.secretItem.type === SecretServiceClient.Map
                 contentItem: ColumnLayout {
+                    property var dynamicFields: []
+                    function generateJsonMap() {
+                        let json = {}
+                        children.forEach((child) => {
+                            if (child instanceof RowLayout && child.visible === true && child.key.length > 0) {
+                                json[child.key] = child.value
+                            }
+                        });
+                        return JSON.stringify(json);
+                    }
+
                     QQC.CheckBox {
                         id: showMapValuesCheck
                         Layout.fillWidth: true
@@ -154,11 +168,15 @@ Kirigami.ScrollablePage {
                         model: App.secretItem.secretValueMapKeys
                         RowLayout {
                             id: tableRow
+                            property alias key: keyField.text
+                            property alias value: valueField.text
                             QQC.TextField {
+                                id: keyField
                                 Layout.fillWidth: true
                                 text: modelData
                             }
                             QQC.TextField {
+                                id: valueField
                                 visible: showMapValuesCheck.checked
                                 Layout.fillWidth: true
                                 text: App.secretItem.secretValueMap[modelData]
@@ -172,7 +190,6 @@ Kirigami.ScrollablePage {
                             }
                         }
                     }
-                    property var dynamicFields: []
                     MapNewField {
                         id: firstDynamicField
                         Component.onCompleted: firstDynamicField.parent.dynamicFields.push(firstDynamicField)
