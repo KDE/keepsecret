@@ -68,7 +68,7 @@ Kirigami.ScrollablePage {
         QQC.TextField {
             id: keyField
             Layout.fillWidth: true
-            onTextChanged: {
+            onTextEdited: {
                 let index = tableRow.parent.dynamicFields.indexOf(tableRow);
                 if (text.length > 0 && index >= 0 && index == tableRow.parent.dynamicFields.length - 1) {
                     print(mapNewFieldComponent)
@@ -76,12 +76,14 @@ Kirigami.ScrollablePage {
                     tableRow.parent.dynamicFields.push(field)
                     tableRow.parent.dynamicFieldsChanged()
                 }
+                saveJsonTimer.restart();
             }
         }
         QQC.TextField {
             id: valueField
             visible: showMapValuesCheck.checked
             Layout.fillWidth: true
+            onTextEdited: saveJsonTimer.restart()
         }
         QQC.Button {
             enabled: tableRow.parent.dynamicFields.indexOf(tableRow) < tableRow.parent.dynamicFields.length - 1
@@ -89,7 +91,10 @@ Kirigami.ScrollablePage {
             QQC.ToolTip.delay: Kirigami.Units.toolTipDelay
             QQC.ToolTip.visible: hovered
             QQC.ToolTip.text: i18n("Remove Row")
-            onClicked: tableRow.destroy()
+            onClicked: {
+                tableRow.destroy();
+                saveJsonTimer.restart();
+            }
         }
         Component.onDestruction: {
             let index = tableRow.parent.dynamicFields.indexOf(tableRow);
@@ -148,7 +153,11 @@ Kirigami.ScrollablePage {
             FormItem {
                 visible: App.secretItem.type === SecretServiceClient.Map
                 contentItem: ColumnLayout {
+                    id: mapFormItem
+                    property var secretValueMap: {}
+                    property var secretValueMapKeys: []
                     property var dynamicFields: []
+
                     function generateJsonMap() {
                         let json = {}
                         children.forEach((child) => {
@@ -159,13 +168,47 @@ Kirigami.ScrollablePage {
                         return JSON.stringify(json);
                     }
 
+                    function reload() {
+                        for (let i in dynamicFields) {
+                            if (typeof dynamicFields[i] === "undefined") {
+                                continue;
+                            }
+                            if (i == 0) {
+                                dynamicFields[0].key = "";
+                                dynamicFields[0].value = "";
+                                continue;
+                            }
+                            dynamicFields[i].destroy();
+                        }
+                        dynamicFields = [dynamicFields[0]];
+
+                        secretValueMap = JSON.parse(App.secretItem.secretValue);
+                    }
+
+                    Component.onCompleted: reload()
+
+                    Connections {
+                        target: App.secretItem
+                        function onItemLoaded() {
+                            mapFormItem.reload();
+                        }
+                        function onItemSaved() {
+                            mapFormItem.reload();
+                        }
+                    }
+
                     QQC.CheckBox {
                         id: showMapValuesCheck
                         Layout.fillWidth: true
                         text: i18n("Show Secret Values")
                     }
+                    Timer {
+                        id: saveJsonTimer
+                        interval: 400
+                        onTriggered: App.secretItem.secretValue = mapFormItem.generateJsonMap();
+                    }
                     Repeater {
-                        model: App.secretItem.secretValueMapKeys
+                        model: Object.keys(mapFormItem.secretValueMap)
                         RowLayout {
                             id: tableRow
                             property alias key: keyField.text
@@ -174,25 +217,29 @@ Kirigami.ScrollablePage {
                                 id: keyField
                                 Layout.fillWidth: true
                                 text: modelData
+                                onTextEdited: saveJsonTimer.restart()
                             }
                             QQC.TextField {
                                 id: valueField
                                 visible: showMapValuesCheck.checked
                                 Layout.fillWidth: true
-                                text: App.secretItem.secretValueMap[modelData]
+                                text: mapFormItem.secretValueMap[modelData]
+                                onTextEdited: saveJsonTimer.restart()
                             }
                             QQC.Button {
                                 icon.name: "delete-symbolic"
                                 QQC.ToolTip.delay: Kirigami.Units.toolTipDelay
                                 QQC.ToolTip.visible: hovered
                                 QQC.ToolTip.text: i18n("Remove Row")
-                                onClicked: tableRow.visible = false;
+                                onClicked: {
+                                    tableRow.visible = false;
+                                    saveJsonTimer.restart();
+                                }
                             }
                         }
                     }
                     MapNewField {
-                        id: firstDynamicField
-                        Component.onCompleted: firstDynamicField.parent.dynamicFields.push(firstDynamicField)
+                        Component.onCompleted: firstDynamicField.parent.dynamicFields.push(this)
                     }
                 }
             }

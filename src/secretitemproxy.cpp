@@ -63,6 +63,11 @@ void SecretItemProxy::setOperations(SecretItemProxy::Operations operations)
     if (m_operations & Saving && !(operations & Saving)) {
         m_modificationTime = QDateTime::currentDateTime();
         Q_EMIT modificationTimeChanged(m_modificationTime);
+        Q_EMIT itemSaved();
+    }
+
+    if (m_operations & Loading && !(operations & Loading)) {
+        Q_EMIT itemLoaded();
     }
 
     qWarning() << "Setting operations" << operations;
@@ -164,21 +169,6 @@ void SecretItemProxy::setSecretValue(const QString &secretValue)
 
     m_secretValue = secretValue.toUtf8();
 
-    m_secretValueMap.clear();
-    if (m_type == SecretServiceClient::Map) {
-        QJsonParseError error;
-        QJsonDocument doc = QJsonDocument::fromJson(m_secretValue, &error);
-        if (error.error != QJsonParseError::NoError) {
-            // TODO, maybe only qcwarnings and not user-visible errors
-            setError(LoadFailed, error.errorString());
-        } else if (!doc.isObject()) {
-            setError(LoadFailed, i18n("JSon data not an Object"));
-        } else {
-            QJsonObject obj = doc.object();
-            m_secretValueMap = obj.toVariantMap();
-        }
-    }
-
     Q_EMIT secretValueChanged();
     setStatus(NeedsSave);
 }
@@ -190,21 +180,6 @@ void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
     }
 
     m_secretValue = secretValue;
-
-    m_secretValueMap.clear();
-    if (m_type == SecretServiceClient::Map) {
-        QJsonParseError error;
-        QJsonDocument doc = QJsonDocument::fromJson(m_secretValue, &error);
-        if (error.error != QJsonParseError::NoError) {
-            // TODO, maybe only qcwarnings and not user-visible errors
-            setError(LoadFailed, error.errorString());
-        } else if (!doc.isObject()) {
-            setError(LoadFailed, i18n("JSon data not an Object"));
-        } else {
-            QJsonObject obj = doc.object();
-            m_secretValueMap = obj.toVariantMap();
-        }
-    }
 
     Q_EMIT secretValueChanged();
     setStatus(NeedsSave);
@@ -228,16 +203,6 @@ QString SecretItemProxy::formattedBinarySecret() const
     formatted.append(QString::fromLatin1(m_secretValue));
 
     return formatted;
-}
-
-QVariantMap SecretItemProxy::secretValueMap() const
-{
-    return m_secretValueMap;
-}
-
-QStringList SecretItemProxy::secretValueMapKeys() const
-{
-    return m_secretValueMap.keys();
 }
 
 QVariantMap SecretItemProxy::attributes() const
