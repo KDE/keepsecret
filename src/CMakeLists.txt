@@ -12,7 +12,6 @@ qt_add_qml_module(kwallets_static
         contents/ui/EntryPage.qml
         contents/ui/FormItem.qml
         contents/ui/MapField.qml
-        contents/ui/ResizeHandle.qml
         contents/ui/WalletContentsPage.qml
         contents/ui/WalletListPage.qml
 )
