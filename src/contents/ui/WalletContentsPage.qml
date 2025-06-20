@@ -60,17 +60,35 @@ Kirigami.ScrollablePage {
 
     header: ColumnLayout {
         spacing: 0
-        visible: searchAction.checked || App.walletModel.error !== SecretServiceClient.NoError
-        QQC.ToolBar {
+        visible: searchBarContainer.height > 0 || App.walletModel.error !== SecretServiceClient.NoError
+        Item {
+            id: searchBarContainer
             Layout.fillWidth: true
-            visible: searchAction.checked
-            contentItem: Kirigami.SearchField {
-                id: searchField
-                onVisibleChanged: {
-                    if (visible) {
-                        forceActiveFocus()
-                    } else {
-                        text = ""
+            implicitHeight: searchAction.checked ? searchBar.implicitHeight : 0
+            Behavior on implicitHeight {
+                NumberAnimation {
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.InOutQuad
+                }
+            }
+            QQC.ToolBar {
+                id: searchBar
+                anchors {
+                    left: parent.left
+                    right:parent.right
+                    bottom: parent.bottom
+                }
+                contentItem: Kirigami.SearchField {
+                    id: searchField
+                    onVisibleChanged: {
+                        if (visible) {
+                            forceActiveFocus()
+                        } else {
+                            text = ""
+                        }
+                    }
+                    Keys.onEscapePressed: {
+                        searchAction.checked = false;
                     }
                 }
             }
