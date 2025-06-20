@@ -361,17 +361,14 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
             GHashTableIter attrIter;
             gpointer key, value;
             g_hash_table_iter_init(&attrIter, attributes.get());
-            QStringList keys;
             while (g_hash_table_iter_next(&attrIter, &key, &value)) {
                 QString keyString = QString::fromUtf8(static_cast<gchar *>(key));
                 QString valueString = QString::fromUtf8(static_cast<gchar *>(value));
                 m_attributes.insert(keyString, valueString);
-                keys << keyString;
                 if (keyString == QStringLiteral("type")) {
                     m_type = m_secretServiceClient->stringToType(valueString);
                 }
             }
-            m_attributes[QStringLiteral("__keys")] = keys;
         }
         if (m_status == Locked) {
             unlock();
@@ -390,7 +387,6 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
         m_secretValue = QByteArray();
         m_type = SecretServiceClient::PlainText;
         m_attributes.clear();
-        m_attributes[QStringLiteral("__keys")] = QStringList();
         setError(LoadFailed, QStringLiteral("Failed to load the secret item"));
     }
 
@@ -493,12 +489,10 @@ void SecretItemProxy::save()
     secret_item_set_label(m_secretItem.get(), m_label.toUtf8().data(), nullptr, onSetLabelFinished, this);
     setOperation(SavingLabel);
 
+    // Only attributes of type org.qt.keychain can be saved
     if (m_attributes.contains(QStringLiteral("xdg:schema")) && m_attributes[QStringLiteral("xdg:schema")] == QStringLiteral("org.qt.keychain")) {
         GHashTable *attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         for (auto it = m_attributes.constBegin(); it != m_attributes.constEnd(); ++it) {
-            if (it.key() == QStringLiteral("__keys")) {
-                continue;
-            }
             QByteArray keyBytes = it.key().toUtf8();
             gchar *key = g_strdup(keyBytes.constData());
 
@@ -547,7 +541,6 @@ void SecretItemProxy::close()
     m_type = SecretServiceClient::PlainText;
     m_folder = QString();
     m_attributes.clear();
-    m_attributes[QStringLiteral("__keys")] = QStringList();
 
     m_secretItem.reset();
 

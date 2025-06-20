@@ -109,7 +109,7 @@ Kirigami.ScrollablePage {
 
         FormCard.FormCard {
             Repeater {
-                model: App.secretItem.attributes.__keys
+                model: Object.keys(App.secretItem.attributes)
                 delegate: FormCard.FormTextDelegate {
                     text: modelData
                     description: App.secretItem.attributes[modelData]
