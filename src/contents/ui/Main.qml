@@ -72,6 +72,16 @@ Kirigami.ApplicationWindow {
         }
     }
 
+    Kirigami.InlineMessage {
+        visible: App.secretService.error !== SecretServiceClient.NoError
+        parent: root.overlay
+        width: parent.width
+        y: root.pageStack.globalToolBar.preferredHeight
+        position: Kirigami.InlineMessage.Header
+        type: Kirigami.MessageType.Error
+        text: App.secretService.errorMessage
+    }
+
     WalletListPage {
         id: walletListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true

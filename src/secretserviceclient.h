@@ -70,6 +70,7 @@ class SecretServiceClient : public QObject
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QString defaultCollection READ defaultCollection WRITE setDefaultCollection NOTIFY defaultCollectionChanged)
 

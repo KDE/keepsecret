@@ -181,8 +181,10 @@ static void onServiceGetFinished(GObject *source, GAsyncResult *result, gpointer
     SecretService *service = secret_service_get_finish(result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
         client->attemptConnectionFinished(service);
     } else {
+        client->setError(SecretServiceClient::ConnectionFailed, message);
         client->attemptConnectionFinished(nullptr);
     }
 }
@@ -222,12 +224,15 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
     setStatus(Disconnected);
     m_service.reset();
 
-    qDebug() << "Secret Service availability changed:" << (available ? "Available" : "Unavailable");
+    qCWarning(KWALLETS_LOG) << "Secret Service availability changed:" << (available ? "Available" : "Unavailable");
     Q_EMIT serviceChanged();
 
-    if (available) {
-        attemptConnection();
+    if (!available) {
+        setError(ConnectionFailed, i18n("Secret Service provider unavailable."));
     }
+
+    // Unconditionally attempt a connection, as the service might be DBus-activated
+    attemptConnection();
 }
 
 void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
@@ -331,6 +336,7 @@ QString SecretServiceClient::errorMessage() const
 
 void SecretServiceClient::setError(SecretServiceClient::Error error, const QString &errorMessage)
 {
+    qWarning() << "AAA" << error << errorMessage;
     if (error != m_error) {
         m_error = error;
         Q_EMIT errorChanged(error);
@@ -367,6 +373,8 @@ void SecretServiceClient::readDefaultCollection()
         m_defaultCollection.clear();
         Q_EMIT defaultCollectionChanged(m_defaultCollection);
         return;
+    } else {
+        setError(NoError, QString());
     }
 
     setOperation(ReadingDefault);
@@ -382,6 +390,7 @@ void SecretServiceClient::readDefaultCollection()
             setError(ReadDefaultFailed, reply.error().message());
             m_defaultCollection.clear();
         } else {
+            setError(NoError, QString());
             m_defaultCollection = reply.value().path();
         }
 
@@ -402,6 +411,8 @@ static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result
     secret_service_set_alias_finish((SecretService *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
+    } else {
         client->setError(SecretServiceClient::SetDefaultFailed, message);
     }
     client->clearOperation(SecretServiceClient::WritingDefault);
@@ -442,9 +453,6 @@ QList<SecretServiceClient::CollectionEntry> SecretServiceClient::listCollections
 
             collections << entry;
         }
-    } else {
-        // FIXME: this else is probably useless
-        setError(LoadCollectionsFailed, i18n("No collections"));
     }
 
     return collections;
@@ -459,11 +467,12 @@ static void onLoadCollectionsFinished(GObject *source, GAsyncResult *result, gpo
     secret_service_load_collections_finish((SecretService *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
+    } else {
         client->setError(SecretServiceClient::LoadCollectionsFailed, message);
     }
 
     client->clearOperation(SecretServiceClient::LoadingCollections);
-    qWarning() << "onLoadCollectionsFinished";
     Q_EMIT client->collectionListDirty();
 }
 
@@ -498,6 +507,7 @@ static void onLockCollectionFinished(GObject *source, GAsyncResult *result, gpoi
 
     client->clearOperation(SecretServiceClient::LockingCollection);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
         client->loadCollections();
         Q_EMIT client->collectionLocked(QDBusObjectPath(path));
     } else {
@@ -543,6 +553,7 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
 
     client->clearOperation(SecretServiceClient::UnlockingCollection);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
         client->loadCollections();
         Q_EMIT client->collectionUnlocked(QDBusObjectPath(path));
     } else {
@@ -577,6 +588,8 @@ static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gp
     secret_collection_create_finish(result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
+    } else {
         client->setError(SecretServiceClient::SetDefaultFailed, message);
     }
     client->clearOperation(SecretServiceClient::CreatingCollection);
@@ -609,6 +622,8 @@ static void onDeleteCollectionFinished(GObject *source, GAsyncResult *result, gp
     secret_collection_delete_finish((SecretCollection *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
+        client->setError(SecretServiceClient::NoError, QString());
+    } else {
         client->setError(SecretServiceClient::SetDefaultFailed, message);
     }
     client->clearOperation(SecretServiceClient::DeletingCollection);

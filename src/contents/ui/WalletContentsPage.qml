@@ -225,16 +225,25 @@ Kirigami.ScrollablePage {
 
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
-            visible: view.count === 0 && (App.walletModel.status == WalletModel.Ready || App.walletModel.status == WalletModel.Locked)
+            visible: view.count === 0 &&
+                    (App.walletModel.status === WalletModel.Ready ||
+                     App.walletModel.status === WalletModel.Locked ||
+                     App.secretService.status === SecretServiceClient.Disconnected)
             icon.name: {
+                if (App.secretService.status === SecretServiceClient.Disconnected) {
+                    return "action-unavailable-symbolic";
+                }
                 switch (App.walletModel.status) {
                 case WalletModel.Locked:
-                    return "object-locked"
+                    return "object-locked";
                 default:
-                    return "wallet-closed"
+                    return "wallet-closed";
                 }
             }
             text: {
+                if (App.secretService.status === SecretServiceClient.Disconnected) {
+                    return "";
+                }
                 switch (App.walletModel.status) {
                 case WalletModel.Locked:
                     return i18n("Wallet is locked")
