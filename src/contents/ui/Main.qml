@@ -71,14 +71,7 @@ Kirigami.ApplicationWindow {
             App.sidebarState = pageStack.columnView.savedState;
         }
     }
-/*
-   // pageStack.wideMode: pageStack.width >= pageStack.defaultColumnWidth + minimumSidebarWidth * 2
-    Binding {
-        target: pageStack.contentItem
-        property: "columnResizeMode"
-        value: pageStack.wideMode ? Kirigami.ColumnView.DynamicColumns : Kirigami.ColumnView.SingleColumn
-    }
-*/
+
     WalletListPage {
         id: walletListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true
@@ -130,17 +123,4 @@ Kirigami.ApplicationWindow {
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.fillWidth: false
     }
-/*
-    // TODO: a component in Kirigami to attach resize handles directly in ColumnView
-    ResizeHandle {
-        targetPage: walletListPage
-        onRight: true
-        maximumWidth: pageStack.width - pageStack.defaultColumnWidth - entryPage.width
-    }
-    ResizeHandle {
-        visible: root.pageStack.wideMode && pageStack.depth === 3
-        targetPage: entryPage
-        onRight: false
-        maximumWidth: pageStack.width - pageStack.defaultColumnWidth - walletListPage.width
-    }*/
 }
