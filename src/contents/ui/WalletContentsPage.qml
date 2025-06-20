@@ -225,7 +225,7 @@ Kirigami.ScrollablePage {
 
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
-            visible: view.count === 0
+            visible: view.count === 0 && (App.walletModel.status == WalletModel.Ready || App.walletModel.status == WalletModel.Locked)
             icon.name: {
                 switch (App.walletModel.status) {
                 case WalletModel.Locked:
