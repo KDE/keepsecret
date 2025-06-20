@@ -210,6 +210,16 @@ QVariantMap SecretItemProxy::attributes() const
     return m_attributes;
 }
 
+void SecretItemProxy::setAttribute(const QString &key, const QString &value)
+{
+    if (!m_attributes.contains(key)) {
+        return;
+    }
+
+    m_attributes[key] = value;
+    setStatus(NeedsSave);
+}
+
 SecretServiceClient::Type SecretItemProxy::type() const
 {
     return m_type;

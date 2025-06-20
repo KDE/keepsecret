@@ -110,9 +110,15 @@ Kirigami.ScrollablePage {
         FormCard.FormCard {
             Repeater {
                 model: Object.keys(App.secretItem.attributes)
-                delegate: FormCard.FormTextDelegate {
-                    text: modelData
-                    description: App.secretItem.attributes[modelData]
+                delegate: FormItem {
+                    label: modelData + ":"
+                    contentItem: QQC.TextField {
+                        text: App.secretItem.attributes[modelData]
+                        readOnly: App.secretItem.attributes["xdg:schema"] !== "org.qt.keychain" ||
+                            (modelData !== "server" && modelData !== "user")
+                        background.visible: !readOnly
+                        onTextEdited: App.secretItem.setAttribute(modelData, text)
+                    }
                 }
             }
         }

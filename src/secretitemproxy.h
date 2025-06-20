@@ -100,6 +100,7 @@ public:
     QString formattedBinarySecret() const;
 
     QVariantMap attributes() const;
+    Q_INVOKABLE void setAttribute(const QString &key, const QString &value);
 
     SecretServiceClient::Type type() const;
 
