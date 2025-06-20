@@ -169,6 +169,9 @@ Kirigami.ScrollablePage {
                     }
 
                     function reload() {
+                        if (App.secretItem.type !== SecretServiceClient.Map) {
+                            return;
+                        }
                         for (let i in dynamicFields) {
                             if (typeof dynamicFields[i] === "undefined") {
                                 continue;
@@ -208,7 +211,7 @@ Kirigami.ScrollablePage {
                         onTriggered: App.secretItem.secretValue = mapFormItem.generateJsonMap();
                     }
                     Repeater {
-                        model: Object.keys(mapFormItem.secretValueMap)
+                        model: mapFormItem.secretValueMap ? Object.keys(mapFormItem.secretValueMap) : 0
                         RowLayout {
                             id: tableRow
                             property alias key: keyField.text
@@ -239,7 +242,7 @@ Kirigami.ScrollablePage {
                         }
                     }
                     MapNewField {
-                        Component.onCompleted: firstDynamicField.parent.dynamicFields.push(this)
+                        Component.onCompleted: mapFormItem.dynamicFields.push(this)
                     }
                 }
             }
