@@ -112,6 +112,7 @@ public:
     Q_INVOKABLE void loadItem(const QString &collectionPath, const QString &itemPath);
     Q_INVOKABLE void unlock();
     Q_INVOKABLE void save();
+    Q_INVOKABLE void revert();
     Q_INVOKABLE void close();
     Q_INVOKABLE void deleteItem();
 
@@ -135,12 +136,13 @@ Q_SIGNALS:
     void attributesChanged(const QVariantMap &attribures);
 
 private:
+    QString m_dbusPath;
+    QString m_collectionPath;
     Status m_status = Disconnected;
     Operations m_operations = OperationNone;
     Error m_error = NoError;
     QString m_errorMessage;
     SecretServiceClient::Type m_type = SecretServiceClient::Unknown;
-    QString m_dbusPath;
     QDateTime m_creationTime;
     QDateTime m_modificationTime;
     QString m_wallet;

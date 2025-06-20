@@ -323,6 +323,7 @@ void SecretItemProxy::createItem(const QString &label,
 void SecretItemProxy::loadItem(const QString &collectionPath, const QString &itemPath)
 {
     m_dbusPath = itemPath;
+    m_collectionPath = collectionPath;
 
     if (!m_secretServiceClient->isAvailable()) {
         return;
@@ -523,6 +524,15 @@ void SecretItemProxy::save()
             setOperation(SavingSecret);
         }
     }
+}
+
+void SecretItemProxy::revert()
+{
+    if (!m_secretServiceClient->isAvailable()) {
+        return;
+    }
+
+    loadItem(m_collectionPath, m_dbusPath);
 }
 
 void SecretItemProxy::close()

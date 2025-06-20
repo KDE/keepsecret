@@ -18,8 +18,17 @@ Kirigami.ScrollablePage {
             text: i18n("Save")
             icon.name: "document-save"
             tooltip: i18n("Save changes")
+            displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.secretItem.status === SecretItemProxy.NeedsSave
             onTriggered: App.secretItem.save()
+        },
+        Kirigami.Action {
+            text: i18n("Revert")
+            icon.name: "document-revert-symbolic"
+            tooltip: i18n("Revert changes")
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            enabled: App.secretItem.status === SecretItemProxy.NeedsSave
+            onTriggered: App.secretItem.revert()
         },
         Kirigami.Action {
             text: i18n("Delete")
