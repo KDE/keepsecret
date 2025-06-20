@@ -58,17 +58,29 @@ Kirigami.ScrollablePage {
         }
     ]
 
-    header: QQC.ToolBar {
-        visible: searchAction.checked
-        contentItem: Kirigami.SearchField {
-            id: searchField
-            onVisibleChanged: {
-                if (visible) {
-                    forceActiveFocus()
-                } else {
-                    text = ""
+    header: ColumnLayout {
+        spacing: 0
+        visible: searchAction.checked || App.walletModel.error !== SecretServiceClient.NoError
+        QQC.ToolBar {
+            Layout.fillWidth: true
+            visible: searchAction.checked
+            contentItem: Kirigami.SearchField {
+                id: searchField
+                onVisibleChanged: {
+                    if (visible) {
+                        forceActiveFocus()
+                    } else {
+                        text = ""
+                    }
                 }
             }
+        }
+        Kirigami.InlineMessage {
+            Layout.fillWidth: true
+            visible: App.walletModel.error !== WalletModel.NoError
+            position: Kirigami.InlineMessage.Header
+            type: Kirigami.MessageType.Error
+            text: App.walletModel.errorMessage
         }
     }
 
@@ -228,7 +240,7 @@ Kirigami.ScrollablePage {
             visible: view.count === 0 &&
                     (App.walletModel.status === WalletModel.Ready ||
                      App.walletModel.status === WalletModel.Locked ||
-                     App.secretService.status === SecretServiceClient.Disconnected)
+                     App.secretService.error === SecretServiceClient.ConnectionFailed)
             icon.name: {
                 if (App.secretService.status === SecretServiceClient.Disconnected) {
                     return "action-unavailable-symbolic";

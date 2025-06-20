@@ -17,6 +17,7 @@ class WalletModel : public QAbstractListModel
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QString collectionName READ collectionName NOTIFY collectionNameChanged)
     Q_PROPERTY(QString collectionPath READ collectionPath WRITE setCollectionPath NOTIFY collectionPathChanged)

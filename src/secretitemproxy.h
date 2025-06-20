@@ -18,6 +18,7 @@ class SecretItemProxy : public QObject
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QDateTime creationTime READ creationTime NOTIFY creationTimeChanged)
     Q_PROPERTY(QDateTime modificationTime READ modificationTime NOTIFY modificationTimeChanged)
