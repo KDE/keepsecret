@@ -35,7 +35,14 @@ Kirigami.ScrollablePage {
             icon.name: "delete-symbolic"
             tooltip: i18n("Delete this entry")
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            onTriggered: deleteDialog.open()
+            onTriggered: {
+                showDeleteDialog(
+                    i18n("Are you sure you want to delete the item “%1”?", App.secretItem.label),
+                         i18n("I understand that the item will be permanently deleted"),
+                         () => {
+                             App.secretItem.deleteItem()
+                         });
+            }
         }
     ]
 
@@ -46,19 +53,6 @@ Kirigami.ScrollablePage {
         type: Kirigami.MessageType.Error
         text: App.secretItem.errorMessage
     }
-
-    QQC.Dialog {
-        id: deleteDialog
-        modal: true
-        header: null
-        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
-        contentItem: QQC.Label {
-            text: i18n("Are you sure you want to delete the entry “%1”?", App.secretItem.label)
-            wrapMode: Text.WordWrap
-        }
-        onAccepted: App.secretItem.deleteItem()
-    }
-
 
     ColumnLayout {
         spacing: Kirigami.Units.gridUnit

@@ -82,6 +82,37 @@ Kirigami.ApplicationWindow {
         text: App.secretService.errorMessage
     }
 
+    function showDeleteDialog(message, confirmationMessage, callback) {
+        deleteDialog.message = message;
+        deleteDialog.confirmationMessage = confirmationMessage;
+        deleteDialog.acceptedCallback = callback;
+        deleteDialog.open()
+    }
+    QQC.Dialog {
+        id: deleteDialog
+        property alias message: messageLabel.text
+        property alias confirmationMessage: deletionConfirmation.text
+        property var acceptedCallback: () => {}
+        modal: true
+        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
+
+        onClosed: deletionConfirmation.checked = false
+        Component.onCompleted: standardButton(QQC.Dialog.Yes).enabled = false
+
+        contentItem: ColumnLayout {
+            QQC.Label {
+                id: messageLabel
+                wrapMode: Text.WordWrap
+            }
+            QQC.CheckBox {
+                id: deletionConfirmation
+                onCheckedChanged: deleteDialog.standardButton(QQC.Dialog.Yes).enabled = checked
+            }
+        }
+
+        onAccepted: acceptedCallback()
+    }
+
     WalletListPage {
         id: walletListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true

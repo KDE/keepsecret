@@ -15,6 +15,7 @@ App::App(QObject *parent)
     m_walletsModel = new WalletsModel(m_secretServiceClient, this);
     m_walletModel = new WalletModel(m_secretServiceClient, this);
     m_secretItemProxy = new SecretItemProxy(m_secretServiceClient, this);
+    m_secretItemForContextMenu = new SecretItemProxy(m_secretServiceClient, this);
     connect(m_walletModel, &WalletModel::collectionPathChanged, m_walletsModel, &WalletsModel::setCollectionPath);
     m_walletsModel->setCollectionPath(m_walletModel->collectionPath());
 }
@@ -41,6 +42,11 @@ WalletModel *App::walletModel() const
 SecretItemProxy *App::secretItem() const
 {
     return m_secretItemProxy;
+}
+
+SecretItemProxy *App::secretItemForContextMenu() const
+{
+    return m_secretItemForContextMenu;
 }
 
 void App::restoreWindowGeometry(QQuickWindow *window, const QString &group) const

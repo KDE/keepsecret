@@ -68,29 +68,6 @@ Kirigami.ScrollablePage {
         }
     }
 
-    QQC.Dialog {
-        id: deletionDialog
-        modal: true
-        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
-        property string collection
-
-        Component.onCompleted: standardButton(QQC.Dialog.Yes).enabled = false
-
-        contentItem: ColumnLayout {
-            QQC.Label {
-                text: i18n("Are you sure you want to delete the wallet “%1”?", deletionDialog.collection)
-                wrapMode: Text.WordWrap
-            }
-            QQC.CheckBox {
-                id: deletionConfirmation
-                text: i18n("I understand that all the items will be permanently deleted")
-                onCheckedChanged: deletionDialog.standardButton(QQC.Dialog.Yes).enabled = checked
-            }
-        }
-
-        onAccepted: App.secretService.deleteCollection(deletionDialog.collection)
-    }
-
     QQC.Menu {
         id: contextMenu
         property var model: {
@@ -118,8 +95,12 @@ Kirigami.ScrollablePage {
             text: i18n("Delete")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
-                deletionDialog.collection = contextMenu.model.dbusPath;
-                deletionDialog.open();
+                showDeleteDialog(
+                    i18n("Are you sure you want to delete the wallet “%1”?", contextMenu.model.display),
+                    i18n("I understand that all the items will be permanently deleted"),
+                    () => {
+                        App.secretService.deleteCollection(contextMenu.model.dbusPath)
+                    });
             }
         }
     }

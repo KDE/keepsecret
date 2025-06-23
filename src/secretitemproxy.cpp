@@ -6,6 +6,8 @@
 #include "secretserviceclient.h"
 
 #include <KLocalizedString>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 
@@ -218,6 +220,11 @@ void SecretItemProxy::setAttribute(const QString &key, const QString &value)
 
     m_attributes[key] = value;
     setStatus(NeedsSave);
+}
+
+void SecretItemProxy::copySecret()
+{
+    qApp->clipboard()->setText(QString::fromUtf8(m_secretValue));
 }
 
 SecretServiceClient::Type SecretItemProxy::type() const

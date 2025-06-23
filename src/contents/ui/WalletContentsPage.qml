@@ -54,7 +54,14 @@ Kirigami.ScrollablePage {
             icon.name: "delete-symbolic"
             tooltip: i18n("Delete this wallet")
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            onTriggered: deletionDialog.open()
+            onTriggered: {
+                showDeleteDialog(
+                    i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.collectionName),
+                    i18n("I understand that all the items will be permanently deleted"),
+                    () => {
+                        App.secretService.deleteCollection(App.walletModel.collectionPath)
+                    });
+            }
         }
     ]
 
@@ -182,26 +189,45 @@ Kirigami.ScrollablePage {
         }
     }
 
-    QQC.Dialog {
-        id: deletionDialog
-        modal: true
-        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
-
-        Component.onCompleted: standardButton(QQC.Dialog.Yes).enabled = false
-
-        contentItem: ColumnLayout {
-            QQC.Label {
-                text: i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.collectionName)
-                wrapMode: Text.WordWrap
-            }
-            QQC.CheckBox {
-                id: deletionConfirmation
-                text: i18n("I understand that all the items will be permanently deleted")
-                onCheckedChanged: deletionDialog.standardButton(QQC.Dialog.Yes).enabled = checked
+    QQC.Menu {
+        id: contextMenu
+        property var model: {
+            "index": -1,
+            "display": "",
+            "dbusPath": "",
+            "folder": ""
+        }
+        onOpened: {
+            App.secretItemForContextMenu.loadItem(App.walletModel.collectionPath, contextMenu.model.dbusPath);
+        }
+        QQC.MenuItem {
+            text: i18n("Copy Secret")
+            icon.name: "edit-copy-symbolic"
+            enabled: App.secretItemForContextMenu.status !== SecretItemProxy.Locked
+            onClicked: App.secretItemForContextMenu.copySecret()
+        }
+        QQC.MenuItem {
+            text: i18n("Delete")
+            icon.name: "usermenu-delete-symbolic"
+            onClicked: {
+                showDeleteDialog(
+                    i18n("Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
+                         i18n("I understand that the item will be permanently deleted"),
+                         () => {
+                             App.secretItemForContextMenu.deleteItem()
+                         })
             }
         }
-
-        onAccepted: App.secretService.deleteCollection(App.walletModel.collectionPath)
+        QQC.MenuSeparator {}
+        QQC.MenuItem {
+            text: i18n("Properties")
+            icon.name: "configure-symbolic"
+            onClicked: {
+                view.currentIndex = contextMenu.model.index
+                App.secretItem.loadItem(App.walletModel.collectionPath, contextMenu.model.dbusPath);
+                page.Kirigami.ColumnView.view.currentIndex = 2;
+            }
+        }
     }
 
     ListView {
@@ -238,6 +264,7 @@ Kirigami.ScrollablePage {
         }
         section.criteria: ViewSection.FullString
         delegate: QQC.ItemDelegate {
+            id: delegate
             required property var model
             required property int index
             width: view.width
@@ -246,10 +273,21 @@ Kirigami.ScrollablePage {
             implicitHeight: Kirigami.Units.iconSizes.smallMedium + padding * 2
             text: model.display
             highlighted: view.currentIndex == index
+
             onClicked: {
                 view.currentIndex = index
                 App.secretItem.loadItem(App.walletModel.collectionPath, model.dbusPath);
                 page.Kirigami.ColumnView.view.currentIndex = 2;
+            }
+
+            TapHandler {
+                acceptedButtons: Qt.RightButton
+                onPressedChanged: {
+                    if (pressed) {
+                        contextMenu.model = model
+                        contextMenu.popup(delegate)
+                    }
+                }
             }
         }
 

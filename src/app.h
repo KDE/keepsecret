@@ -25,6 +25,7 @@ class App : public QObject
     Q_PROPERTY(WalletsModel *walletsModel READ walletsModel CONSTANT)
     Q_PROPERTY(WalletModel *walletModel READ walletModel CONSTANT)
     Q_PROPERTY(SecretItemProxy *secretItem READ secretItem CONSTANT)
+    Q_PROPERTY(SecretItemProxy *secretItemForContextMenu READ secretItemForContextMenu CONSTANT)
     Q_PROPERTY(QString sidebarState READ sidebarState WRITE setSidebarState NOTIFY sidebarStateChanged)
 
 public:
@@ -35,6 +36,7 @@ public:
     WalletsModel *walletsModel() const;
     WalletModel *walletModel() const;
     SecretItemProxy *secretItem() const;
+    SecretItemProxy *secretItemForContextMenu() const;
 
     QString sidebarState() const;
     void setSidebarState(const QString &state);
@@ -52,4 +54,5 @@ private:
     WalletsModel *m_walletsModel = nullptr;
     WalletModel *m_walletModel = nullptr;
     SecretItemProxy *m_secretItemProxy = nullptr;
+    SecretItemProxy *m_secretItemForContextMenu = nullptr;
 };
