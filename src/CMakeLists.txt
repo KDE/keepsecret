@@ -21,6 +21,7 @@ target_sources(kwallets_static PUBLIC
     walletmodel.cpp
     secretitemproxy.cpp
     secretserviceclient.cpp
+    statetracker.cpp
     walletsmodel.cpp
 )
 

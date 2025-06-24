@@ -11,6 +11,9 @@
 #include <QQmlEngine>
 
 #include <libsecret/secret.h>
+#include <memory>
+
+#include "statetracker.h"
 
 class QDBusServiceWatcher;
 class QTimer;
@@ -68,10 +71,6 @@ class SecretServiceClient : public QObject
     QML_ELEMENT
     QML_UNCREATABLE("Cannot create elements of type SecretServiceClient")
 
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
-    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
-    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QString defaultCollection READ defaultCollection WRITE setDefaultCollection NOTIFY defaultCollectionChanged)
 
 public:
@@ -83,37 +82,6 @@ public:
         Unknown
     };
     Q_ENUM(Type);
-
-    enum Status {
-        Disconnected = 0,
-        Connected
-    };
-    Q_ENUM(Status);
-
-    enum Operation {
-        OperationNone = 0,
-        Connecting = 1,
-        LoadingCollections = 2,
-        ReadingDefault = 4,
-        WritingDefault = 8,
-        LockingCollection = 16,
-        UnlockingCollection = 32,
-        CreatingCollection = 64,
-        DeletingCollection = 128
-    };
-    Q_ENUM(Operation);
-    Q_DECLARE_FLAGS(Operations, Operation);
-
-    enum Error {
-        NoError = 0,
-        ConnectionFailed,
-        ReadDefaultFailed,
-        SetDefaultFailed,
-        LoadCollectionsFailed,
-        UnlockCollectionFailed,
-        LockCollectionFailed
-    };
-    Q_ENUM(Error);
 
     struct CollectionEntry {
         QString name;
@@ -130,17 +98,7 @@ public:
     bool isAvailable() const;
     SecretService *service() const;
 
-    Status status() const;
-    void setStatus(Status status);
-
-    Operations operations() const;
-    void setOperations(Operations operations);
-    void setOperation(Operation operation);
-    void clearOperation(Operation operation);
-
-    Error error() const;
-    QString errorMessage() const;
-    void setError(Error error, const QString &message);
+    StateTracker *stateTracker() const;
 
     SecretCollection *retrieveCollection(const QString &collectionPath);
     // TODO: move in secretitemproxy?
@@ -172,10 +130,6 @@ public:
 Q_SIGNALS:
     // Emitted when the service availability changed, or the service owner of secretservice has changed to a new one
     void serviceChanged();
-    void statusChanged(Status status);
-    void operationsChanged(Operations operations);
-    void errorChanged(Error error);
-    void errorMessageChanged(const QString &errorMessage);
     void collectionsChanged();
     void promptClosed(bool accepted);
     void collectionListDirty();
@@ -198,15 +152,10 @@ protected Q_SLOTS:
     void onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);
 
 private:
+    std::unique_ptr<StateTracker> m_stateTracker;
     SecretServicePtr m_service;
-    Status m_status = Disconnected;
-    Operations m_operations = OperationNone;
-    Error m_error = NoError;
-    QString m_errorMessage;
     QString m_serviceBusName;
     QDBusServiceWatcher *m_serviceWatcher;
 
     QString m_defaultCollection;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(SecretServiceClient::Operations)

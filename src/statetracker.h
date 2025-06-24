@@ -4,14 +4,17 @@
 #pragma once
 
 #include <QObject>
+#include <qqmlregistration.h>
 
 class StateTracker : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("Cannot create elements of type StateTracker")
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
 
 public:
@@ -37,23 +40,23 @@ public:
         // Service operations
         ServiceConnecting = 1 << 1,
         ServiceLoadingCollections = 1 << 2,
-        ServiceReadingDefaultCollection = 1 << 3,
-        ServiceWritingDefaultCollection = 1 << 4,
 
         // Item operations
-        ItemCreating = 1 << 5,
-        ItemLoading = 1 << 6,
-        ItemLoadingSecret = 1 << 7,
-        ItemUnlocking = ItemLoading | 1 << 8,
+        ItemCreating = 1 << 3,
+        ItemLoading = 1 << 4,
+        ItemLoadingSecret = 1 << 5,
+        ItemUnlocking = ItemLoading | 1 << 6,
 
-        ItemSaving = 1 << 9,
-        ItemSavingLabel = ItemSaving | 1 << 10,
-        ItemSavingSecret = ItemSaving | 1 << 11,
-        ItemSavingAttributes = ItemSaving | 1 << 12,
+        ItemSaving = 1 << 7,
+        ItemSavingLabel = ItemSaving | 1 << 8,
+        ItemSavingSecret = ItemSaving | 1 << 9,
+        ItemSavingAttributes = ItemSaving | 1 << 10,
 
-        ItemDeleting = 1 << 13,
+        ItemDeleting = 1 << 11,
 
         // Collection operations
+        CollectionReadingDefault = 1 << 12,
+        CollectionWritingDefault = 1 << 13,
         CollectionCreating = 1 << 14,
         CollectionLoading = 1 << 15,
         CollectionUnlocking = 1 << 16,
@@ -67,8 +70,7 @@ public:
         NoError = 0,
         // Service related errors
         ServiceConnectionError,
-        ServiceReadDefaultCollectionError,
-        ServiceSetDefaultCollectionError,
+        ServiceLoadCollectionsError,
 
         // Item related errors
         ItemCreationError,
@@ -79,6 +81,8 @@ public:
         ItemDeleteError,
 
         // Collection related errors
+        CollectionReadDefaultError,
+        CollectionWriteDefaultError,
         CollectionCreationError,
         CollectionLoadError,
         CollectionUnlockError,
@@ -87,8 +91,8 @@ public:
     };
     Q_ENUM(Error);
 
-    SecretOperationTracker(QObject *parent = nullptr);
-    ~SecretOperationTracker();
+    StateTracker(QObject *parent = nullptr);
+    ~StateTracker();
 
     Status status() const;
     void setStatus(Status status);
@@ -112,11 +116,11 @@ Q_SIGNALS:
     void errorMessageChanged(const QString &errorMessage);
 
 private:
-    Status m_status = Disconnected;
+    Status m_status = ServiceDisconnected;
     Operations m_operations = OperationNone;
     Error m_error = NoError;
     QString m_errorMessage;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(SecretOperationTracker::Status)
-Q_DECLARE_OPERATORS_FOR_FLAGS(SecretOperationTracker::Operations)
+Q_DECLARE_OPERATORS_FOR_FLAGS(StateTracker::Status)
+Q_DECLARE_OPERATORS_FOR_FLAGS(StateTracker::Operations)

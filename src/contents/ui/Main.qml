@@ -73,13 +73,13 @@ Kirigami.ApplicationWindow {
     }
 
     Kirigami.InlineMessage {
-        visible: App.secretService.error !== SecretServiceClient.NoError
+        visible: App.stateTracker.error !== StateTracker.NoError
         parent: root.overlay
         width: parent.width
         y: root.pageStack.globalToolBar.preferredHeight
         position: Kirigami.InlineMessage.Header
         type: Kirigami.MessageType.Error
-        text: App.secretService.errorMessage
+        text: App.stateTracker.errorMessage
     }
 
     function showDeleteDialog(message, confirmationMessage, callback) {

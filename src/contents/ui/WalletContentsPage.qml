@@ -188,7 +188,7 @@ Kirigami.ScrollablePage {
             serverField.text = ""
         }
     }
-
+/*
     QQC.Menu {
         id: contextMenu
         property var model: {
@@ -229,7 +229,7 @@ Kirigami.ScrollablePage {
             }
         }
     }
-
+*/
     ListView {
         id: view
         currentIndex: -1
@@ -296,9 +296,9 @@ Kirigami.ScrollablePage {
             visible: view.count === 0 &&
                     (App.walletModel.status === WalletModel.Ready ||
                      App.walletModel.status === WalletModel.Locked ||
-                     App.secretService.error === SecretServiceClient.ConnectionFailed)
+                     App.stateTracker.error === StateTracker.ServiceConnectionError)
             icon.name: {
-                if (App.secretService.status === SecretServiceClient.Disconnected) {
+                if (App.stateTracker.status === StateTracker.ServiceDisconnected) {
                     return "action-unavailable-symbolic";
                 }
                 switch (App.walletModel.status) {
@@ -309,7 +309,7 @@ Kirigami.ScrollablePage {
                 }
             }
             text: {
-                if (App.secretService.status === SecretServiceClient.Disconnected) {
+                if (App.stateTracker.status === StateTracker.ServiceDisconnected) {
                     return "";
                 }
                 switch (App.walletModel.status) {

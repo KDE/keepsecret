@@ -14,9 +14,9 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    connect(m_secretServiceClient, &SecretServiceClient::statusChanged, this, [this](SecretServiceClient::Status status) {
+    connect(m_secretServiceClient->stateTracker(), &StateTracker::statusChanged, this, [this](StateTracker::Status status) {
         setError(NoError, QString());
-        if (status & SecretServiceClient::Connected) {
+        if (status & StateTracker::ServiceConnected) {
             setStatus(Connected);
             loadWallet();
         } else {
@@ -130,7 +130,7 @@ void WalletModel::setError(WalletModel::Error error, const QString &errorMessage
 
 QString WalletModel::collectionName() const
 {
-    if (m_secretServiceClient->status() != SecretServiceClient::Connected || !m_secretCollection) {
+    if (!m_secretServiceClient->isAvailable() || !m_secretCollection) {
         return QString();
     }
 
@@ -158,7 +158,7 @@ void WalletModel::setCollectionPath(const QString &collectionPath)
         beginResetModel();
         m_items.clear();
         endResetModel();
-    } else if (m_secretServiceClient->status() == SecretServiceClient::Connected) {
+    } else if (m_secretServiceClient->isAvailable()) {
         loadWallet();
     }
 
@@ -178,7 +178,7 @@ void WalletModel::lock()
         return;
     }
 
-    if (m_secretServiceClient->status() != SecretServiceClient::Connected || !m_secretCollection) {
+    if (!m_secretServiceClient->isAvailable() || !m_secretCollection) {
         return;
     }
 
@@ -191,7 +191,7 @@ void WalletModel::unlock()
         return;
     }
 
-    if (m_secretServiceClient->status() != SecretServiceClient::Connected || !m_secretCollection) {
+    if (m_secretServiceClient->isAvailable() || !m_secretCollection) {
         return;
     }
     qWarning() << "UNLOCKING" << m_currentCollectionPath;
@@ -249,7 +249,7 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
 
 void WalletModel::loadWallet()
 {
-    if (m_secretServiceClient->status() != SecretServiceClient::Connected) {
+    if (!m_secretServiceClient->isAvailable()) {
         return;
     }
 

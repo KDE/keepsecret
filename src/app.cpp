@@ -29,6 +29,11 @@ SecretServiceClient *App::secretService() const
     return m_secretServiceClient;
 }
 
+StateTracker *App::stateTracker() const
+{
+    return m_secretServiceClient->stateTracker();
+}
+
 WalletsModel *App::walletsModel() const
 {
     return m_walletsModel;
