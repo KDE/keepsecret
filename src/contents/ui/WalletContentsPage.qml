@@ -16,7 +16,7 @@ Kirigami.ScrollablePage {
     title: App.walletModel.collectionName
 
     // FIXME: why int?
-    property int status: App.walletModel.status
+    property int status: App.stateTracker.status
 
     actions: [
         Kirigami.Action {
@@ -24,7 +24,7 @@ Kirigami.ScrollablePage {
             text: i18n("New Entry")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new entry in this wallet")
-            enabled: App.walletModel.status & WalletModel.Connected
+            enabled: App.stateTracker.status & StateTracker.ServiceConnected
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
@@ -32,17 +32,18 @@ Kirigami.ScrollablePage {
             text: i18n("Search")
             icon.name: "search-symbolic"
             tooltip: i18n("Search entries in this wallet")
-            enabled: App.walletModel.status === WalletModel.Ready
+            enabled: App.stateTracker.status === StateTracker.CollectionReady
             checkable: true
         },
         Kirigami.Action {
             id: lockAction
-            text: App.walletModel.status === WalletModel.Locked? i18n("Unlock") : i18n("Lock")
-            icon.name: App.walletModel.status === WalletModel.Locked? "unlock-symbolic" : "lock-symbolic"
-            tooltip: App.walletModel.status === WalletModel.Locked? i18n("Unlock this wallet") : i18n("Lock this wallet")
-            enabled: App.walletModel.status !== WalletModel.Disconnected
+            readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
+            text: locked ? i18n("Unlock") : i18n("Lock")
+            icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
+            tooltip: locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
+            enabled: App.stateTracker.status !== StateTracker.ServiceDisconnected
             onTriggered: {
-                if (App.walletModel.status === WalletModel.Locked) {
+                if (locked) {
                     App.walletModel.unlock()
                 } else {
                     App.walletModel.lock()
@@ -67,7 +68,7 @@ Kirigami.ScrollablePage {
 
     header: ColumnLayout {
         spacing: 0
-        visible: searchBarContainer.height > 0 || App.walletModel.error !== SecretServiceClient.NoError
+        visible: searchBarContainer.height > 0 || App.stateTracker.error !== StateTracker.NoError
         Item {
             id: searchBarContainer
             Layout.fillWidth: true
@@ -100,12 +101,9 @@ Kirigami.ScrollablePage {
                 }
             }
         }
-        Kirigami.InlineMessage {
+        Item {
             Layout.fillWidth: true
-            visible: App.walletModel.error !== WalletModel.NoError
-            position: Kirigami.InlineMessage.Header
-            type: Kirigami.MessageType.Error
-            text: App.walletModel.errorMessage
+            implicitHeight: 0
         }
     }
 
@@ -188,7 +186,7 @@ Kirigami.ScrollablePage {
             serverField.text = ""
         }
     }
-/*
+
     QQC.Menu {
         id: contextMenu
         property var model: {
@@ -229,7 +227,7 @@ Kirigami.ScrollablePage {
             }
         }
     }
-*/
+
     ListView {
         id: view
         currentIndex: -1
@@ -294,41 +292,36 @@ Kirigami.ScrollablePage {
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
             visible: view.count === 0 &&
-                    (App.walletModel.status === WalletModel.Ready ||
-                     App.walletModel.status === WalletModel.Locked ||
+                    (App.stateTracker.status & StateTracker.CollectionReady ||
+                     App.stateTracker.status & StateTracker.CollectionLocked ||
                      App.stateTracker.error === StateTracker.ServiceConnectionError)
             icon.name: {
-                if (App.stateTracker.status === StateTracker.ServiceDisconnected) {
+                if (App.stateTracker.status & StateTracker.ServiceDisconnected) {
                     return "action-unavailable-symbolic";
-                }
-                switch (App.walletModel.status) {
-                case WalletModel.Locked:
+                } else if (App.stateTracker.status & StateTracker.CollectionLocked) {
                     return "object-locked";
-                default:
+                } else {
                     return "wallet-closed";
                 }
             }
             text: {
-                if (App.stateTracker.status === StateTracker.ServiceDisconnected) {
+                if (App.stateTracker.status & StateTracker.ServiceDisconnected) {
                     return "";
-                }
-                switch (App.walletModel.status) {
-                case WalletModel.Locked:
-                    return i18n("Wallet is locked")
-                case WalletModel.Ready:
-                    return i18n("Wallet is empty")
-                default:
-                    return i18n("Select a wallet to open from the list")
+                } else if (App.stateTracker.status & StateTracker.CollectionLocked) {
+                    return i18n("Wallet is locked");
+                } else if (App.stateTracker.status & StateTracker.CollectionReady) {
+                    return i18n("Wallet is empty");
+                } else {
+                    return i18n("Select a wallet to open from the list");
                 }
             }
             helpfulAction: {
-                switch (App.walletModel.status) {
-                case WalletModel.Locked:
-                    return lockAction
-                case WalletModel.Ready:
-                    return newAction
-                default:
-                    return null
+                if (App.stateTracker.status & StateTracker.CollectionLocked) {
+                    return lockAction;
+                } else if (App.stateTracker.status &  StateTracker.CollectionReady) {
+                    return newAction;
+                } else {
+                    return null;
                 }
             }
         }

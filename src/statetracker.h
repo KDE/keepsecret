@@ -46,12 +46,10 @@ public:
         ItemLoading = 1 << 4,
         ItemLoadingSecret = 1 << 5,
         ItemUnlocking = ItemLoading | 1 << 6,
-
         ItemSaving = 1 << 7,
         ItemSavingLabel = ItemSaving | 1 << 8,
         ItemSavingSecret = ItemSaving | 1 << 9,
         ItemSavingAttributes = ItemSaving | 1 << 10,
-
         ItemDeleting = 1 << 11,
 
         // Collection operations
@@ -110,7 +108,7 @@ public:
     void clearError();
 
 Q_SIGNALS:
-    void statusChanged(Status status);
+    void statusChanged(Status oldStatus, Status newStatus);
     void operationsChanged(Operations operations);
     void errorChanged(Error error);
     void errorMessageChanged(const QString &errorMessage);

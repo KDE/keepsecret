@@ -152,7 +152,7 @@ protected Q_SLOTS:
     void onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);
 
 private:
-    std::unique_ptr<StateTracker> m_stateTracker;
+    StateTracker *m_stateTracker;
     SecretServicePtr m_service;
     QString m_serviceBusName;
     QDBusServiceWatcher *m_serviceWatcher;

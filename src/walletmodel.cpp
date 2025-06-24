@@ -13,14 +13,22 @@
 WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
+    , m_stateTracker(m_secretServiceClient->stateTracker())
 {
-    connect(m_secretServiceClient->stateTracker(), &StateTracker::statusChanged, this, [this](StateTracker::Status status) {
-        setError(NoError, QString());
-        if (status & StateTracker::ServiceConnected) {
-            setStatus(Connected);
+    connect(m_stateTracker, &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
+        m_stateTracker->clearError();
+        if (m_currentCollectionPath.isEmpty()) {
+            return;
+        }
+        if (oldStatus & StateTracker::ServiceConnected && newStatus & StateTracker::ServiceConnected) {
+            return;
+        }
+        if (m_currentCollectionPath.isEmpty()) {
+            return;
+        }
+        if (!(oldStatus & StateTracker::ServiceConnected) && (newStatus & StateTracker::ServiceConnected)) {
             loadWallet();
         } else {
-            setStatus(Disconnected);
             beginResetModel();
             m_items.clear();
             endResetModel();
@@ -36,14 +44,14 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionLocked, this, [this](const QDBusObjectPath &path) {
         if (path.path() == m_currentCollectionPath) {
-            setStatus(Locked);
+            m_stateTracker->setState(StateTracker::CollectionLocked);
         }
     });
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionUnlocked, this, [this](const QDBusObjectPath &path) {
         qWarning() << "RELOADING" << path << m_currentCollectionPath;
         if (path.path() == m_currentCollectionPath) {
-            setStatus(Ready);
+            m_stateTracker->setState(StateTracker::CollectionReady);
             loadWallet();
         }
     });
@@ -58,74 +66,6 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
 
 WalletModel::~WalletModel()
 {
-}
-
-WalletModel::Status WalletModel::status() const
-{
-    return m_status;
-}
-
-void WalletModel::setStatus(WalletModel::Status status)
-{
-    if (status == m_status) {
-        return;
-    }
-
-    qWarning() << "WalletModel: Setting status" << status;
-
-    m_status = status;
-    Q_EMIT statusChanged(status);
-}
-
-WalletModel::Operations WalletModel::operations() const
-{
-    return m_operations;
-}
-
-void WalletModel::setOperations(WalletModel::Operations operations)
-{
-    if (operations == m_operations) {
-        return;
-    }
-
-    qWarning() << "WalletModel: Setting operations" << operations;
-
-    m_operations = operations;
-    Q_EMIT operationsChanged(operations);
-}
-
-void WalletModel::setOperation(WalletModel::Operation operation)
-{
-    setOperations(m_operations | operation);
-}
-
-void WalletModel::clearOperation(WalletModel::Operation operation)
-{
-    setOperations(m_operations & ~operation);
-}
-
-WalletModel::Error WalletModel::error() const
-{
-    return m_error;
-}
-
-QString WalletModel::errorMessage() const
-{
-    return m_errorMessage;
-}
-
-void WalletModel::setError(WalletModel::Error error, const QString &errorMessage)
-{
-    if (error != m_error) {
-        m_error = error;
-        Q_EMIT errorChanged(error);
-    }
-
-    if (errorMessage != m_errorMessage) {
-        m_errorMessage = errorMessage;
-        Q_EMIT errorMessageChanged(errorMessage);
-    }
-    qWarning() << "Error:" << error << errorMessage;
 }
 
 QString WalletModel::collectionName() const
@@ -174,7 +114,7 @@ void WalletModel::setCollectionPath(const QString &collectionPath)
 
 void WalletModel::lock()
 {
-    if (m_status == Locked) {
+    if (m_stateTracker->status() & StateTracker::CollectionLocked) {
         return;
     }
 
@@ -187,11 +127,11 @@ void WalletModel::lock()
 
 void WalletModel::unlock()
 {
-    if (m_status != Locked) {
+    if (!(m_stateTracker->status() & StateTracker::CollectionLocked)) {
         return;
     }
 
-    if (m_secretServiceClient->isAvailable() || !m_secretCollection) {
+    if (!m_secretServiceClient->isAvailable() || !m_secretCollection) {
         return;
     }
     qWarning() << "UNLOCKING" << m_currentCollectionPath;
@@ -272,14 +212,15 @@ void WalletModel::refreshWallet()
         g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
     }
 
-    setError(NoError, QString());
+    m_stateTracker->clearError();
 
-    setStatus(Connected);
+    m_stateTracker->clearState(StateTracker::CollectionLocked);
+    m_stateTracker->clearState(StateTracker::CollectionReady);
     beginResetModel();
     m_items.clear();
 
     if (secret_collection_get_locked(m_secretCollection.get())) {
-        setStatus(Locked);
+        m_stateTracker->setState(StateTracker::CollectionLocked);
         endResetModel();
         return;
     }
@@ -288,7 +229,7 @@ void WalletModel::refreshWallet()
     secret_collection_load_items_sync(m_secretCollection.get(), nullptr, &error);
 
     if (error) {
-        setError(LoadFailed, QString::fromUtf8(error->message));
+        m_stateTracker->setError(StateTracker::CollectionLoadError, QString::fromUtf8(error->message));
         g_error_free(error);
         endResetModel();
         return;
@@ -323,9 +264,10 @@ void WalletModel::refreshWallet()
         }
     }
 
-    setStatus(Ready);
+    m_stateTracker->setState(StateTracker::CollectionReady);
 
     endResetModel();
+
     m_notifyHandlerId = g_signal_connect(m_secretCollection.get(), "notify", G_CALLBACK(onCollectionNotify), this);
 }
 

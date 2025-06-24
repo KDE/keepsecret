@@ -29,8 +29,9 @@ void StateTracker::setStatus(Status status)
 
     qWarning() << "Setting status" << status;
 
+    const Status oldStatus = m_status;
     m_status = status;
-    Q_EMIT statusChanged(status);
+    Q_EMIT statusChanged(oldStatus, status);
 }
 
 void StateTracker::setState(StateTracker::State state)

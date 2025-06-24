@@ -21,7 +21,7 @@
 
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
-    , m_stateTracker(std::make_unique<StateTracker>(this))
+    , m_stateTracker(new StateTracker(this))
 {
     m_serviceBusName = QStringLiteral("org.freedesktop.secrets");
 
@@ -288,7 +288,7 @@ SecretService *SecretServiceClient::service() const
 
 StateTracker *SecretServiceClient::stateTracker() const
 {
-    return m_stateTracker.get();
+    return m_stateTracker;
 }
 
 QString SecretServiceClient::defaultCollection()

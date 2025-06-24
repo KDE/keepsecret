@@ -15,42 +15,10 @@ class WalletModel : public QAbstractListModel
     QML_ELEMENT
     QML_UNCREATABLE("Cannot create elements of type WalletModel")
 
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
-    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
-    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QString collectionName READ collectionName NOTIFY collectionNameChanged)
     Q_PROPERTY(QString collectionPath READ collectionPath WRITE setCollectionPath NOTIFY collectionPathChanged)
 
 public:
-    enum StatusItem {
-        Disconnected = 0,
-        Connected = 1,
-        Ready = Connected | 2,
-        Locked = Connected | 4
-    };
-    Q_ENUM(StatusItem);
-    Q_DECLARE_FLAGS(Status, StatusItem)
-
-    enum Operation {
-        OperationNone = 0,
-        Creating = 1,
-        Loading = 2,
-        Deleting = 4
-    };
-    Q_ENUM(Operation);
-    Q_DECLARE_FLAGS(Operations, Operation);
-
-    enum Error {
-        NoError = 0,
-        CreationFailed,
-        LoadFailed,
-        UnlockFailed,
-        LockFailed,
-        DeleteFailed
-    };
-    Q_ENUM(Error);
-
     enum Roles {
         FolderRole = Qt::UserRole + 1,
         DbusPathRole
@@ -59,18 +27,6 @@ public:
 
     WalletModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~WalletModel();
-
-    Status status() const;
-    void setStatus(Status status);
-
-    Operations operations() const;
-    void setOperations(Operations operations);
-    void setOperation(Operation operation);
-    void clearOperation(Operation operation);
-
-    Error error() const;
-    QString errorMessage() const;
-    void setError(Error error, const QString &message);
 
     QString collectionName() const;
 
@@ -87,10 +43,6 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 Q_SIGNALS:
-    void statusChanged(Status status);
-    void operationsChanged(Operations operations);
-    void errorChanged(Error error);
-    void errorMessageChanged(const QString &errorMessage);
     void collectionNameChanged(const QString &name);
     void collectionPathChanged(const QString &collectionPath);
     bool lockedChanged(bool locked);
@@ -99,10 +51,6 @@ protected:
     void loadWallet();
 
 private:
-    Status m_status = Disconnected;
-    Operations m_operations = OperationNone;
-    Error m_error = NoError;
-    QString m_errorMessage;
     struct Entry {
         QString label;
         QString dbusPath;
@@ -112,8 +60,6 @@ private:
     QList<Entry> m_items;
     SecretCollectionPtr m_secretCollection;
     SecretServiceClient *m_secretServiceClient = nullptr;
+    StateTracker *m_stateTracker = nullptr;
     ulong m_notifyHandlerId = 0;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(WalletModel::Status)
-Q_DECLARE_OPERATORS_FOR_FLAGS(WalletModel::Operations)
