@@ -11,7 +11,7 @@ Kirigami.ScrollablePage {
     id: page
 
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
-    title: Kirigami.Settings.isMobile ? i18n("Wallets") : ""
+    title: QQC.ApplicationWindow.window.pageStack.wideMode ? "" : i18n("Wallets")
 
     readonly property string collectionPath: App.walletModel.collectionPath
 

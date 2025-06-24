@@ -11,7 +11,7 @@ import org.kde.kwallets
 Kirigami.ScrollablePage {
     id: page
 
-    title: App.secretItem.label
+    title: QQC.ApplicationWindow.window.pageStack.wideMode ? "" : App.secretItem.label
 
     actions: [
         Kirigami.Action {
@@ -21,14 +21,21 @@ Kirigami.ScrollablePage {
             displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.secretItem.status === SecretItemProxy.NeedsSave
             onTriggered: App.secretItem.save()
-        },
-        Kirigami.Action {
+        },Kirigami.Action {
             text: i18n("Revert")
             icon.name: "document-revert-symbolic"
             tooltip: i18n("Revert changes")
-            displayHint: Kirigami.DisplayHint.AlwaysHide
+            //displayHint: Kirigami.DisplayHint.AlwaysHide
             enabled: App.secretItem.status === SecretItemProxy.NeedsSave
             onTriggered: App.secretItem.revert()
+        },
+        Kirigami.Action {
+            text: i18n("Copy")
+            icon.name: "edit-copy-symbolic"
+            tooltip: i18n("Copy the secret password in the clipboard")
+            displayHint: Kirigami.DisplayHint.KeepVisible
+            enabled: App.secretItem.secretValue.length > 0
+            onTriggered: App.secretItem.copySecret()
         },
         Kirigami.Action {
             text: i18n("Delete")
