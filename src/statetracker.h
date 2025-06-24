@@ -5,9 +5,7 @@
 
 #include <QObject>
 
-class SecretServiceClient;
-
-class SecretOperationTracker : public QObject
+class StateTracker : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
@@ -17,38 +15,46 @@ class SecretOperationTracker : public QObject
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
 
 public:
-    enum StatusItem {
+    enum State {
+        // Service state
         ServiceDisconnected = 0,
         ServiceConnected = 1 << 1,
 
+        // Item state
         ItemReady = 1 << 2,
         ItemLocked = 1 << 3,
         ItemNeedsSave = 1 << 4,
 
+        // Collection state
         CollectionReady = 1 << 5,
         CollectionLocked = 1 << 6
     };
-    Q_ENUM(StatusItem);
-    Q_DECLARE_FLAGS(Status, StatusItem)
+    Q_ENUM(State);
+    Q_DECLARE_FLAGS(Status, State)
 
     enum Operation {
         OperationNone = 0,
+        // Service operations
         ServiceConnecting = 1 << 1,
         ServiceLoadingCollections = 1 << 2,
         ServiceReadingDefaultCollection = 1 << 3,
         ServiceWritingDefaultCollection = 1 << 4,
 
+        // Item operations
         ItemCreating = 1 << 5,
         ItemLoading = 1 << 6,
         ItemLoadingSecret = 1 << 7,
         ItemUnlocking = ItemLoading | 1 << 8,
+
         ItemSaving = 1 << 9,
         ItemSavingLabel = ItemSaving | 1 << 10,
         ItemSavingSecret = ItemSaving | 1 << 11,
         ItemSavingAttributes = ItemSaving | 1 << 12,
-        ItemDeleting = 1 << 13
 
-            CollectionCreating = 1 << 14,
+        ItemDeleting = 1 << 13,
+
+        // Collection operations
+        CollectionCreating = 1 << 14,
         CollectionLoading = 1 << 15,
         CollectionUnlocking = 1 << 16,
         CollectionLocking = 1 << 17,
@@ -59,30 +65,35 @@ public:
 
     enum Error {
         NoError = 0,
-        ServiceConnectionFailed,
-        ServiceReadDefaultCollectionFailed,
-        ServiceSetDefaultCollectionFailed,
+        // Service related errors
+        ServiceConnectionError,
+        ServiceReadDefaultCollectionError,
+        ServiceSetDefaultCollectionError,
 
-        ItemCreationFailed,
-        ItemLoadFailed,
-        ItemLoadSecretFailed,
-        ItemUnlockFailed,
-        ItemSaveFailed,
-        ItemDeleteFailed,
+        // Item related errors
+        ItemCreationError,
+        ItemLoadError,
+        ItemLoadSecretError,
+        ItemUnlockError,
+        ItemSaveError,
+        ItemDeleteError,
 
-        CollectionCreationFailed,
-        CollectionLoadFailed,
-        CollectionUnlockFailed,
-        CollectionLockFailed,
-        CollectionDeleteFailed
+        // Collection related errors
+        CollectionCreationError,
+        CollectionLoadError,
+        CollectionUnlockError,
+        CollectionLockError,
+        CollectionDeleteError
     };
     Q_ENUM(Error);
 
-    SecretOperationTracker(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
+    SecretOperationTracker(QObject *parent = nullptr);
     ~SecretOperationTracker();
 
     Status status() const;
     void setStatus(Status status);
+    void setState(State state);
+    void clearState(State state);
 
     Operations operations() const;
     void setOperations(Operations operations);
@@ -92,6 +103,7 @@ public:
     Error error() const;
     QString errorMessage() const;
     void setError(Error error, const QString &message);
+    void clearError();
 
 Q_SIGNALS:
     void statusChanged(Status status);
