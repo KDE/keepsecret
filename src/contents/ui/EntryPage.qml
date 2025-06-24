@@ -25,7 +25,6 @@ Kirigami.ScrollablePage {
             text: i18n("Revert")
             icon.name: "document-revert-symbolic"
             tooltip: i18n("Revert changes")
-            //displayHint: Kirigami.DisplayHint.AlwaysHide
             enabled: App.secretItem.status === SecretItemProxy.NeedsSave
             onTriggered: App.secretItem.revert()
         },
