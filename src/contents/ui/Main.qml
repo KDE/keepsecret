@@ -121,6 +121,13 @@ Kirigami.ApplicationWindow {
                 errorDialog.open();
             }
         }
+        onOperationsChanged: (oldOp, newOp) => {
+            if (newOp === StateTracker.OperationNone) {
+                loadingPopup.close();
+            } else {
+                loadingIndicatorTimer.restart();
+            }
+        }
     }
     QQC.Dialog {
         id: errorDialog
@@ -131,6 +138,37 @@ Kirigami.ApplicationWindow {
         contentItem: RowLayout {
             Kirigami.SelectableLabel {
                 id: errorLabel
+            }
+        }
+    }
+
+    QQC.Popup {
+        id: loadingPopup
+        x: parent.width - width - Kirigami.Units.smallSpacing
+        y: parent.height - height - Kirigami.Units.smallSpacing
+        padding: Kirigami.Units.smallSpacing
+        parent: root.QQC.Overlay.overlay
+        modal: false
+        contentItem: RowLayout {
+            QQC.BusyIndicator {
+                id: busyIndicator
+                implicitWidth: Kirigami.Units.iconSizes.small
+                implicitHeight: implicitWidth
+                running: visible
+            }
+            QQC.Label {
+                Layout.preferredHeight: busyIndicator.implicitHeight
+                // TODO: replace with the operation name
+                text: "Loading..."
+            }
+        }
+        Timer {
+            id: loadingIndicatorTimer
+            interval: Kirigami.Units.humanMoment
+            onTriggered: {
+                if (App.stateTracker.operations !== StateTracker.OperationNone) {
+                    loadingPopup.open()
+                }
             }
         }
     }
