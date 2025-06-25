@@ -54,7 +54,7 @@ Kirigami.ScrollablePage {
 
     header: Kirigami.InlineMessage {
         Layout.fillWidth: true
-        visible: App.secretItem.error !== WalletModel.NoError
+        visible: App.secretItem.error !== StateTracker.NoError
         position: Kirigami.InlineMessage.Header
         type: Kirigami.MessageType.Error
         text: App.secretItem.errorMessage

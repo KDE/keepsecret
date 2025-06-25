@@ -99,7 +99,7 @@ void WalletsModel::reloadWallets()
 {
     beginResetModel();
     m_wallets.clear();
-    if (m_secretServiceClient->stateTracker()->status() == StateTracker::ServiceConnected) {
+    if (m_secretServiceClient->stateTracker()->status() & StateTracker::ServiceConnected) {
         m_wallets = m_secretServiceClient->listCollections();
     }
     endResetModel();
