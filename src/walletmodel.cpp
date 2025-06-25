@@ -3,6 +3,7 @@
 
 #include "walletmodel.h"
 #include "secretserviceclient.h"
+#include "statetracker.h"
 
 #include <QTimer>
 
@@ -13,10 +14,9 @@
 WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
-    , m_stateTracker(m_secretServiceClient->stateTracker())
 {
-    connect(m_stateTracker, &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
-        m_stateTracker->clearError();
+    connect(StateTracker::instance(), &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
+        StateTracker::instance()->clearError();
         if (m_currentCollectionPath.isEmpty()) {
             return;
         }
@@ -44,14 +44,14 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionLocked, this, [this](const QDBusObjectPath &path) {
         if (path.path() == m_currentCollectionPath) {
-            m_stateTracker->setState(StateTracker::CollectionLocked);
+            StateTracker::instance()->setState(StateTracker::CollectionLocked);
         }
     });
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionUnlocked, this, [this](const QDBusObjectPath &path) {
         qWarning() << "RELOADING" << path << m_currentCollectionPath;
         if (path.path() == m_currentCollectionPath) {
-            m_stateTracker->setState(StateTracker::CollectionReady);
+            StateTracker::instance()->setState(StateTracker::CollectionReady);
             loadWallet();
         }
     });
@@ -114,7 +114,7 @@ void WalletModel::setCollectionPath(const QString &collectionPath)
 
 void WalletModel::lock()
 {
-    if (m_stateTracker->status() & StateTracker::CollectionLocked) {
+    if (StateTracker::instance()->status() & StateTracker::CollectionLocked) {
         return;
     }
 
@@ -127,7 +127,7 @@ void WalletModel::lock()
 
 void WalletModel::unlock()
 {
-    if (!(m_stateTracker->status() & StateTracker::CollectionLocked)) {
+    if (!(StateTracker::instance()->status() & StateTracker::CollectionLocked)) {
         return;
     }
 
@@ -212,15 +212,15 @@ void WalletModel::refreshWallet()
         g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
     }
 
-    m_stateTracker->clearError();
+    StateTracker::instance()->clearError();
 
-    m_stateTracker->clearState(StateTracker::CollectionLocked);
-    m_stateTracker->clearState(StateTracker::CollectionReady);
+    StateTracker::instance()->clearState(StateTracker::CollectionLocked);
+    StateTracker::instance()->clearState(StateTracker::CollectionReady);
     beginResetModel();
     m_items.clear();
 
     if (secret_collection_get_locked(m_secretCollection.get())) {
-        m_stateTracker->setState(StateTracker::CollectionLocked);
+        StateTracker::instance()->setState(StateTracker::CollectionLocked);
         endResetModel();
         return;
     }
@@ -229,7 +229,7 @@ void WalletModel::refreshWallet()
     secret_collection_load_items_sync(m_secretCollection.get(), nullptr, &error);
 
     if (error) {
-        m_stateTracker->setError(StateTracker::CollectionLoadError, QString::fromUtf8(error->message));
+        StateTracker::instance()->setError(StateTracker::CollectionLoadError, QString::fromUtf8(error->message));
         g_error_free(error);
         endResetModel();
         return;
@@ -264,7 +264,7 @@ void WalletModel::refreshWallet()
         }
     }
 
-    m_stateTracker->setState(StateTracker::CollectionReady);
+    StateTracker::instance()->setState(StateTracker::CollectionReady);
 
     endResetModel();
 

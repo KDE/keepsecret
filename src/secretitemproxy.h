@@ -4,7 +4,6 @@
 #pragma once
 
 #include "secretserviceclient.h"
-#include "statetracker.h"
 #include <QDateTime>
 #include <QObject>
 #include <qqmlregistration.h>
@@ -31,8 +30,6 @@ class SecretItemProxy : public QObject
 public:
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
-
-    StateTracker *stateTracker();
 
     QDateTime creationTime() const;
     QDateTime modificationTime() const;
@@ -72,8 +69,6 @@ public:
     SecretItem *secretItem() const;
 
 Q_SIGNALS:
-    void itemLoaded();
-    void itemSaved();
     void creationTimeChanged(const QDateTime &time);
     void modificationTimeChanged(const QDateTime &time);
     void walletChanged(const QString &wallet);
@@ -85,7 +80,6 @@ Q_SIGNALS:
     void attributesChanged(const QVariantMap &attribures);
 
 private:
-    StateTracker *m_stateTracker;
     QString m_dbusPath;
     QString m_collectionPath;
     SecretServiceClient::Type m_type = SecretServiceClient::Unknown;

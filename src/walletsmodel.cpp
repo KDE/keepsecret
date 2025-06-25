@@ -3,13 +3,14 @@
 
 #include "walletsmodel.h"
 #include "secretserviceclient.h"
+#include "statetracker.h"
 
 WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    connect(m_secretServiceClient->stateTracker(), &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
-        m_secretServiceClient->stateTracker()->clearError();
+    connect(StateTracker::instance(), &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
+        StateTracker::instance()->clearError();
         if (oldStatus & StateTracker::ServiceConnected && newStatus & StateTracker::ServiceConnected) {
             return;
         }
@@ -99,7 +100,7 @@ void WalletsModel::reloadWallets()
 {
     beginResetModel();
     m_wallets.clear();
-    if (m_secretServiceClient->stateTracker()->status() & StateTracker::ServiceConnected) {
+    if (StateTracker::instance()->status() & StateTracker::ServiceConnected) {
         m_wallets = m_secretServiceClient->listCollections();
     }
     endResetModel();

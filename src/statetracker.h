@@ -92,6 +92,8 @@ public:
     StateTracker(QObject *parent = nullptr);
     ~StateTracker();
 
+    static StateTracker *instance();
+
     Status status() const;
     void setStatus(Status status);
     void setState(State state);

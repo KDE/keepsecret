@@ -31,7 +31,7 @@ SecretServiceClient *App::secretService() const
 
 StateTracker *App::stateTracker() const
 {
-    return m_secretServiceClient->stateTracker();
+    return StateTracker::instance();
 }
 
 WalletsModel *App::walletsModel() const

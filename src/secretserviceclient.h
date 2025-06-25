@@ -13,8 +13,6 @@
 #include <libsecret/secret.h>
 #include <memory>
 
-#include "statetracker.h"
-
 class QDBusServiceWatcher;
 class QTimer;
 
@@ -98,8 +96,6 @@ public:
     bool isAvailable() const;
     SecretService *service() const;
 
-    StateTracker *stateTracker() const;
-
     SecretCollection *retrieveCollection(const QString &collectionPath);
     // TODO: move in secretitemproxy?
     SecretItemPtr retrieveItem(const QString &dbusPath, const QString &collectionPath, bool *ok);
@@ -152,7 +148,6 @@ protected Q_SLOTS:
     void onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);
 
 private:
-    StateTracker *m_stateTracker;
     SecretServicePtr m_service;
     QString m_serviceBusName;
     QDBusServiceWatcher *m_serviceWatcher;

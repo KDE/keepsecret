@@ -8,6 +8,7 @@
 
 #include "secretitemproxy.h"
 #include "secretserviceclient.h"
+#include "statetracker.h"
 #include "walletmodel.h"
 #include "walletsmodel.h"
 

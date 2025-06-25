@@ -60,6 +60,5 @@ private:
     QList<Entry> m_items;
     SecretCollectionPtr m_secretCollection;
     SecretServiceClient *m_secretServiceClient = nullptr;
-    StateTracker *m_stateTracker = nullptr;
     ulong m_notifyHandlerId = 0;
 };

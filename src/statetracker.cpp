@@ -6,6 +6,21 @@
 
 #include <KLocalizedString>
 #include <cstdlib>
+#include <memory>
+
+class StateTrackerSingleton
+{
+public:
+    StateTrackerSingleton();
+    std::unique_ptr<StateTracker> stateTracker;
+};
+
+StateTrackerSingleton::StateTrackerSingleton()
+    : stateTracker(std::make_unique<StateTracker>())
+{
+}
+
+Q_GLOBAL_STATIC(StateTrackerSingleton, s_stateTracker)
 
 StateTracker::StateTracker(QObject *parent)
     : QObject(parent)
@@ -14,6 +29,11 @@ StateTracker::StateTracker(QObject *parent)
 
 StateTracker::~StateTracker()
 {
+}
+
+StateTracker *StateTracker::instance()
+{
+    return s_stateTracker->stateTracker.get();
 }
 
 StateTracker::Status StateTracker::status() const

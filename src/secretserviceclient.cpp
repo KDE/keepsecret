@@ -21,7 +21,6 @@
 
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
-    , m_stateTracker(new StateTracker(this))
 {
     m_serviceBusName = QStringLiteral("org.freedesktop.secrets");
 
@@ -184,10 +183,10 @@ static void onServiceGetFinished(GObject *source, GAsyncResult *result, gpointer
     SecretService *service = secret_service_get_finish(result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
         client->attemptConnectionFinished(service);
     } else {
-        client->stateTracker()->setError(StateTracker::ServiceConnectionError, message);
+        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, message);
         client->attemptConnectionFinished(nullptr);
     }
 }
@@ -196,12 +195,12 @@ void SecretServiceClient::attemptConnectionFinished(SecretService *service)
 {
     m_service.reset(service);
     if (service) {
-        m_stateTracker->setState(StateTracker::ServiceConnected);
-        m_stateTracker->clearOperation(StateTracker::ServiceConnecting);
+        StateTracker::instance()->setState(StateTracker::ServiceConnected);
+        StateTracker::instance()->clearOperation(StateTracker::ServiceConnecting);
         readDefaultCollection();
     } else {
         // Use setStatus as it will reset any other state
-        m_stateTracker->setStatus(StateTracker::ServiceDisconnected);
+        StateTracker::instance()->setStatus(StateTracker::ServiceDisconnected);
     }
 }
 
@@ -211,7 +210,7 @@ bool SecretServiceClient::attemptConnection()
         return true;
     }
 
-    m_stateTracker->setOperation(StateTracker::ServiceConnecting);
+    StateTracker::instance()->setOperation(StateTracker::ServiceConnecting);
 
     secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this);
 
@@ -225,14 +224,14 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
 
     bool available = !newOwner.isEmpty();
 
-    m_stateTracker->setStatus(StateTracker::ServiceDisconnected);
+    StateTracker::instance()->setStatus(StateTracker::ServiceDisconnected);
     m_service.reset();
 
     qCWarning(KWALLETS_LOG) << "Secret Service availability changed:" << (available ? "Available" : "Unavailable");
     Q_EMIT serviceChanged();
 
     if (!available) {
-        m_stateTracker->setError(StateTracker::ServiceConnectionError, i18n("Secret Service provider unavailable."));
+        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18n("Secret Service provider unavailable."));
     }
 
     // Unconditionally attempt a connection, as the service might be DBus-activated
@@ -286,11 +285,6 @@ SecretService *SecretServiceClient::service() const
     return m_service.get();
 }
 
-StateTracker *SecretServiceClient::stateTracker() const
-{
-    return m_stateTracker;
-}
-
 QString SecretServiceClient::defaultCollection()
 {
     return m_defaultCollection;
@@ -312,15 +306,15 @@ void SecretServiceClient::readDefaultCollection()
                                     QDBusConnection::sessionBus());
 
     if (!serviceInterface.isValid()) {
-        m_stateTracker->setError(StateTracker::ServiceConnectionError, i18n("Failed to connect to the DBus SecretService object"));
+        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18n("Failed to connect to the DBus SecretService object"));
         m_defaultCollection.clear();
         Q_EMIT defaultCollectionChanged(m_defaultCollection);
         return;
     } else {
-        m_stateTracker->clearError();
+        StateTracker::instance()->clearError();
     }
 
-    m_stateTracker->setOperation(StateTracker::CollectionReadingDefault);
+    StateTracker::instance()->setOperation(StateTracker::CollectionReadingDefault);
     QDBusPendingCall call = serviceInterface.asyncCall(QStringLiteral("ReadAlias"), QStringLiteral("default"));
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
 
@@ -330,15 +324,15 @@ void SecretServiceClient::readDefaultCollection()
         const QString oldDefaultCollection = m_defaultCollection;
 
         if (reply.isError()) {
-            m_stateTracker->setError(StateTracker::CollectionReadDefaultError, reply.error().message());
+            StateTracker::instance()->setError(StateTracker::CollectionReadDefaultError, reply.error().message());
             m_defaultCollection.clear();
         } else {
-            m_stateTracker->clearError();
+            StateTracker::instance()->clearError();
             m_defaultCollection = reply.value().path();
         }
 
         call->deleteLater();
-        m_stateTracker->clearOperation(StateTracker::CollectionReadingDefault);
+        StateTracker::instance()->clearOperation(StateTracker::CollectionReadingDefault);
         if (oldDefaultCollection != m_defaultCollection) {
             Q_EMIT defaultCollectionChanged(m_defaultCollection);
         }
@@ -354,11 +348,11 @@ static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result
     secret_service_set_alias_finish((SecretService *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
     } else {
-        client->stateTracker()->setError(StateTracker::CollectionWriteDefaultError, message);
+        StateTracker::instance()->setError(StateTracker::CollectionWriteDefaultError, message);
     }
-    client->stateTracker()->clearOperation(StateTracker::CollectionWritingDefault);
+    StateTracker::instance()->clearOperation(StateTracker::CollectionWritingDefault);
     client->readDefaultCollection();
 }
 
@@ -370,7 +364,7 @@ void SecretServiceClient::setDefaultCollection(const QString &collectionPath)
 
     SecretCollection *collection = retrieveCollection(collectionPath);
 
-    m_stateTracker->setOperation(StateTracker::CollectionWritingDefault);
+    StateTracker::instance()->setOperation(StateTracker::CollectionWritingDefault);
     secret_service_set_alias(m_service.get(), "default", collection, nullptr, onSetDefaultCollectionFinished, this);
 }
 
@@ -410,12 +404,12 @@ static void onLoadCollectionsFinished(GObject *source, GAsyncResult *result, gpo
     secret_service_load_collections_finish((SecretService *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
     } else {
-        client->stateTracker()->setError(StateTracker::ServiceLoadCollectionsError, message);
+        StateTracker::instance()->setError(StateTracker::ServiceLoadCollectionsError, message);
     }
 
-    client->stateTracker()->clearOperation(StateTracker::ServiceLoadingCollections);
+    StateTracker::instance()->clearOperation(StateTracker::ServiceLoadingCollections);
     Q_EMIT client->collectionListDirty();
 }
 
@@ -425,7 +419,7 @@ void SecretServiceClient::loadCollections()
         return;
     }
 
-    m_stateTracker->setOperation(StateTracker::ServiceLoadingCollections);
+    StateTracker::instance()->setOperation(StateTracker::ServiceLoadingCollections);
 
     secret_service_load_collections(m_service.get(), nullptr, onLoadCollectionsFinished, this);
 }
@@ -448,13 +442,13 @@ static void onLockCollectionFinished(GObject *source, GAsyncResult *result, gpoi
     }
     g_list_free(locked);
 
-    client->stateTracker()->clearOperation(StateTracker::CollectionLocking);
+    StateTracker::instance()->clearOperation(StateTracker::CollectionLocking);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
         client->loadCollections();
         Q_EMIT client->collectionLocked(QDBusObjectPath(path));
     } else {
-        client->stateTracker()->setError(StateTracker::CollectionLockError, message);
+        StateTracker::instance()->setError(StateTracker::CollectionLockError, message);
     }
 }
 
@@ -472,7 +466,7 @@ void SecretServiceClient::lockCollection(const QString &collectionPath)
         return;
     }
 
-    m_stateTracker->setOperation(StateTracker::CollectionLocking);
+    StateTracker::instance()->setOperation(StateTracker::CollectionLocking);
     secret_service_lock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onLockCollectionFinished, this);
 }
 
@@ -494,13 +488,13 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
     }
     g_list_free(unlocked);
 
-    client->stateTracker()->clearOperation(StateTracker::CollectionUnlocking);
+    StateTracker::instance()->clearOperation(StateTracker::CollectionUnlocking);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
         client->loadCollections();
         Q_EMIT client->collectionUnlocked(QDBusObjectPath(path));
     } else {
-        client->stateTracker()->setError(StateTracker::CollectionUnlockError, message);
+        StateTracker::instance()->setError(StateTracker::CollectionUnlockError, message);
     }
 }
 
@@ -518,7 +512,7 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
         return;
     }
 
-    m_stateTracker->setOperation(StateTracker::CollectionUnlocking);
+    StateTracker::instance()->setOperation(StateTracker::CollectionUnlocking);
     secret_service_unlock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onUnlockCollectionFinished, this);
 }
 
@@ -531,11 +525,11 @@ static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gp
     secret_collection_create_finish(result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
     } else {
-        client->stateTracker()->setError(StateTracker::CollectionCreationError, message);
+        StateTracker::instance()->setError(StateTracker::CollectionCreationError, message);
     }
-    client->stateTracker()->clearOperation(StateTracker::CollectionCreating);
+    StateTracker::instance()->clearOperation(StateTracker::CollectionCreating);
     client->readDefaultCollection();
     client->loadCollections();
 }
@@ -546,7 +540,7 @@ void SecretServiceClient::createCollection(const QString &collectionName)
         return;
     }
 
-    m_stateTracker->setOperation(StateTracker::CollectionCreating);
+    StateTracker::instance()->setOperation(StateTracker::CollectionCreating);
     secret_collection_create(m_service.get(),
                              collectionName.toUtf8().data(),
                              nullptr,
@@ -565,11 +559,11 @@ static void onDeleteCollectionFinished(GObject *source, GAsyncResult *result, gp
     secret_collection_delete_finish((SecretCollection *)source, result, &error);
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
-        client->stateTracker()->clearError();
+        StateTracker::instance()->clearError();
     } else {
-        client->stateTracker()->setError(StateTracker::CollectionDeleteError, message);
+        StateTracker::instance()->setError(StateTracker::CollectionDeleteError, message);
     }
-    client->stateTracker()->clearOperation(StateTracker::CollectionDeleting);
+    StateTracker::instance()->clearOperation(StateTracker::CollectionDeleting);
     client->readDefaultCollection();
 }
 
@@ -581,7 +575,7 @@ void SecretServiceClient::deleteCollection(const QString &collectionPath)
 
     SecretCollection *collection = retrieveCollection(collectionPath);
 
-    m_stateTracker->setOperation(StateTracker::CollectionDeleting);
+    StateTracker::instance()->setOperation(StateTracker::CollectionDeleting);
     secret_collection_delete(collection, nullptr, onDeleteCollectionFinished, this);
 }
 
