@@ -109,7 +109,7 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Status oldStatus, Status newStatus);
-    void operationsChanged(Operations operations);
+    void operationsChanged(Operations oldOperations, Operations newOperations);
     void errorChanged(Error error);
     void errorMessageChanged(const QString &errorMessage);
 

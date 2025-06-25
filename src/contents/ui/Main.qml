@@ -79,7 +79,7 @@ Kirigami.ApplicationWindow {
         y: root.pageStack.globalToolBar.preferredHeight
         position: Kirigami.InlineMessage.Header
         type: Kirigami.MessageType.Error
-        text: App.stateTracker.errorMessage
+        text: App.stateTracker.errorMessage + App.stateTracker.error
     }
 
     function showDeleteDialog(message, confirmationMessage, callback) {
@@ -150,7 +150,7 @@ Kirigami.ApplicationWindow {
             }
         }
         onStatusChanged: {
-            if (status != WalletModel.Ready) {
+            if (!(status & StateTracker.CollectionReady)) {
                 pageStack.pop(walletContentsPage)
             }
         }

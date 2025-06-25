@@ -4,6 +4,7 @@
 #pragma once
 
 #include "secretserviceclient.h"
+#include "statetracker.h"
 #include <QDateTime>
 #include <QObject>
 #include <qqmlregistration.h>
@@ -16,10 +17,6 @@ class SecretItemProxy : public QObject
     QML_ELEMENT
     QML_UNCREATABLE("Cannot create elements of type SecretItemProxy")
 
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
-    Q_PROPERTY(Error error READ error NOTIFY errorChanged)
-    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QDateTime creationTime READ creationTime NOTIFY creationTimeChanged)
     Q_PROPERTY(QDateTime modificationTime READ modificationTime NOTIFY modificationTimeChanged)
     Q_PROPERTY(QString wallet READ wallet NOTIFY walletChanged)
@@ -32,56 +29,10 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
 public:
-    enum StatusItem {
-        Disconnected = 0,
-        Connected = 1,
-        Ready = Connected | 2,
-        Locked = Connected | 4,
-        NeedsSave = Ready | 8,
-    };
-    Q_ENUM(StatusItem);
-    Q_DECLARE_FLAGS(Status, StatusItem)
-
-    enum Operation {
-        OperationNone = 0,
-        Creating = 1,
-        Loading = 2,
-        LoadingSecret = Loading | 4,
-        Unlocking = Loading | 8,
-        Saving = 16,
-        SavingLabel = Saving | 32,
-        SavingSecret = Saving | 64,
-        SavingAttributes = Saving | 128,
-        Deleting = 256
-    };
-    Q_ENUM(Operation);
-    Q_DECLARE_FLAGS(Operations, Operation);
-
-    enum Error {
-        NoError = 0,
-        CreationFailed,
-        LoadFailed,
-        LoadSecretFailed,
-        UnlockFailed,
-        SaveFailed,
-        DeleteFailed
-    };
-    Q_ENUM(Error);
-
     SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
     ~SecretItemProxy();
 
-    Status status() const;
-    void setStatus(Status status);
-
-    Operations operations() const;
-    void setOperations(Operations operations);
-    void setOperation(Operation operation);
-    void clearOperation(Operation operation);
-
-    Error error() const;
-    QString errorMessage() const;
-    void setError(Error error, const QString &message);
+    StateTracker *stateTracker();
 
     QDateTime creationTime() const;
     QDateTime modificationTime() const;
@@ -123,10 +74,6 @@ public:
 Q_SIGNALS:
     void itemLoaded();
     void itemSaved();
-    void statusChanged(Status status);
-    void operationsChanged(Operations operations);
-    void errorChanged(Error error);
-    void errorMessageChanged(const QString &errorMessage);
     void creationTimeChanged(const QDateTime &time);
     void modificationTimeChanged(const QDateTime &time);
     void walletChanged(const QString &wallet);
@@ -138,12 +85,9 @@ Q_SIGNALS:
     void attributesChanged(const QVariantMap &attribures);
 
 private:
+    StateTracker *m_stateTracker;
     QString m_dbusPath;
     QString m_collectionPath;
-    Status m_status = Disconnected;
-    Operations m_operations = OperationNone;
-    Error m_error = NoError;
-    QString m_errorMessage;
     SecretServiceClient::Type m_type = SecretServiceClient::Unknown;
     QDateTime m_creationTime;
     QDateTime m_modificationTime;
@@ -157,6 +101,3 @@ private:
     SecretItemPtr m_secretItem;
     SecretServiceClient *m_secretServiceClient = nullptr;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(SecretItemProxy::Status)
-Q_DECLARE_OPERATORS_FOR_FLAGS(SecretItemProxy::Operations)

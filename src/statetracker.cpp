@@ -57,8 +57,14 @@ void StateTracker::setOperations(StateTracker::Operations operations)
 
     qWarning() << "Setting operations" << operations;
 
+    const Operations oldOperations = m_operations;
     m_operations = operations;
-    Q_EMIT operationsChanged(operations);
+    Q_EMIT operationsChanged(oldOperations, operations);
+
+    // If we are not saving anymore, remove ItemNeedsSave from the status
+    if (!(operations & ItemSaving)) {
+        setStatus(m_status & ~ItemNeedsSave);
+    }
 }
 
 void StateTracker::setOperation(StateTracker::Operation operation)

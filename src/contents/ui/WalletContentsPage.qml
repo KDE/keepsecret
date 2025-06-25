@@ -32,7 +32,7 @@ Kirigami.ScrollablePage {
             text: i18n("Search")
             icon.name: "search-symbolic"
             tooltip: i18n("Search entries in this wallet")
-            enabled: App.stateTracker.status === StateTracker.CollectionReady
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
             checkable: true
         },
         Kirigami.Action {
@@ -66,44 +66,37 @@ Kirigami.ScrollablePage {
         }
     ]
 
-    header: ColumnLayout {
-        spacing: 0
-        visible: searchBarContainer.height > 0 || App.stateTracker.error !== StateTracker.NoError
-        Item {
-            id: searchBarContainer
-            Layout.fillWidth: true
-            implicitHeight: searchAction.checked ? searchBar.implicitHeight : 0
-            Behavior on implicitHeight {
-                NumberAnimation {
-                    duration: Kirigami.Units.longDuration
-                    easing.type: Easing.InOutQuad
-                }
-            }
-            QQC.ToolBar {
-                id: searchBar
-                anchors {
-                    left: parent.left
-                    right:parent.right
-                    bottom: parent.bottom
-                }
-                contentItem: Kirigami.SearchField {
-                    id: searchField
-                    onVisibleChanged: {
-                        if (visible) {
-                            forceActiveFocus()
-                        } else {
-                            text = ""
-                        }
-                    }
-                    Keys.onEscapePressed: {
-                        searchAction.checked = false;
-                    }
-                }
+    header: Item {
+        id: searchBarContainer
+        visible: height > 0
+        Layout.fillWidth: true
+        implicitHeight: searchAction.checked ? searchBar.implicitHeight : 0
+        Behavior on implicitHeight {
+            NumberAnimation {
+                duration: Kirigami.Units.longDuration
+                easing.type: Easing.InOutQuad
             }
         }
-        Item {
-            Layout.fillWidth: true
-            implicitHeight: 0
+        QQC.ToolBar {
+            id: searchBar
+            anchors {
+                left: parent.left
+                right:parent.right
+                bottom: parent.bottom
+            }
+            contentItem: Kirigami.SearchField {
+                id: searchField
+                onVisibleChanged: {
+                    if (visible) {
+                        forceActiveFocus()
+                    } else {
+                        text = ""
+                    }
+                }
+                Keys.onEscapePressed: {
+                    searchAction.checked = false;
+                }
+            }
         }
     }
 

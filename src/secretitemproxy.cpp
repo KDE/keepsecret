@@ -4,6 +4,7 @@
 #include "secretitemproxy.h"
 #include "kwallets_debug.h"
 #include "secretserviceclient.h"
+#include "statetracker.h"
 
 #include <KLocalizedString>
 #include <QClipboard>
@@ -14,18 +15,24 @@
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)
     , m_secretServiceClient(secretServiceClient)
+    , m_stateTracker(secretServiceClient->stateTracker())
 {
-    connect(m_secretServiceClient, &SecretServiceClient::serviceChanged, this, [this] {
-        if (m_dbusPath.isEmpty()) {
-            setStatus(Disconnected);
+    connect(m_stateTracker, &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
+        m_secretServiceClient->stateTracker()->clearError();
+        if (oldStatus & StateTracker::ServiceConnected && newStatus & StateTracker::ServiceConnected) {
             return;
         }
-        if (m_secretServiceClient->isAvailable()) {
-            setStatus(Connected);
+        if (!(oldStatus & StateTracker::ServiceConnected) && (newStatus & StateTracker::ServiceConnected)) {
             loadItem(m_wallet, m_dbusPath);
         } else {
-            setStatus(Disconnected);
             close();
+        }
+    });
+
+    connect(m_stateTracker, &StateTracker::operationsChanged, this, [this](StateTracker::Operations oldOperations, StateTracker::Operations newOperations) {
+        if (oldOperations & StateTracker::ItemSaving && !(newOperations & StateTracker::ItemSaving)) {
+            m_modificationTime = QDateTime::currentDateTime();
+            Q_EMIT modificationTimeChanged(m_modificationTime);
         }
     });
 }
@@ -34,89 +41,9 @@ SecretItemProxy::~SecretItemProxy()
 {
 }
 
-SecretItemProxy::Status SecretItemProxy::status() const
+StateTracker *SecretItemProxy::stateTracker()
 {
-    return m_status;
-}
-
-void SecretItemProxy::setStatus(Status status)
-{
-    if (status == m_status) {
-        return;
-    }
-
-    qWarning() << "Setting status" << status;
-
-    m_status = status;
-    Q_EMIT statusChanged(status);
-}
-
-SecretItemProxy::Operations SecretItemProxy::operations() const
-{
-    return m_operations;
-}
-
-void SecretItemProxy::setOperations(SecretItemProxy::Operations operations)
-{
-    if (operations == m_operations) {
-        return;
-    }
-
-    if (m_operations & Saving && !(operations & Saving)) {
-        m_modificationTime = QDateTime::currentDateTime();
-        Q_EMIT modificationTimeChanged(m_modificationTime);
-        Q_EMIT itemSaved();
-    }
-
-    if (m_operations & Loading && !(operations & Loading)) {
-        Q_EMIT itemLoaded();
-    }
-
-    qWarning() << "Setting operations" << operations;
-
-    m_operations = operations;
-    Q_EMIT operationsChanged(operations);
-}
-
-void SecretItemProxy::setOperation(SecretItemProxy::Operation operation)
-{
-    setOperations(m_operations | operation);
-}
-
-void SecretItemProxy::clearOperation(SecretItemProxy::Operation operation)
-{
-    // Keep the Loading or Saving flags if we still have another load/save operation
-    Operations result = m_operations & ~operation;
-    if (result & (SavingLabel | SavingSecret | SavingAttributes)) {
-        result |= Saving;
-    }
-    if (result & (LoadingSecret | Unlocking)) {
-        result |= Loading;
-    }
-    setOperations(result);
-}
-
-SecretItemProxy::Error SecretItemProxy::error() const
-{
-    return m_error;
-}
-
-QString SecretItemProxy::errorMessage() const
-{
-    return m_errorMessage;
-}
-
-void SecretItemProxy::setError(SecretItemProxy::Error error, const QString &errorMessage)
-{
-    if (error != m_error) {
-        m_error = error;
-        Q_EMIT errorChanged(error);
-    }
-
-    if (errorMessage != m_errorMessage) {
-        m_errorMessage = errorMessage;
-        Q_EMIT errorMessageChanged(errorMessage);
-    }
+    return m_stateTracker;
 }
 
 QDateTime SecretItemProxy::creationTime() const
@@ -153,7 +80,7 @@ void SecretItemProxy::setLabel(const QString &label)
     m_label = label;
 
     Q_EMIT labelChanged(label);
-    setStatus(NeedsSave);
+    m_stateTracker->setState(StateTracker::ItemNeedsSave);
 }
 
 QString SecretItemProxy::secretValue() const
@@ -172,7 +99,7 @@ void SecretItemProxy::setSecretValue(const QString &secretValue)
     m_secretValue = secretValue.toUtf8();
 
     Q_EMIT secretValueChanged();
-    setStatus(NeedsSave);
+    m_stateTracker->setState(StateTracker::ItemNeedsSave);
 }
 
 void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
@@ -184,7 +111,7 @@ void SecretItemProxy::setSecretValue(const QByteArray &secretValue)
     m_secretValue = secretValue;
 
     Q_EMIT secretValueChanged();
-    setStatus(NeedsSave);
+    m_stateTracker->setState(StateTracker::ItemNeedsSave);
 }
 
 QString SecretItemProxy::formattedBinarySecret() const
@@ -219,7 +146,7 @@ void SecretItemProxy::setAttribute(const QString &key, const QString &value)
     }
 
     m_attributes[key] = value;
-    setStatus(NeedsSave);
+    m_stateTracker->setState(StateTracker::ItemNeedsSave);
 }
 
 void SecretItemProxy::copySecret()
@@ -257,14 +184,15 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
                     proxy->setSecretValue(QByteArray(password));
                 }
             }
-            proxy->setStatus(SecretItemProxy::Ready);
+            proxy->stateTracker()->clearError();
+            proxy->stateTracker()->setState(StateTracker::ItemReady);
         } else {
-            proxy->setError(SecretItemProxy::LoadSecretFailed, i18n("Couldn't retrieve the secret value"));
+            proxy->stateTracker()->setError(StateTracker::ItemLoadSecretError, i18n("Couldn't retrieve the secret value"));
         }
     } else {
-        proxy->setError(SecretItemProxy::LoadSecretFailed, message);
+        proxy->stateTracker()->setError(StateTracker::ItemLoadSecretError, message);
     }
-    proxy->clearOperation(SecretItemProxy::LoadingSecret);
+    proxy->stateTracker()->clearOperation(StateTracker::ItemLoadingSecret);
 }
 
 static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -276,10 +204,12 @@ static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer
 
     secret_item_create_finish(result, &error);
 
-    if (!SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setError(SecretItemProxy::CreationFailed, message);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        proxy->stateTracker()->clearError();
+    } else {
+        proxy->stateTracker()->setError(StateTracker::ItemCreationError, message);
     }
-    proxy->clearOperation(SecretItemProxy::Creating);
+    proxy->stateTracker()->clearOperation(StateTracker::ItemCreating);
 }
 
 void SecretItemProxy::createItem(const QString &label,
@@ -315,8 +245,10 @@ void SecretItemProxy::createItem(const QString &label,
 
     SecretValuePtr secretValue = SecretValuePtr(secret_value_new(data.constData(), -1, mimeType.toLatin1().constData()));
     if (!secretValue) {
-        setError(CreationFailed, i18n("Failed to create SecretValue"));
+        m_stateTracker->setError(StateTracker::ItemCreationError, i18n("Failed to create SecretValue"));
         return;
+    } else {
+        m_stateTracker->clearError();
     }
 
     GHashTablePtr attributes = GHashTablePtr(g_hash_table_new(g_str_hash, g_str_equal));
@@ -334,7 +266,7 @@ void SecretItemProxy::createItem(const QString &label,
                        onItemCreateFinished,
                        this);
 
-    setOperation(Creating);
+    m_stateTracker->setOperation(StateTracker::ItemCreating);
 }
 
 void SecretItemProxy::loadItem(const QString &collectionPath, const QString &itemPath)
@@ -352,7 +284,7 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
 
     if (ok) {
         if (secret_item_get_locked(m_secretItem.get())) {
-            setStatus(Locked);
+            m_stateTracker->setState(StateTracker::ItemLocked);
         }
         m_creationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_created(m_secretItem.get()));
         m_modificationTime = QDateTime::fromSecsSinceEpoch(secret_item_get_modified(m_secretItem.get()));
@@ -387,12 +319,14 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
                 }
             }
         }
-        if (m_status == Locked) {
+        if (m_stateTracker->status() & StateTracker::ItemLocked) {
             unlock();
         } else {
-            setOperation(LoadingSecret);
+            m_stateTracker->setOperation(StateTracker::ItemLoadingSecret);
             secret_item_load_secret(m_secretItem.get(), nullptr, onLoadSecretFinish, this);
         }
+
+        m_stateTracker->clearError();
 
     } else {
         m_creationTime = {};
@@ -404,7 +338,7 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
         m_secretValue = QByteArray();
         m_type = SecretServiceClient::PlainText;
         m_attributes.clear();
-        setError(LoadFailed, QStringLiteral("Failed to load the secret item"));
+        m_stateTracker->setError(StateTracker::ItemLoadError, QStringLiteral("Failed to load the secret item"));
     }
 
     Q_EMIT creationTimeChanged(m_creationTime);
@@ -426,11 +360,13 @@ static void onItemUnlockFinished(GObject *source, GAsyncResult *result, gpointer
 
     secret_service_unlock_finish((SecretService *)source, result, nullptr, &error);
 
-    if (!SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setError(SecretItemProxy::UnlockFailed, message);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        proxy->stateTracker()->clearError();
+    } else {
+        proxy->stateTracker()->setError(StateTracker::ItemUnlockError, message);
     }
 
-    proxy->clearOperation(SecretItemProxy::Unlocking);
+    proxy->stateTracker()->clearOperation(StateTracker::ItemUnlocking);
 }
 
 void SecretItemProxy::unlock()
@@ -439,7 +375,7 @@ void SecretItemProxy::unlock()
         return;
     }
 
-    setOperation(Unlocking);
+    m_stateTracker->setOperation(StateTracker::ItemUnlocking);
     secret_service_unlock(m_secretServiceClient->service(), g_list_append(nullptr, m_secretItem.get()), nullptr, onItemUnlockFinished, this);
 }
 
@@ -451,13 +387,11 @@ static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer i
 
     secret_item_set_label_finish((SecretItem *)source, result, &error);
 
-    if (!SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setError(SecretItemProxy::SaveFailed, message);
-    }
-
-    proxy->clearOperation(SecretItemProxy::SavingLabel);
-    if (!(proxy->operations() & SecretItemProxy::Saving)) {
-        proxy->setStatus(proxy->status() & ~SecretItemProxy::NeedsSave);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        proxy->stateTracker()->clearError();
+        proxy->stateTracker()->clearOperation(StateTracker::ItemSavingLabel);
+    } else {
+        proxy->stateTracker()->setError(StateTracker::ItemSaveError, message);
     }
 }
 
@@ -469,13 +403,11 @@ static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpoin
 
     secret_item_set_attributes_finish((SecretItem *)source, result, &error);
 
-    if (!SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setError(SecretItemProxy::SaveFailed, message);
-    }
-
-    proxy->clearOperation(SecretItemProxy::SavingAttributes);
-    if (!(proxy->operations() & SecretItemProxy::Saving)) {
-        proxy->setStatus(proxy->status() & ~SecretItemProxy::NeedsSave);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        proxy->stateTracker()->clearError();
+        proxy->stateTracker()->clearOperation(StateTracker::ItemSavingAttributes);
+    } else {
+        proxy->stateTracker()->setError(StateTracker::ItemSaveError, message);
     }
 }
 
@@ -487,13 +419,11 @@ static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer 
 
     secret_item_set_secret_finish((SecretItem *)source, result, &error);
 
-    if (!SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setError(SecretItemProxy::SaveFailed, message);
-    }
-
-    proxy->clearOperation(SecretItemProxy::SavingSecret);
-    if (!(proxy->operations() & SecretItemProxy::Saving)) {
-        proxy->setStatus(proxy->status() & ~SecretItemProxy::NeedsSave);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        proxy->stateTracker()->clearError();
+        proxy->stateTracker()->clearOperation(StateTracker::ItemSavingSecret);
+    } else {
+        proxy->stateTracker()->setError(StateTracker::ItemSaveError, message);
     }
 }
 
@@ -504,7 +434,7 @@ void SecretItemProxy::save()
     }
 
     secret_item_set_label(m_secretItem.get(), m_label.toUtf8().data(), nullptr, onSetLabelFinished, this);
-    setOperation(SavingLabel);
+    m_stateTracker->setOperation(StateTracker::ItemSavingLabel);
 
     // Only attributes of type org.qt.keychain can be saved
     if (m_attributes.contains(QStringLiteral("xdg:schema")) && m_attributes[QStringLiteral("xdg:schema")] == QStringLiteral("org.qt.keychain")) {
@@ -520,7 +450,7 @@ void SecretItemProxy::save()
         }
 
         secret_item_set_attributes(m_secretItem.get(), SecretServiceClient::qtKeychainSchema(), attributes, nullptr, onSetAttributesFinished, this);
-        setOperation(SavingAttributes);
+        m_stateTracker->setOperation(StateTracker::ItemSavingAttributes);
 
         SecretValuePtr secretValue;
         if (m_type == SecretServiceClient::Base64) {
@@ -532,7 +462,7 @@ void SecretItemProxy::save()
         // Saving binary secrets not supported yet
         if (m_type != SecretServiceClient::Binary) {
             secret_item_set_secret(m_secretItem.get(), secretValue.get(), nullptr, onSetSecretFinished, this);
-            setOperation(SavingSecret);
+            m_stateTracker->setOperation(StateTracker::ItemSavingSecret);
         }
     }
 }
@@ -571,7 +501,7 @@ void SecretItemProxy::close()
     Q_EMIT typeChanged(m_type);
     Q_EMIT attributesChanged(m_attributes);
 
-    setStatus(Connected);
+    m_stateTracker->setStatus(m_stateTracker->status() & ~(StateTracker::ItemReady | StateTracker::ItemLocked | StateTracker::ItemNeedsSave));
 }
 
 static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -582,20 +512,22 @@ static void onDeleteFinished(GObject *source, GAsyncResult *result, gpointer ins
 
     secret_item_delete_finish((SecretItem *)source, result, &error);
 
-    if (!SecretServiceClient::wasErrorFree(&error, message)) {
-        proxy->setError(SecretItemProxy::DeleteFailed, message);
+    if (SecretServiceClient::wasErrorFree(&error, message)) {
+        proxy->stateTracker()->clearError();
+    } else {
+        proxy->stateTracker()->setError(StateTracker::ItemDeleteError, message);
     }
     proxy->close();
-    proxy->clearOperation(SecretItemProxy::Deleting);
+    proxy->stateTracker()->clearOperation(StateTracker::ItemDeleting);
 }
 
 void SecretItemProxy::deleteItem()
 {
-    if (m_status <= Connected) {
+    if (!(m_stateTracker->status() & StateTracker::ServiceConnected)) {
         return;
     }
 
-    setOperation(Deleting);
+    m_stateTracker->setOperation(StateTracker::ItemDeleting);
     secret_item_delete(m_secretItem.get(), nullptr, onDeleteFinished, this);
 }
 

@@ -19,13 +19,13 @@ Kirigami.ScrollablePage {
             icon.name: "document-save"
             tooltip: i18n("Save changes")
             displayHint: Kirigami.DisplayHint.KeepVisible
-            enabled: App.secretItem.status === SecretItemProxy.NeedsSave
+            enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
             onTriggered: App.secretItem.save()
         },Kirigami.Action {
             text: i18n("Revert")
             icon.name: "document-revert-symbolic"
             tooltip: i18n("Revert changes")
-            enabled: App.secretItem.status === SecretItemProxy.NeedsSave
+            enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
             onTriggered: App.secretItem.revert()
         },
         Kirigami.Action {
@@ -51,14 +51,6 @@ Kirigami.ScrollablePage {
             }
         }
     ]
-
-    header: Kirigami.InlineMessage {
-        Layout.fillWidth: true
-        visible: App.secretItem.error !== StateTracker.NoError
-        position: Kirigami.InlineMessage.Header
-        type: Kirigami.MessageType.Error
-        text: App.secretItem.errorMessage
-    }
 
     ColumnLayout {
         spacing: Kirigami.Units.gridUnit
