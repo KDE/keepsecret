@@ -112,7 +112,7 @@ SecretServiceClient::Type SecretServiceClient::stringToType(const QString &typeN
 
 QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return {};
     }
     QDBusInterface collectionInterface(m_serviceBusName, path.path(), QStringLiteral("org.freedesktop.Secret.Collection"), QDBusConnection::sessionBus());
@@ -134,7 +134,7 @@ QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
 
 SecretCollection *SecretServiceClient::retrieveCollection(const QString &collectionPath)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return nullptr;
     }
 
@@ -252,7 +252,7 @@ void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
 void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
 {
     Q_UNUSED(path);
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -275,11 +275,6 @@ void SecretServiceClient::handlePrompt(bool dismissed)
     Q_EMIT promptClosed(!dismissed);
 }
 
-bool SecretServiceClient::isAvailable() const
-{
-    return m_service != nullptr;
-}
-
 SecretService *SecretServiceClient::service() const
 {
     return m_service.get();
@@ -292,7 +287,7 @@ QString SecretServiceClient::defaultCollection()
 
 void SecretServiceClient::readDefaultCollection()
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         m_defaultCollection.clear();
         Q_EMIT defaultCollectionChanged(m_defaultCollection);
         return;
@@ -358,7 +353,7 @@ static void onSetDefaultCollectionFinished(GObject *source, GAsyncResult *result
 
 void SecretServiceClient::setDefaultCollection(const QString &collectionPath)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -372,7 +367,7 @@ QList<SecretServiceClient::CollectionEntry> SecretServiceClient::listCollections
 {
     QList<CollectionEntry> collections;
 
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return collections;
     }
 
@@ -415,7 +410,7 @@ static void onLoadCollectionsFinished(GObject *source, GAsyncResult *result, gpo
 
 void SecretServiceClient::loadCollections()
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -454,7 +449,7 @@ static void onLockCollectionFinished(GObject *source, GAsyncResult *result, gpoi
 
 void SecretServiceClient::lockCollection(const QString &collectionPath)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -500,7 +495,7 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
 
 void SecretServiceClient::unlockCollection(const QString &collectionPath)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -536,7 +531,7 @@ static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gp
 
 void SecretServiceClient::createCollection(const QString &collectionName)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -569,7 +564,7 @@ static void onDeleteCollectionFinished(GObject *source, GAsyncResult *result, gp
 
 void SecretServiceClient::deleteCollection(const QString &collectionPath)
 {
-    if (!isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 

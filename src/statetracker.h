@@ -98,6 +98,8 @@ public:
     void setStatus(Status status);
     void setState(State state);
     void clearState(State state);
+    // Short hand to see if State has ServiceConnected
+    bool isServiceConnected() const;
 
     Operations operations() const;
     void setOperations(Operations operations);
@@ -111,6 +113,7 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Status oldStatus, Status newStatus);
+    void serviceConnectedChanged(bool connected);
     void operationsChanged(Operations oldOperations, Operations newOperations);
     void errorChanged(Error error);
     void errorMessageChanged(const QString &errorMessage);

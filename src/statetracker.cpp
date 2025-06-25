@@ -52,6 +52,9 @@ void StateTracker::setStatus(Status status)
     const Status oldStatus = m_status;
     m_status = status;
     Q_EMIT statusChanged(oldStatus, status);
+    if ((oldStatus & ServiceConnected) != (status & ServiceConnected)) {
+        Q_EMIT serviceConnectedChanged(status & ServiceConnected);
+    }
 }
 
 void StateTracker::setState(StateTracker::State state)
@@ -62,6 +65,11 @@ void StateTracker::setState(StateTracker::State state)
 void StateTracker::clearState(StateTracker::State state)
 {
     setStatus(m_status & ~state);
+}
+
+bool StateTracker::isServiceConnected() const
+{
+    return m_status & ServiceConnected;
 }
 
 StateTracker::Operations StateTracker::operations() const

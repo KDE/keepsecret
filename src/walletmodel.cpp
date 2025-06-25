@@ -15,18 +15,11 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    connect(StateTracker::instance(), &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
-        StateTracker::instance()->clearError();
+    connect(StateTracker::instance(), &StateTracker::serviceConnectedChanged, this, [this](bool connected) {
         if (m_currentCollectionPath.isEmpty()) {
             return;
         }
-        if (oldStatus & StateTracker::ServiceConnected && newStatus & StateTracker::ServiceConnected) {
-            return;
-        }
-        if (m_currentCollectionPath.isEmpty()) {
-            return;
-        }
-        if (!(oldStatus & StateTracker::ServiceConnected) && (newStatus & StateTracker::ServiceConnected)) {
+        if (connected) {
             loadWallet();
         } else {
             beginResetModel();
@@ -34,6 +27,7 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
             endResetModel();
         }
         Q_EMIT collectionNameChanged(collectionName());
+        Q_EMIT collectionPathChanged(collectionPath());
     });
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionDeleted, this, [this](const QDBusObjectPath &path) {
@@ -70,7 +64,7 @@ WalletModel::~WalletModel()
 
 QString WalletModel::collectionName() const
 {
-    if (!m_secretServiceClient->isAvailable() || !m_secretCollection) {
+    if (!StateTracker::instance()->isServiceConnected() || !m_secretCollection) {
         return QString();
     }
 
@@ -98,7 +92,7 @@ void WalletModel::setCollectionPath(const QString &collectionPath)
         beginResetModel();
         m_items.clear();
         endResetModel();
-    } else if (m_secretServiceClient->isAvailable()) {
+    } else if (StateTracker::instance()->isServiceConnected()) {
         loadWallet();
     }
 
@@ -118,7 +112,7 @@ void WalletModel::lock()
         return;
     }
 
-    if (!m_secretServiceClient->isAvailable() || !m_secretCollection) {
+    if (!StateTracker::instance()->isServiceConnected() || !m_secretCollection) {
         return;
     }
 
@@ -131,7 +125,7 @@ void WalletModel::unlock()
         return;
     }
 
-    if (!m_secretServiceClient->isAvailable() || !m_secretCollection) {
+    if (!StateTracker::instance()->isServiceConnected() || !m_secretCollection) {
         return;
     }
     qWarning() << "UNLOCKING" << m_currentCollectionPath;
@@ -189,7 +183,7 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
 
 void WalletModel::loadWallet()
 {
-    if (!m_secretServiceClient->isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 

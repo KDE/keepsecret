@@ -16,12 +16,8 @@ SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObje
     : QObject(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    connect(StateTracker::instance(), &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
-        StateTracker::instance()->clearError();
-        if (oldStatus & StateTracker::ServiceConnected && newStatus & StateTracker::ServiceConnected) {
-            return;
-        }
-        if (!(oldStatus & StateTracker::ServiceConnected) && (newStatus & StateTracker::ServiceConnected)) {
+    connect(StateTracker::instance(), &StateTracker::serviceConnectedChanged, this, [this](bool connected) {
+        if (connected) {
             loadItem(m_wallet, m_dbusPath);
         } else {
             close();
@@ -217,7 +213,7 @@ void SecretItemProxy::createItem(const QString &label,
                                  const QString &collectionPath)
 {
     qWarning() << label << secret << user << server << collectionPath;
-    if (!m_secretServiceClient->isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -271,7 +267,7 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
     m_dbusPath = itemPath;
     m_collectionPath = collectionPath;
 
-    if (!m_secretServiceClient->isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -368,7 +364,7 @@ static void onItemUnlockFinished(GObject *source, GAsyncResult *result, gpointer
 
 void SecretItemProxy::unlock()
 {
-    if (!m_secretServiceClient->isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -426,7 +422,7 @@ static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer 
 
 void SecretItemProxy::save()
 {
-    if (!m_secretServiceClient->isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 
@@ -466,7 +462,7 @@ void SecretItemProxy::save()
 
 void SecretItemProxy::revert()
 {
-    if (!m_secretServiceClient->isAvailable()) {
+    if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }
 

@@ -9,12 +9,8 @@ WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *pa
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
-    connect(StateTracker::instance(), &StateTracker::statusChanged, this, [this](StateTracker::Status oldStatus, StateTracker::Status newStatus) {
-        StateTracker::instance()->clearError();
-        if (oldStatus & StateTracker::ServiceConnected && newStatus & StateTracker::ServiceConnected) {
-            return;
-        }
-        if (!(oldStatus & StateTracker::ServiceConnected) && (newStatus & StateTracker::ServiceConnected)) {
+    connect(StateTracker::instance(), &StateTracker::serviceConnectedChanged, this, [this](bool connected) {
+        if (connected) {
             reloadWallets();
         } else {
             beginResetModel();

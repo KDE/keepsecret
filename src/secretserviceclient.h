@@ -93,7 +93,6 @@ public:
 
     static bool wasErrorFree(GError **error, QString &message);
 
-    bool isAvailable() const;
     SecretService *service() const;
 
     SecretCollection *retrieveCollection(const QString &collectionPath);
