@@ -264,6 +264,10 @@ void SecretItemProxy::createItem(const QString &label,
 
 void SecretItemProxy::loadItem(const QString &collectionPath, const QString &itemPath)
 {
+    if (collectionPath.isEmpty() || itemPath.isEmpty()) {
+        return;
+    }
+
     m_dbusPath = itemPath;
     m_collectionPath = collectionPath;
 

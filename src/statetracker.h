@@ -15,7 +15,7 @@ class StateTracker : public QObject
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
     Q_PROPERTY(Error error READ error NOTIFY errorChanged)
-    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorChanged)
 
 public:
     enum State {
@@ -115,8 +115,7 @@ Q_SIGNALS:
     void statusChanged(Status oldStatus, Status newStatus);
     void serviceConnectedChanged(bool connected);
     void operationsChanged(Operations oldOperations, Operations newOperations);
-    void errorChanged(Error error);
-    void errorMessageChanged(const QString &errorMessage);
+    void errorChanged(Error error, const QString &errorMessage);
 
 private:
     Status m_status = ServiceDisconnected;

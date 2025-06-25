@@ -125,28 +125,16 @@ QString StateTracker::errorMessage() const
 
 void StateTracker::setError(StateTracker::Error error, const QString &errorMessage)
 {
-    if (error != m_error) {
+    if (error != m_error || errorMessage != m_errorMessage) {
         m_error = error;
-        Q_EMIT errorChanged(error);
-    }
-
-    if (errorMessage != m_errorMessage) {
         m_errorMessage = errorMessage;
-        Q_EMIT errorMessageChanged(errorMessage);
+        Q_EMIT errorChanged(error, errorMessage);
     }
 }
 
 void StateTracker::clearError()
 {
-    if (m_error != NoError) {
-        m_error = NoError;
-        Q_EMIT errorChanged(NoError);
-    }
-
-    if (!m_errorMessage.isEmpty()) {
-        m_errorMessage.clear();
-        Q_EMIT errorMessageChanged(QString());
-    }
+    setError(NoError, QString());
 }
 
 #include "moc_statetracker.cpp"

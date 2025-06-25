@@ -73,13 +73,13 @@ Kirigami.ApplicationWindow {
     }
 
     Kirigami.InlineMessage {
-        visible: App.stateTracker.error !== StateTracker.NoError
+        visible: App.stateTracker.error === StateTracker.ServiceConnectionError
         parent: root.overlay
         width: parent.width
         y: root.pageStack.globalToolBar.preferredHeight
         position: Kirigami.InlineMessage.Header
         type: Kirigami.MessageType.Error
-        text: App.stateTracker.errorMessage + App.stateTracker.error
+        text: visible ? App.stateTracker.errorMessage : ""
     }
 
     function showDeleteDialog(message, confirmationMessage, callback) {
@@ -111,6 +111,28 @@ Kirigami.ApplicationWindow {
         }
 
         onAccepted: acceptedCallback()
+    }
+
+    Connections {
+        target: App.stateTracker
+        onErrorChanged: (error, message) => {
+            if (error !== StateTracker.NoError && error != StateTracker.ServiceConnectionError) {
+                errorLabel.text = message
+                errorDialog.open();
+            }
+        }
+    }
+    QQC.Dialog {
+        id: errorDialog
+        modal: true
+        standardButtons: QQC.Dialog.Ok
+        width: Math.round(Math.min(implicitWidth, root.width * 0.8))
+        title: i18n("Error")
+        contentItem: RowLayout {
+            Kirigami.SelectableLabel {
+                id: errorLabel
+            }
+        }
     }
 
     WalletListPage {
