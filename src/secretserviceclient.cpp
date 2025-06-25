@@ -176,6 +176,7 @@ SecretItemPtr SecretServiceClient::retrieveItem(const QString &itemPath, const Q
 
 static void onServiceGetFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
+    Q_UNUSED(source);
     GError *error = nullptr;
     QString message;
     SecretServiceClient *client = (SecretServiceClient *)inst;
@@ -262,6 +263,7 @@ void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
 
 void SecretServiceClient::onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties)
 {
+    Q_UNUSED(changedProperties);
     Q_UNUSED(invalidatedProperties)
 
     if (interface == QStringLiteral("org.freedesktop.Secret.Service")) {
@@ -513,6 +515,7 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
+    Q_UNUSED(source);
     GError *error = nullptr;
     QString message;
     SecretServiceClient *client = (SecretServiceClient *)inst;

@@ -191,9 +191,9 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
 static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
     Q_UNUSED(source);
+    Q_UNUSED(inst);
     GError *error = nullptr;
     QString message;
-    SecretItemProxy *proxy = (SecretItemProxy *)inst;
 
     secret_item_create_finish(result, &error);
 
@@ -347,9 +347,9 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
 
 static void onItemUnlockFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
+    Q_UNUSED(inst);
     GError *error = nullptr;
     QString message;
-    SecretItemProxy *proxy = (SecretItemProxy *)inst;
 
     secret_service_unlock_finish((SecretService *)source, result, nullptr, &error);
 
@@ -374,9 +374,9 @@ void SecretItemProxy::unlock()
 
 static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
+    Q_UNUSED(inst);
     GError *error = nullptr;
     QString message;
-    SecretItemProxy *proxy = (SecretItemProxy *)inst;
 
     secret_item_set_label_finish((SecretItem *)source, result, &error);
 
@@ -390,9 +390,9 @@ static void onSetLabelFinished(GObject *source, GAsyncResult *result, gpointer i
 
 static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
+    Q_UNUSED(inst);
     GError *error = nullptr;
     QString message;
-    SecretItemProxy *proxy = (SecretItemProxy *)inst;
 
     secret_item_set_attributes_finish((SecretItem *)source, result, &error);
 
@@ -406,9 +406,9 @@ static void onSetAttributesFinished(GObject *source, GAsyncResult *result, gpoin
 
 static void onSetSecretFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
+    Q_UNUSED(inst);
     GError *error = nullptr;
     QString message;
-    SecretItemProxy *proxy = (SecretItemProxy *)inst;
 
     secret_item_set_secret_finish((SecretItem *)source, result, &error);
 
