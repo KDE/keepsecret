@@ -43,7 +43,6 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     });
 
     connect(m_secretServiceClient, &SecretServiceClient::collectionUnlocked, this, [this](const QDBusObjectPath &path) {
-        qWarning() << "RELOADING" << path << m_currentCollectionPath;
         if (path.path() == m_currentCollectionPath) {
             StateTracker::instance()->setState(StateTracker::CollectionReady);
             loadWallet();
@@ -128,7 +127,7 @@ void WalletModel::unlock()
     if (!StateTracker::instance()->isServiceConnected() || !m_secretCollection) {
         return;
     }
-    qWarning() << "UNLOCKING" << m_currentCollectionPath;
+
     m_secretServiceClient->unlockCollection(m_currentCollectionPath);
 }
 
@@ -176,7 +175,7 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
     if (g_strcmp0(pspec->name, "items") != 0) {
         return;
     }
-    qWarning() << "NOTIFY";
+
     WalletModel *walletModel = (WalletModel *)inst;
     walletModel->refreshWallet();
 }

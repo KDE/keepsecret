@@ -212,7 +212,7 @@ void SecretItemProxy::createItem(const QString &label,
                                  const QString &server,
                                  const QString &collectionPath)
 {
-    qWarning() << label << secret << user << server << collectionPath;
+    qCDebug(KWALLETS_LOG) << "Creating item:" << label << secret << user << server << collectionPath;
     if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }

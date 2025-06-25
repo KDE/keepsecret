@@ -7,6 +7,7 @@
 #include <KLocalizedString>
 #include <cstdlib>
 #include <memory>
+#include <qt6/QtCore/qloggingcategory.h>
 
 class StateTrackerSingleton
 {
@@ -47,7 +48,7 @@ void StateTracker::setStatus(Status status)
         return;
     }
 
-    qWarning() << "Setting status" << status;
+    qCDebug(KWALLETS_LOG) << "Setting status" << status;
 
     const Status oldStatus = m_status;
     m_status = status;
@@ -83,7 +84,7 @@ void StateTracker::setOperations(StateTracker::Operations operations)
         return;
     }
 
-    qWarning() << "Setting operations" << operations;
+    qCDebug(KWALLETS_LOG) << "Setting operations" << operations;
 
     const Operations oldOperations = m_operations;
     m_operations = operations;
@@ -125,6 +126,9 @@ QString StateTracker::errorMessage() const
 
 void StateTracker::setError(StateTracker::Error error, const QString &errorMessage)
 {
+    if (error != NoError) {
+        qCWarning(KWALLETS_LOG) << "ERROR:" << error << errorMessage;
+    }
     if (error != m_error || errorMessage != m_errorMessage) {
         m_error = error;
         m_errorMessage = errorMessage;
