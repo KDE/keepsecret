@@ -158,8 +158,7 @@ Kirigami.ApplicationWindow {
             }
             QQC.Label {
                 Layout.preferredHeight: busyIndicator.implicitHeight
-                // TODO: replace with the operation name
-                text: "Loading..."
+                text: App.stateTracker.operationsReadableName
             }
         }
         Timer {

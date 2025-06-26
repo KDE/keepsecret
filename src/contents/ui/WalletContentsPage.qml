@@ -179,7 +179,7 @@ Kirigami.ScrollablePage {
             serverField.text = ""
         }
     }
-/*
+
     QQC.Menu {
         id: contextMenu
         property var model: {
@@ -220,7 +220,7 @@ Kirigami.ScrollablePage {
             }
         }
     }
-*/
+
     ListView {
         id: view
         currentIndex: -1

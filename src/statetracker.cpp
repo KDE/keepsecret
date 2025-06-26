@@ -88,6 +88,7 @@ void StateTracker::setOperations(StateTracker::Operations operations)
     const Operations oldOperations = m_operations;
     m_operations = operations;
     Q_EMIT operationsChanged(oldOperations, operations);
+    Q_EMIT operationsReadableNameChanged(operationsReadableName());
 
     // If we are not saving anymore, remove ItemNeedsSave from the status
     if (!(operations & ItemSaving)) {
@@ -111,6 +112,27 @@ void StateTracker::clearOperation(StateTracker::Operation operation)
         result |= ItemLoading;
     }
     setOperations(result);
+}
+
+QString StateTracker::operationsReadableName() const
+{
+    // Return a single name, regardless of the operations combination, one "wins"
+    if (m_operations & ServiceConnecting) {
+        return i18nc("Single word explaining the current operation", "Connecting");
+    } else if (m_operations & ItemCreating || m_operations & CollectionCreating) {
+        return i18nc("Single word explaining the current operation", "Creating");
+    } else if (m_operations & ItemSaving) {
+        return i18nc("Single word explaining the current operation", "Saving");
+    } else if (m_operations & ItemUnlocking || m_operations & CollectionUnlocking) {
+        return i18nc("Single word explaining the current operation", "Unlocking");
+    } else if (m_operations & ItemDeleting || m_operations & CollectionDeleting) {
+        return i18nc("Single word explaining the current operation", "Deleting");
+    } else if (m_operations & CollectionLocking) {
+        return i18nc("Single word explaining the current operation", "Locking");
+    }
+
+    // Everything else is just "Loading"
+    return i18n("Loading");
 }
 
 StateTracker::Error StateTracker::error() const

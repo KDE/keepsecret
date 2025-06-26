@@ -14,6 +14,7 @@ class StateTracker : public QObject
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(Operations operations READ operations NOTIFY operationsChanged)
+    Q_PROPERTY(QString operationsReadableName READ operationsReadableName NOTIFY operationsReadableNameChanged)
     Q_PROPERTY(Error error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorChanged)
 
@@ -105,6 +106,7 @@ public:
     void setOperations(Operations operations);
     void setOperation(Operation operation);
     void clearOperation(Operation operation);
+    QString operationsReadableName() const;
 
     Error error() const;
     QString errorMessage() const;
@@ -115,6 +117,7 @@ Q_SIGNALS:
     void statusChanged(Status oldStatus, Status newStatus);
     void serviceConnectedChanged(bool connected);
     void operationsChanged(Operations oldOperations, Operations newOperations);
+    void operationsReadableNameChanged(const QString &name);
     void errorChanged(Error error, const QString &errorMessage);
 
 private:
