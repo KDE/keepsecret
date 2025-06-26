@@ -245,6 +245,7 @@ Kirigami.ScrollablePage {
                 }
                 QQC.Label {
                     text: section
+                    font.bold: true
                     Layout.fillWidth: false
                 }
                 Kirigami.Separator {
