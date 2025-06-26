@@ -69,6 +69,8 @@ public:
     SecretItem *secretItem() const;
 
 Q_SIGNALS:
+    void itemLoaded();
+    void itemSaved();
     void creationTimeChanged(const QDateTime &time);
     void modificationTimeChanged(const QDateTime &time);
     void walletChanged(const QString &wallet);

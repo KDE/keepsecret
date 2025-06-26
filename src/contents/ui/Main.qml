@@ -115,13 +115,13 @@ Kirigami.ApplicationWindow {
 
     Connections {
         target: App.stateTracker
-        onErrorChanged: (error, message) => {
+        function onErrorChanged(error, message) {
             if (error !== StateTracker.NoError && error != StateTracker.ServiceConnectionError) {
                 errorLabel.text = message
                 errorDialog.open();
             }
         }
-        onOperationsChanged: (oldOp, newOp) => {
+        function onOperationsChanged(oldOp, newOp) {
             if (newOp === StateTracker.OperationNone) {
                 loadingPopup.close();
             } else {

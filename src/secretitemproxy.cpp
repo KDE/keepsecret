@@ -31,6 +31,9 @@ SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObje
                 if (oldOperations & StateTracker::ItemSaving && !(newOperations & StateTracker::ItemSaving)) {
                     m_modificationTime = QDateTime::currentDateTime();
                     Q_EMIT modificationTimeChanged(m_modificationTime);
+                    Q_EMIT itemSaved();
+                } else if (oldOperations & StateTracker::ItemLoading && !(newOperations & StateTracker::ItemLoading)) {
+                    Q_EMIT itemLoaded();
                 }
             });
 }
