@@ -36,6 +36,8 @@ if (NOT ANDROID)
     list(APPEND QT_EXTRA_COMPONENTS Widgets)
 endif()
 
+find_package(PkgConfig REQUIRED)
+
 find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickControls2 Svg ${QT_EXTRA_COMPONENTS})
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Kirigami CoreAddons Config I18n)
 
