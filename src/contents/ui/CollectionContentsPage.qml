@@ -294,6 +294,8 @@ Kirigami.ScrollablePage {
                     return "action-unavailable-symbolic";
                 } else if (App.stateTracker.status & StateTracker.CollectionLocked) {
                     return "object-locked";
+                } else if (searchField.text.length > 0) {
+                    return "search-symbolic";
                 } else {
                     return "wallet-closed";
                 }
@@ -303,6 +305,8 @@ Kirigami.ScrollablePage {
                     return "";
                 } else if (App.stateTracker.status & StateTracker.CollectionLocked) {
                     return i18n("Wallet is locked");
+                } else if (searchField.text.length > 0) {
+                    return i18n("No search results");
                 } else if (App.stateTracker.status & StateTracker.CollectionReady) {
                     return i18n("Wallet is empty");
                 } else {
@@ -312,6 +316,8 @@ Kirigami.ScrollablePage {
             helpfulAction: {
                 if (App.stateTracker.status & StateTracker.CollectionLocked) {
                     return lockAction;
+                } else if (searchField.text.length > 0) {
+                    return null;
                 } else if (App.stateTracker.status &  StateTracker.CollectionReady) {
                     return newAction;
                 } else {
