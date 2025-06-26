@@ -285,7 +285,9 @@ Kirigami.ScrollablePage {
 
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
-            visible: view.count === 0
+            opacity: view.count === 0 &&
+                !(App.stateTracker.operations & StateTracker.ServiceConnecting) &&
+                !(App.stateTracker.operations & StateTracker.ServiceLoadingCollections)
             icon.name: {
                 if (App.stateTracker.status & StateTracker.ServiceDisconnected) {
                     return "action-unavailable-symbolic";
