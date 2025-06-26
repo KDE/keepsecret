@@ -219,8 +219,10 @@ Kirigami.ApplicationWindow {
         id: entryPage
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
         Kirigami.ColumnView.maximumWidth: maximumSidebarWidth
-        visible: false
+        // By default as wide as possible
+        Kirigami.ColumnView.preferredWidth: maximumSidebarWidth
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.fillWidth: false
+        visible: false
     }
 }
