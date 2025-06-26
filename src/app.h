@@ -6,11 +6,11 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include "collectionmodel.h"
+#include "collectionsmodel.h"
 #include "secretitemproxy.h"
 #include "secretserviceclient.h"
 #include "statetracker.h"
-#include "walletmodel.h"
-#include "walletsmodel.h"
 
 class QQuickWindow;
 
@@ -24,8 +24,8 @@ class App : public QObject
 
     Q_PROPERTY(SecretServiceClient *secretService READ secretService CONSTANT)
     Q_PROPERTY(StateTracker *stateTracker READ stateTracker CONSTANT)
-    Q_PROPERTY(WalletsModel *walletsModel READ walletsModel CONSTANT)
-    Q_PROPERTY(WalletModel *walletModel READ walletModel CONSTANT)
+    Q_PROPERTY(CollectionsModel *collectionsModel READ collectionsModel CONSTANT)
+    Q_PROPERTY(CollectionModel *collectionModel READ collectionModel CONSTANT)
     Q_PROPERTY(SecretItemProxy *secretItem READ secretItem CONSTANT)
     Q_PROPERTY(SecretItemProxy *secretItemForContextMenu READ secretItemForContextMenu CONSTANT)
     Q_PROPERTY(QString sidebarState READ sidebarState WRITE setSidebarState NOTIFY sidebarStateChanged)
@@ -36,8 +36,8 @@ public:
 
     SecretServiceClient *secretService() const;
     StateTracker *stateTracker() const;
-    WalletsModel *walletsModel() const;
-    WalletModel *walletModel() const;
+    CollectionsModel *collectionsModel() const;
+    CollectionModel *collectionModel() const;
     SecretItemProxy *secretItem() const;
     SecretItemProxy *secretItemForContextMenu() const;
 
@@ -54,8 +54,8 @@ Q_SIGNALS:
 
 private:
     SecretServiceClient *m_secretServiceClient = nullptr;
-    WalletsModel *m_walletsModel = nullptr;
-    WalletModel *m_walletModel = nullptr;
+    CollectionsModel *m_collectionsModel = nullptr;
+    CollectionModel *m_collectionModel = nullptr;
     SecretItemProxy *m_secretItemProxy = nullptr;
     SecretItemProxy *m_secretItemForContextMenu = nullptr;
 };

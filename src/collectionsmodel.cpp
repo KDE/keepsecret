@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
-#include "walletsmodel.h"
+#include "collectionsmodel.h"
 #include "secretserviceclient.h"
 #include "statetracker.h"
 
-WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *parent)
+CollectionsModel::CollectionsModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
@@ -19,19 +19,19 @@ WalletsModel::WalletsModel(SecretServiceClient *secretServiceClient, QObject *pa
         }
     });
 
-    connect(m_secretServiceClient, &SecretServiceClient::collectionListDirty, this, &WalletsModel::reloadWallets);
+    connect(m_secretServiceClient, &SecretServiceClient::collectionListDirty, this, &CollectionsModel::reloadWallets);
 }
 
-WalletsModel::~WalletsModel()
+CollectionsModel::~CollectionsModel()
 {
 }
 
-QString WalletsModel::collectionPath() const
+QString CollectionsModel::collectionPath() const
 {
     return m_currentCollectionPath;
 }
 
-void WalletsModel::setCollectionPath(const QString &collectionPath)
+void CollectionsModel::setCollectionPath(const QString &collectionPath)
 {
     if (collectionPath == m_currentCollectionPath) {
         return;
@@ -42,7 +42,7 @@ void WalletsModel::setCollectionPath(const QString &collectionPath)
     Q_EMIT currentIndexChanged();
 }
 
-int WalletsModel::currentIndex() const
+int CollectionsModel::currentIndex() const
 {
     int i = 0;
     for (const SecretServiceClient::CollectionEntry &entry : m_wallets) {
@@ -55,7 +55,7 @@ int WalletsModel::currentIndex() const
     return -1;
 }
 
-QHash<int, QByteArray> WalletsModel::roleNames() const
+QHash<int, QByteArray> CollectionsModel::roleNames() const
 {
     QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
     roleNames[DbusPathRole] = "dbusPath";
@@ -64,7 +64,7 @@ QHash<int, QByteArray> WalletsModel::roleNames() const
     return roleNames;
 }
 
-int WalletsModel::rowCount(const QModelIndex &parent) const
+int CollectionsModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) {
         return 0;
@@ -73,7 +73,7 @@ int WalletsModel::rowCount(const QModelIndex &parent) const
     return m_wallets.count();
 }
 
-QVariant WalletsModel::data(const QModelIndex &index, int role) const
+QVariant CollectionsModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() > m_wallets.count() - 1) {
         return {};
@@ -92,7 +92,7 @@ QVariant WalletsModel::data(const QModelIndex &index, int role) const
     }
 }
 
-void WalletsModel::reloadWallets()
+void CollectionsModel::reloadWallets()
 {
     beginResetModel();
     m_wallets.clear();
@@ -103,4 +103,4 @@ void WalletsModel::reloadWallets()
     Q_EMIT currentIndexChanged();
 }
 
-#include "moc_walletsmodel.cpp"
+#include "moc_collectionsmodel.cpp"

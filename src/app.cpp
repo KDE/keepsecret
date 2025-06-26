@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 #include "app.h"
+#include "collectionmodel.h"
 #include "secretserviceclient.h"
-#include "walletmodel.h"
 #include <KSharedConfig>
 #include <KWindowConfig>
 #include <QQuickWindow>
@@ -12,12 +12,14 @@ App::App(QObject *parent)
     : QObject(parent)
     , m_secretServiceClient(new SecretServiceClient(this))
 {
-    m_walletsModel = new WalletsModel(m_secretServiceClient, this);
-    m_walletModel = new WalletModel(m_secretServiceClient, this);
+    m_collectionsModel = new CollectionsModel(m_secretServiceClient, this);
+    m_collectionModel = new CollectionModel(m_secretServiceClient, this);
     m_secretItemProxy = new SecretItemProxy(m_secretServiceClient, this);
     m_secretItemForContextMenu = new SecretItemProxy(m_secretServiceClient, this);
-    connect(m_walletModel, &WalletModel::collectionPathChanged, m_walletsModel, &WalletsModel::setCollectionPath);
-    m_walletsModel->setCollectionPath(m_walletModel->collectionPath());
+
+    m_collectionsModel->setCollectionPath(m_collectionModel->collectionPath());
+
+    connect(m_collectionModel, &CollectionModel::collectionPathChanged, m_collectionsModel, &CollectionsModel::setCollectionPath);
 }
 
 App::~App()
@@ -34,14 +36,14 @@ StateTracker *App::stateTracker() const
     return StateTracker::instance();
 }
 
-WalletsModel *App::walletsModel() const
+CollectionsModel *App::collectionsModel() const
 {
-    return m_walletsModel;
+    return m_collectionsModel;
 }
 
-WalletModel *App::walletModel() const
+CollectionModel *App::collectionModel() const
 {
-    return m_walletModel;
+    return m_collectionModel;
 }
 
 SecretItemProxy *App::secretItem() const

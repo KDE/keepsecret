@@ -13,7 +13,7 @@ Kirigami.ScrollablePage {
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
     title: QQC.ApplicationWindow.window.pageStack.wideMode ? "" : i18n("Wallets")
 
-    readonly property string collectionPath: App.walletModel.collectionPath
+    readonly property string collectionPath: App.collectionModel.collectionPath
 
     actions: [
         Kirigami.Action {
@@ -107,20 +107,20 @@ Kirigami.ScrollablePage {
 
     ListView {
         id: view
-        currentIndex: App.walletsModel.currentIndex
-        model: App.walletsModel
+        currentIndex: App.collectionsModel.currentIndex
+        model: App.collectionsModel
         delegate: QQC.ItemDelegate {
             id: delegate
             required property var model
             required property int index
             width: view.width
-            icon.name: highlighted && !App.walletModel.locked ? "wallet-open" : "wallet-closed"
+            icon.name: highlighted && !App.collectionModel.locked ? "wallet-open" : "wallet-closed"
             text: model.display
             highlighted: view.currentIndex == index
             font.bold: App.secretService.defaultCollection === model.dbusPath
 
             onClicked: {
-                App.walletModel.collectionPath = model.dbusPath
+                App.collectionModel.collectionPath = model.dbusPath
                 page.Kirigami.ColumnView.view.currentIndex = 1
             }
 

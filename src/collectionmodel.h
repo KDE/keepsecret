@@ -9,11 +9,11 @@
 
 class SecretServiceClient;
 
-class WalletModel : public QAbstractListModel
+class CollectionModel : public QAbstractListModel
 {
     Q_OBJECT
     QML_ELEMENT
-    QML_UNCREATABLE("Cannot create elements of type WalletModel")
+    QML_UNCREATABLE("Cannot create elements of type CollectionModel")
 
     Q_PROPERTY(QString collectionName READ collectionName NOTIFY collectionNameChanged)
     Q_PROPERTY(QString collectionPath READ collectionPath WRITE setCollectionPath NOTIFY collectionPathChanged)
@@ -25,8 +25,8 @@ public:
     };
     Q_ENUM(Roles)
 
-    WalletModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
-    ~WalletModel();
+    CollectionModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
+    ~CollectionModel();
 
     QString collectionName() const;
 

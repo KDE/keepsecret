@@ -13,7 +13,7 @@ Kirigami.ScrollablePage {
 
     property alias currentEntry: view.currentIndex
 
-    title: App.walletModel.collectionName
+    title: App.collectionModel.collectionName
 
     // FIXME: why int?
     property int status: App.stateTracker.status
@@ -44,9 +44,9 @@ Kirigami.ScrollablePage {
             enabled: App.stateTracker.status !== StateTracker.ServiceDisconnected
             onTriggered: {
                 if (locked) {
-                    App.walletModel.unlock()
+                    App.collectionModel.unlock()
                 } else {
-                    App.walletModel.lock()
+                    App.collectionModel.lock()
                 }
             }
         },
@@ -57,10 +57,10 @@ Kirigami.ScrollablePage {
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(
-                    i18n("Are you sure you want to delete the wallet “%1”?", App.walletModel.collectionName),
+                    i18n("Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
                     i18n("I understand that all the items will be permanently deleted"),
                     () => {
-                        App.secretService.deleteCollection(App.walletModel.collectionPath)
+                        App.secretService.deleteCollection(App.collectionModel.collectionPath)
                     });
             }
         }
@@ -170,7 +170,7 @@ Kirigami.ScrollablePage {
                                 passwordField.text,
                                 userField.text,
                                 serverField.text,
-                                App.walletModel.collectionPath);
+                                App.collectionModel.collectionPath);
         }
         onVisibleChanged: {
             labelField.text = ""
@@ -179,7 +179,7 @@ Kirigami.ScrollablePage {
             serverField.text = ""
         }
     }
-
+/*
     QQC.Menu {
         id: contextMenu
         property var model: {
@@ -189,7 +189,7 @@ Kirigami.ScrollablePage {
             "folder": ""
         }
         onOpened: {
-            App.secretItemForContextMenu.loadItem(App.walletModel.collectionPath, contextMenu.model.dbusPath);
+            App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, contextMenu.model.dbusPath);
         }
         QQC.MenuItem {
             text: i18n("Copy Secret")
@@ -215,17 +215,17 @@ Kirigami.ScrollablePage {
             icon.name: "configure-symbolic"
             onClicked: {
                 view.currentIndex = contextMenu.model.index
-                App.secretItem.loadItem(App.walletModel.collectionPath, contextMenu.model.dbusPath);
+                App.secretItem.loadItem(App.collectionModel.collectionPath, contextMenu.model.dbusPath);
                 page.Kirigami.ColumnView.view.currentIndex = 2;
             }
         }
     }
-
+*/
     ListView {
         id: view
         currentIndex: -1
         model: KSortFilterProxyModel {
-            sourceModel: App.walletModel
+            sourceModel: App.collectionModel
             sortRoleName: "folder"
             sortCaseSensitivity: Qt.CaseInsensitive
             filterRole: Qt.DisplayRole
@@ -267,7 +267,7 @@ Kirigami.ScrollablePage {
 
             onClicked: {
                 view.currentIndex = index
-                App.secretItem.loadItem(App.walletModel.collectionPath, model.dbusPath);
+                App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath);
                 page.Kirigami.ColumnView.view.currentIndex = 2;
             }
 

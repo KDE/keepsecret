@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
-#include "walletmodel.h"
+#include "collectionmodel.h"
 #include "secretserviceclient.h"
 #include "statetracker.h"
 
@@ -11,7 +11,7 @@
 #include <KConfigGroup>
 #include <KLocalizedString>
 
-WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *parent)
+CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
     , m_secretServiceClient(secretServiceClient)
 {
@@ -57,11 +57,11 @@ WalletModel::WalletModel(SecretServiceClient *secretServiceClient, QObject *pare
     });
 }
 
-WalletModel::~WalletModel()
+CollectionModel::~CollectionModel()
 {
 }
 
-QString WalletModel::collectionName() const
+QString CollectionModel::collectionName() const
 {
     if (!StateTracker::instance()->isServiceConnected() || !m_secretCollection) {
         return QString();
@@ -70,12 +70,12 @@ QString WalletModel::collectionName() const
     return QString::fromUtf8(secret_collection_get_label(m_secretCollection.get()));
 }
 
-QString WalletModel::collectionPath() const
+QString CollectionModel::collectionPath() const
 {
     return m_currentCollectionPath;
 }
 
-void WalletModel::setCollectionPath(const QString &collectionPath)
+void CollectionModel::setCollectionPath(const QString &collectionPath)
 {
     if (collectionPath == m_currentCollectionPath) {
         return;
@@ -105,7 +105,7 @@ void WalletModel::setCollectionPath(const QString &collectionPath)
     Q_EMIT collectionNameChanged(collectionName());
 }
 
-void WalletModel::lock()
+void CollectionModel::lock()
 {
     if (StateTracker::instance()->status() & StateTracker::CollectionLocked) {
         return;
@@ -118,7 +118,7 @@ void WalletModel::lock()
     m_secretServiceClient->lockCollection(m_currentCollectionPath);
 }
 
-void WalletModel::unlock()
+void CollectionModel::unlock()
 {
     if (!(StateTracker::instance()->status() & StateTracker::CollectionLocked)) {
         return;
@@ -131,7 +131,7 @@ void WalletModel::unlock()
     m_secretServiceClient->unlockCollection(m_currentCollectionPath);
 }
 
-QHash<int, QByteArray> WalletModel::roleNames() const
+QHash<int, QByteArray> CollectionModel::roleNames() const
 {
     QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
     roleNames[FolderRole] = "folder";
@@ -140,7 +140,7 @@ QHash<int, QByteArray> WalletModel::roleNames() const
     return roleNames;
 }
 
-int WalletModel::rowCount(const QModelIndex &parent) const
+int CollectionModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) {
         return 0;
@@ -149,7 +149,7 @@ int WalletModel::rowCount(const QModelIndex &parent) const
     return m_items.count();
 }
 
-QVariant WalletModel::data(const QModelIndex &index, int role) const
+QVariant CollectionModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() > m_items.count() - 1) {
         return {};
@@ -176,11 +176,11 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
         return;
     }
 
-    WalletModel *walletModel = (WalletModel *)inst;
-    walletModel->refreshWallet();
+    CollectionModel *collectionModel = (CollectionModel *)inst;
+    collectionModel->refreshWallet();
 }
 
-void WalletModel::loadWallet()
+void CollectionModel::loadWallet()
 {
     if (!StateTracker::instance()->isServiceConnected()) {
         return;
@@ -195,7 +195,7 @@ void WalletModel::loadWallet()
     refreshWallet();
 }
 
-void WalletModel::refreshWallet()
+void CollectionModel::refreshWallet()
 {
     if (!m_secretCollection) {
         return;
@@ -264,4 +264,4 @@ void WalletModel::refreshWallet()
     m_notifyHandlerId = g_signal_connect(m_secretCollection.get(), "notify", G_CALLBACK(onCollectionNotify), this);
 }
 
-#include "moc_walletmodel.cpp"
+#include "moc_collectionmodel.cpp"

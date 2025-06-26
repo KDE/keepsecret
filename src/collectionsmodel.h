@@ -8,7 +8,7 @@
 
 class SecretServiceClient;
 
-class WalletsModel : public QAbstractListModel
+class CollectionsModel : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -21,8 +21,8 @@ public:
     };
     Q_ENUM(Roles)
 
-    WalletsModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
-    ~WalletsModel();
+    CollectionsModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
+    ~CollectionsModel();
 
     QString collectionPath() const;
     void setCollectionPath(const QString &collectionPath);

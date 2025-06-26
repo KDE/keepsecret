@@ -18,11 +18,11 @@ qt_add_qml_module(kwallets_static
 
 target_sources(kwallets_static PUBLIC
     app.cpp
-    walletmodel.cpp
+    collectionmodel.cpp
     secretitemproxy.cpp
     secretserviceclient.cpp
     statetracker.cpp
-    walletsmodel.cpp
+    collectionsmodel.cpp
 )
 
 ecm_qt_declare_logging_category(kwallets_static
