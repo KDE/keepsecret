@@ -234,26 +234,12 @@ Kirigami.ScrollablePage {
         }
         onModelChanged: currentIndex = -1
         section.property: "folder"
-        section.delegate: QQC.Control {
+        section.delegate: Kirigami.ListSectionHeader {
             width: view.width
-            contentItem: RowLayout {
-                Kirigami.Icon {
-                    source: section
-                    fallback: "folder"
-                    implicitWidth: Kirigami.Units.iconSizes.smallMedium
-                    implicitHeight: implicitWidth
-                }
-                QQC.Label {
-                    text: section
-                    font.bold: true
-                    Layout.fillWidth: false
-                }
-                Kirigami.Separator {
-                    Layout.alignment: Qt.AlignCenter
-                    Layout.fillWidth: true
-                }
-            }
+            text: section
+            icon.name: "folder"
         }
+
         section.criteria: ViewSection.FullString
         delegate: QQC.ItemDelegate {
             id: delegate
@@ -261,7 +247,7 @@ Kirigami.ScrollablePage {
             required property int index
             width: view.width
             // FIXME: this imitates an item with the space for the icon even if there is none, there should be something to do that more cleanly
-            leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.mediumSpacing * 2
+            leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
             implicitHeight: Kirigami.Units.iconSizes.smallMedium + padding * 2
             text: model.display
             highlighted: view.currentIndex == index
