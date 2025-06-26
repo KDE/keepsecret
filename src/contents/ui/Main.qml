@@ -218,9 +218,9 @@ Kirigami.ApplicationWindow {
     EntryPage {
         id: entryPage
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
-        Kirigami.ColumnView.maximumWidth: maximumSidebarWidth
-        // By default as wide as possible
-        Kirigami.ColumnView.preferredWidth: maximumSidebarWidth
+        Kirigami.ColumnView.maximumWidth: root.width - walletListPage.width - root.pageStack.defaultColumnWidth
+        // An arbitrary big width by default
+        Kirigami.ColumnView.preferredWidth: Kirigami.Units.gridUnit * 30
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.fillWidth: false
         visible: false
