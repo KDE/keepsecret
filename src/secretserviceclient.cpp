@@ -380,6 +380,11 @@ QList<SecretServiceClient::CollectionEntry> SecretServiceClient::listCollections
             CollectionEntry entry;
             SecretCollection *collection = SECRET_COLLECTION(iter->data);
             const gchar *rawLabel = secret_collection_get_label(collection);
+            // Skip empty names: gnome-keyring uses an empty label as an insernal session collection that the user shouldn't touch
+            if (strlen(rawLabel) == 0) {
+                g_object_unref(collection);
+                continue;
+            }
 
             entry.name = QString::fromUtf8(rawLabel);
             entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(collection)));
