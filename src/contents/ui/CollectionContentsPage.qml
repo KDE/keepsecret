@@ -24,7 +24,7 @@ Kirigami.ScrollablePage {
             text: i18n("New Entry")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new entry in this wallet")
-            enabled: App.stateTracker.status & StateTracker.ServiceConnected
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
@@ -41,7 +41,7 @@ Kirigami.ScrollablePage {
             text: locked ? i18n("Unlock") : i18n("Lock")
             icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
             tooltip: locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
-            enabled: App.stateTracker.status !== StateTracker.ServiceDisconnected
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
             onTriggered: {
                 if (locked) {
                     App.collectionModel.unlock()
@@ -285,10 +285,7 @@ Kirigami.ScrollablePage {
 
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
-            visible: view.count === 0 &&
-                    (App.stateTracker.status & StateTracker.CollectionReady ||
-                     App.stateTracker.status & StateTracker.CollectionLocked ||
-                     App.stateTracker.error === StateTracker.ServiceConnectionError)
+            visible: view.count === 0
             icon.name: {
                 if (App.stateTracker.status & StateTracker.ServiceDisconnected) {
                     return "action-unavailable-symbolic";
