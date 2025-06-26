@@ -7,7 +7,6 @@
 #include <KLocalizedString>
 #include <cstdlib>
 #include <memory>
-#include <qt6/QtCore/qloggingcategory.h>
 
 class StateTrackerSingleton
 {
