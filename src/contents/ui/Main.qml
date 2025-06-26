@@ -172,7 +172,7 @@ Kirigami.ApplicationWindow {
         }
     }
 
-    WalletListPage {
+    CollectionListPage {
         id: walletListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
@@ -193,7 +193,7 @@ Kirigami.ApplicationWindow {
         }
     }
 
-    WalletContentsPage {
+    CollectionContentsPage {
         id: walletContentsPage
         visible: false
         Kirigami.ColumnView.fillWidth: true

@@ -12,8 +12,8 @@ qt_add_qml_module(kwallets_static
         contents/ui/EntryPage.qml
         contents/ui/FormItem.qml
         contents/ui/MapField.qml
-        contents/ui/WalletContentsPage.qml
-        contents/ui/WalletListPage.qml
+        contents/ui/CollectionContentsPage.qml
+        contents/ui/CollectionListPage.qml
 )
 
 target_sources(kwallets_static PUBLIC
