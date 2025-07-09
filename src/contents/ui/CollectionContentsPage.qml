@@ -310,5 +310,16 @@ Kirigami.ScrollablePage {
                 }
             }
         }
+        Image {
+            anchors {
+                right: parent.right
+                bottom: parent.bottom
+            }
+            width: Math.round(Math.min(parent.width, parent.height) * 0.8)
+            height: width
+            sourceSize.width: width
+            sourceSize.height: height
+            source: "qrc:/watermark.svg"
+        }
     }
 }

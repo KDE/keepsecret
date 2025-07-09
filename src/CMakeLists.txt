@@ -23,6 +23,7 @@ target_sources(kwallets_static PUBLIC
     secretserviceclient.cpp
     statetracker.cpp
     collectionsmodel.cpp
+    resources.qrc
 )
 
 ecm_qt_declare_logging_category(kwallets_static
