@@ -45,7 +45,7 @@ public:
         // Item operations
         ItemCreating = 1 << 3,
         ItemLoading = 1 << 4,
-        ItemLoadingSecret = 1 << 5,
+        ItemLoadingSecret = ItemLoading | 1 << 5,
         ItemUnlocking = ItemLoading | 1 << 6,
         ItemSaving = 1 << 7,
         ItemSavingLabel = ItemSaving | 1 << 8,
