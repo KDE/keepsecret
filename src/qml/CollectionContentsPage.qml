@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kirigamiaddons.components as KAC
 import org.kde.kitemmodels
 import org.kde.kwallets
 
@@ -303,7 +304,7 @@ Kirigami.ScrollablePage {
                     return lockAction;
                 } else if (searchField.text.length > 0) {
                     return null;
-                } else if (App.stateTracker.status &  StateTracker.CollectionReady) {
+                } else if (App.stateTracker.status & StateTracker.CollectionReady) {
                     return newAction;
                 } else {
                     return null;
@@ -321,5 +322,16 @@ Kirigami.ScrollablePage {
             sourceSize.height: height
             source: "qrc:/watermark.svg"
         }
+    }
+    KAC.FloatingButton {
+        parent: page
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+        }
+        margins: Kirigami.Units.gridUnit
+        visible: Kirigami.Settings.isMobile && App.stateTracker.status & StateTracker.CollectionReady
+
+        action: newAction
     }
 }

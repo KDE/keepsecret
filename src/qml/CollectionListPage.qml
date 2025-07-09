@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kirigamiaddons.components as KAC
 import org.kde.kwallets
 
 Kirigami.ScrollablePage {
@@ -17,6 +18,7 @@ Kirigami.ScrollablePage {
 
     actions: [
         Kirigami.Action {
+            id: createAction
             text: i18n("New Wallet")
             icon.name: "list-add-symbolic"
             tooltip: i18n("Create a new wallet")
@@ -164,5 +166,16 @@ Kirigami.ScrollablePage {
             sourceSize.height: height
             source: visible ? "qrc:/watermark.svg" : ""
         }
+    }
+    KAC.FloatingButton {
+        parent: page
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+        }
+        margins: Kirigami.Units.gridUnit
+        visible: Kirigami.Settings.isMobile
+
+        action: createAction
     }
 }

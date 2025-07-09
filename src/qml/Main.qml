@@ -70,7 +70,10 @@ Kirigami.ApplicationWindow {
         columnView.onSavedStateChanged: {
             App.sidebarState = pageStack.columnView.savedState;
         }
-        globalToolBar.showNavigationButtons: Kirigami.ApplicationHeaderStyle.ShowBackButton
+        globalToolBar {
+            style: Kirigami.ApplicationHeaderStyle.ToolBar
+            showNavigationButtons: Kirigami.ApplicationHeaderStyle.ShowBackButton
+        }
     }
 
     Kirigami.InlineMessage {
