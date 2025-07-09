@@ -41,7 +41,7 @@ Kirigami.ScrollablePage {
             text: locked ? i18n("Unlock") : i18n("Lock")
             icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
             tooltip: locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
-            enabled: App.stateTracker.status & StateTracker.CollectionReady
+            enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
             onTriggered: {
                 if (locked) {
                     App.collectionModel.unlock()
