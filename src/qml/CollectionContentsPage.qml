@@ -254,18 +254,29 @@ Kirigami.ScrollablePage {
             highlighted: view.currentIndex == index
 
             onClicked: {
+                if (contextMenu.visible) {
+                    return;
+                }
                 view.currentIndex = index
                 App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath);
                 page.Kirigami.ColumnView.view.currentIndex = 2;
             }
 
             TapHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus
                 acceptedButtons: Qt.RightButton
                 onPressedChanged: {
                     if (pressed) {
                         contextMenu.model = model
                         contextMenu.popup(delegate)
                     }
+                }
+            }
+            TapHandler {
+                acceptedDevices: PointerDevice.TouchScreen
+                onLongPressed: {
+                    contextMenu.model = model
+                    contextMenu.popup(delegate)
                 }
             }
         }
