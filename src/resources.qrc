@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="watermark.svg">contents/ui/watermark.svg</file>
+        <file alias="watermark.svg">qml/watermark.svg</file>
     </qresource>
 </RCC>

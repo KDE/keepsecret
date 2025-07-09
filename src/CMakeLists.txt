@@ -7,13 +7,13 @@ qt_add_qml_module(kwallets_static
     URI org.kde.kwallets
     VERSION 1.0
     QML_FILES
-        contents/ui/Main.qml
-        contents/ui/About.qml
-        contents/ui/EntryPage.qml
-        contents/ui/FormItem.qml
-        contents/ui/MapField.qml
-        contents/ui/CollectionContentsPage.qml
-        contents/ui/CollectionListPage.qml
+        qml/Main.qml
+        qml/About.qml
+        qml/EntryPage.qml
+        qml/FormItem.qml
+        qml/MapField.qml
+        qml/CollectionContentsPage.qml
+        qml/CollectionListPage.qml
 )
 
 target_sources(kwallets_static PUBLIC
