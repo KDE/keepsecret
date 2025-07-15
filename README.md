@@ -2,9 +2,9 @@
 SPDX-FileCopyrightText: 2025 Marco Martin <mart@kde.org>
 SPDX-License-Identifier: FSFAP
 -->
-# Keep Secret
+# KeepSecret
 
-Keep Secret is a Password manager GUI intended to be a client for a Secret Service
+KeepSecret is a Password manager GUI intended to be a client for a Secret Service
 compatible provider.
 
 

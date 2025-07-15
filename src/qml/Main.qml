@@ -11,7 +11,7 @@ import org.kde.keepsecret
 Kirigami.ApplicationWindow {
     id: root
 
-    title: i18n("Keep Secret")
+    title: i18n("KeepSecret")
 
     minimumWidth: Kirigami.Units.gridUnit * 20
     minimumHeight: Kirigami.Units.gridUnit * 20
@@ -48,7 +48,7 @@ Kirigami.ApplicationWindow {
         isMenu: !Kirigami.Settings.isMobile
         actions: [
             Kirigami.Action {
-                text: i18n("About Keep Secret")
+                text: i18n("About KeepSecret")
                 icon.name: "help-about"
                 onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/keepsecret/qml/About.qml")
             },

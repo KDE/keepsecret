@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
         // The program name used internally.
         u"keepsecret"_s,
         // A displayable program name string.
-        i18nc("@title", "Keep Secret"),
+        i18nc("@title", "KeepSecret"),
         // The program version string.
         QStringLiteral(KEEPSECRET_VERSION_STRING),
         // Short description of what the app does.
