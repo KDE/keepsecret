@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 #include "secretitemproxy.h"
-#include "kwallets_debug.h"
+#include "keepsecret_debug.h"
 #include "secretserviceclient.h"
 #include "statetracker.h"
 
@@ -215,7 +215,7 @@ void SecretItemProxy::createItem(const QString &label,
                                  const QString &server,
                                  const QString &collectionPath)
 {
-    qCDebug(KWALLETS_LOG) << "Creating item:" << label << secret << user << server << collectionPath;
+    qCDebug(KEEPSECRET_LOG) << "Creating item:" << label << secret << user << server << collectionPath;
     if (!StateTracker::instance()->isServiceConnected()) {
         return;
     }

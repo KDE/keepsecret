@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 # Target: static library
-qt_add_qml_module(kwallets_static
+qt_add_qml_module(keepsecret_static
     STATIC
-    URI org.kde.kwallets
+    URI org.kde.keepsecret
     VERSION 1.0
     QML_FILES
         qml/Main.qml
@@ -16,7 +16,7 @@ qt_add_qml_module(kwallets_static
         qml/CollectionListPage.qml
 )
 
-target_sources(kwallets_static PUBLIC
+target_sources(keepsecret_static PUBLIC
     app.cpp
     collectionmodel.cpp
     secretitemproxy.cpp
@@ -26,15 +26,15 @@ target_sources(kwallets_static PUBLIC
     resources.qrc
 )
 
-ecm_qt_declare_logging_category(kwallets_static
-    HEADER kwallets_debug.h
-    IDENTIFIER KWALLETS_LOG
-    CATEGORY_NAME org.kde.kwallets
-    DESCRIPTION "kwallets"
-    EXPORT KWALLETS
+ecm_qt_declare_logging_category(keepsecret_static
+    HEADER keepsecret_debug.h
+    IDENTIFIER KEEPSECRET_LOG
+    CATEGORY_NAME org.kde.keepsecret
+    DESCRIPTION "keepsecret"
+    EXPORT keepsecret
 )
 
-target_link_libraries(kwallets_static PUBLIC
+target_link_libraries(keepsecret_static PUBLIC
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
@@ -48,7 +48,7 @@ target_link_libraries(kwallets_static PUBLIC
     Qt::DBus
     ${LIBSECRET_LIBRARIES}
 )
-target_include_directories(kwallets_static PUBLIC ${CMAKE_BINARY_DIR})
+target_include_directories(keepsecret_static PUBLIC ${CMAKE_BINARY_DIR})
 
 if (ANDROID)
     kirigami_package_breeze_icons(ICONS
@@ -58,12 +58,12 @@ if (ANDROID)
         applications-graphics
     )
 else()
-    target_link_libraries(kwallets_static PUBLIC Qt::Widgets)
+    target_link_libraries(keepsecret_static PUBLIC Qt::Widgets)
 endif()
 
-kconfig_add_kcfg_files(kwallets_static GENERATE_MOC kwalletsconfig.kcfgc)
+kconfig_add_kcfg_files(keepsecret_static GENERATE_MOC keepsecretconfig.kcfgc)
 
 # Target: main executable
-add_executable(kwallets main.cpp)
-target_link_libraries(kwallets PUBLIC kwallets_static kwallets_staticplugin)
-install(TARGETS kwallets ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+add_executable(keepsecret main.cpp)
+target_link_libraries(keepsecret PUBLIC keepsecret_static keepsecret_staticplugin)
+install(TARGETS keepsecret ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

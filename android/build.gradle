@@ -72,8 +72,8 @@ android {
     defaultConfig {
         minSdkVersion qtMinSdkVersion
         targetSdkVersion qtTargetSdkVersion
-        applicationId "org.kde.kwallets"
-        namespace "org.kde.kwallets"
+        applicationId "org.kde.keepsecret"
+        namespace "org.kde.keepsecret"
         versionCode timestamp
         versionName projectVersionFull
         manifestPlaceholders = [versionName: projectVersionFull, versionCode: timestamp]

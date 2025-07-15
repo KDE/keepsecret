@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 
 #include "statetracker.h"
-#include "kwallets_debug.h"
+#include "keepsecret_debug.h"
 
 #include <KLocalizedString>
 #include <cstdlib>
@@ -47,7 +47,7 @@ void StateTracker::setStatus(Status status)
         return;
     }
 
-    qCDebug(KWALLETS_LOG) << "Setting status" << status;
+    qCDebug(KEEPSECRET_LOG) << "Setting status" << status;
 
     const Status oldStatus = m_status;
     m_status = status;
@@ -83,7 +83,7 @@ void StateTracker::setOperations(StateTracker::Operations operations)
         return;
     }
 
-    qCDebug(KWALLETS_LOG) << "Setting operations" << operations;
+    qCDebug(KEEPSECRET_LOG) << "Setting operations" << operations;
 
     const Operations oldOperations = m_operations;
     m_operations = operations;
@@ -148,7 +148,7 @@ QString StateTracker::errorMessage() const
 void StateTracker::setError(StateTracker::Error error, const QString &errorMessage)
 {
     if (error != NoError) {
-        qCWarning(KWALLETS_LOG) << "ERROR:" << error << errorMessage;
+        qCWarning(KEEPSECRET_LOG) << "ERROR:" << error << errorMessage;
     }
     if (error != m_error || errorMessage != m_errorMessage) {
         m_error = error;

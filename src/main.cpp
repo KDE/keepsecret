@@ -17,12 +17,12 @@
 #include <QUrl>
 
 #include "app.h"
-#include "version-kwallets.h"
+#include "version-keepsecret.h"
 #include <KAboutData>
 #include <KLocalizedContext>
 #include <KLocalizedString>
 
-#include "kwalletsconfig.h"
+#include "keepsecretconfig.h"
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -55,38 +55,35 @@ int main(int argc, char *argv[])
     app.setFont(font);
 #endif
 
-    KLocalizedString::setApplicationDomain("kwallets");
+    KLocalizedString::setApplicationDomain("keepsecret");
     QCoreApplication::setOrganizationName(u"KDE"_s);
 
     KAboutData aboutData(
         // The program name used internally.
-        u"kwallets"_s,
+        u"keepsecret"_s,
         // A displayable program name string.
-        i18nc("@title", "Wallets"),
+        i18nc("@title", "Keep Secret"),
         // The program version string.
-        QStringLiteral(KWALLETS_VERSION_STRING),
+        QStringLiteral(KEEPSECRET_VERSION_STRING),
         // Short description of what the app does.
-        i18n("Secret Service Wallet Manager"),
+        i18n("Secret Service Password Manager"),
         // The license this code is released under.
         KAboutLicense::GPL,
         // Copyright Statement.
         i18n("(c) 2025"));
-    aboutData.addAuthor(i18nc("@info:credit", "Marco Martin"),
-                        i18nc("@info:credit", "Maintainer"),
-                        u"notmart@gmail.com"_s,
-                        u"https://yourwebsite.com"_s);
+    aboutData.addAuthor(i18nc("@info:credit", "Marco Martin"), i18nc("@info:credit", "Maintainer"), {}, u"https://notmart.org"_s);
     aboutData.setTranslator(i18nc("NAME OF TRANSLATORS", "Your names"), i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);
     QGuiApplication::setWindowIcon(QIcon::fromTheme(u"kwalletmanager"_s));
 
     QQmlApplicationEngine engine;
 
-    auto config = kwalletsConfig::self();
+    auto config = keepsecretConfig::self();
 
-    qmlRegisterSingletonInstance("org.kde.kwallets.private", 1, 0, "Config", config);
+    qmlRegisterSingletonInstance("org.kde.keepsecret.private", 1, 0, "Config", config);
 
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
-    engine.loadFromModule("org.kde.kwallets", u"Main");
+    engine.loadFromModule("org.kde.keepsecret", u"Main");
 
     if (engine.rootObjects().isEmpty()) {
         return -1;

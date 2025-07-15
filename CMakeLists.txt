@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(kwallets VERSION 0.1)
+project(keepsecret VERSION 0.1)
 
 include(FeatureSummary)
 
@@ -27,8 +27,8 @@ if (NOT ANDROID)
 endif()
 
 ecm_setup_version(${PROJECT_VERSION}
-    VARIABLE_PREFIX KWALLETS
-    VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/src/version-kwallets.h"
+    VARIABLE_PREFIX KEEPSECRET
+    VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/src/version-keepsecret.h"
 )
 
 set(QT_EXTRA_COMPONENTS)
@@ -55,8 +55,8 @@ endif()
 
 add_subdirectory(src)
 
-install(FILES org.kde.kwallets.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-install(FILES org.kde.kwallets.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
+install(FILES org.kde.keepsecret.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES org.kde.keepsecret.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 ki18n_install(po)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

@@ -5,7 +5,7 @@
 */
 
 #include "secretserviceclient.h"
-#include "kwallets_debug.h"
+#include "keepsecret_debug.h"
 #include "statetracker.h"
 
 #include <KConfig>
@@ -76,7 +76,7 @@ bool SecretServiceClient::wasErrorFree(GError **error, QString &message)
         return true;
     }
     message = QString::fromUtf8((*error)->message);
-    qCWarning(KWALLETS_LOG) << message;
+    qCWarning(KEEPSECRET_LOG) << message;
     g_error_free(*error);
     *error = nullptr;
     return false;
@@ -118,14 +118,14 @@ QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
     QDBusInterface collectionInterface(m_serviceBusName, path.path(), QStringLiteral("org.freedesktop.Secret.Collection"), QDBusConnection::sessionBus());
 
     if (!collectionInterface.isValid()) {
-        qCWarning(KWALLETS_LOG) << "Failed to connect to the DBus collection object:" << path.path();
+        qCWarning(KEEPSECRET_LOG) << "Failed to connect to the DBus collection object:" << path.path();
         return {};
     }
 
     QVariant reply = collectionInterface.property("Label");
 
     if (!reply.isValid()) {
-        qCWarning(KWALLETS_LOG) << "Error reading label:" << collectionInterface.lastError();
+        qCWarning(KEEPSECRET_LOG) << "Error reading label:" << collectionInterface.lastError();
         return {};
     }
 
@@ -228,7 +228,7 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
     StateTracker::instance()->setStatus(StateTracker::ServiceDisconnected);
     m_service.reset();
 
-    qCWarning(KWALLETS_LOG) << "Secret Service availability changed:" << (available ? "Available" : "Unavailable");
+    qCWarning(KEEPSECRET_LOG) << "Secret Service availability changed:" << (available ? "Available" : "Unavailable");
     Q_EMIT serviceChanged();
 
     if (!available) {

@@ -6,7 +6,7 @@ import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import org.kde.kirigamiaddons.formcard as FormCard
 import org.kde.kirigami as Kirigami
-import org.kde.kwallets
+import org.kde.keepsecret
 
 
 FormItem {

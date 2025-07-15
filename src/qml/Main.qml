@@ -6,12 +6,12 @@ import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import QtQuick.Window
 import org.kde.kirigami as Kirigami
-import org.kde.kwallets
+import org.kde.keepsecret
 
 Kirigami.ApplicationWindow {
     id: root
 
-    title: i18n("Wallets")
+    title: i18n("Keep Secret")
 
     minimumWidth: Kirigami.Units.gridUnit * 20
     minimumHeight: Kirigami.Units.gridUnit * 20
@@ -29,7 +29,7 @@ Kirigami.ApplicationWindow {
     Component.onCompleted: {
         App.restoreWindowGeometry(root);
         if (width >= pageStack.defaultColumnWidth * 2 ) {
-            pageStack.push(walletContentsPage);
+            pageStack.push(collectionContentsPage);
         }
         pageStack.columnView.savedState = App.sidebarState;
     }
@@ -48,9 +48,9 @@ Kirigami.ApplicationWindow {
         isMenu: !Kirigami.Settings.isMobile
         actions: [
             Kirigami.Action {
-                text: i18n("About kwallets")
+                text: i18n("About Keep Secret")
                 icon.name: "help-about"
-                onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/kwallets/contents/ui/About.qml")
+                onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/keepsecret/qml/About.qml")
             },
             Kirigami.Action {
                 text: i18n("Quit")
@@ -65,7 +65,7 @@ Kirigami.ApplicationWindow {
     }
 
     pageStack {
-        initialPage: walletListPage
+        initialPage: collectionListPage
         columnView.columnResizeMode: pageStack.wideMode ? Kirigami.ColumnView.DynamicColumns : Kirigami.ColumnView.SingleColumn
         columnView.onSavedStateChanged: {
             App.sidebarState = pageStack.columnView.savedState;
@@ -177,31 +177,31 @@ Kirigami.ApplicationWindow {
     }
 
     CollectionListPage {
-        id: walletListPage
+        id: collectionListPage
         Kirigami.ColumnView.interactiveResizeEnabled: true
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
         Kirigami.ColumnView.maximumWidth: maximumSidebarWidth
         onCollectionPathChanged: {
-            walletContentsPage.currentEntry = -1
+            collectionContentsPage.currentEntry = -1
             if (collectionPath.length >= 0) {
                 if (pageStack.depth < 2) {
-                    pageStack.push(walletContentsPage)
+                    pageStack.push(collectionContentsPage)
                 }
 
                 pageStack.currentIndex = 1
             } else if (pageStack.wideMode) {
                 pageStack.currentIndex = 0
             } else {
-                pageStack.pop(walletListPage)
+                pageStack.pop(collectionListPage)
             }
         }
     }
 
     CollectionContentsPage {
-        id: walletContentsPage
+        id: collectionContentsPage
         visible: false
         Kirigami.ColumnView.fillWidth: true
-        Kirigami.ColumnView.reservedSpace: walletListPage.width + (pageStack.depth === 3 ? entryPage.width : 0)
+        Kirigami.ColumnView.reservedSpace: collectionListPage.width + (pageStack.depth === 3 ? entryPage.width : 0)
         onCurrentEntryChanged: {
             if (currentEntry > -1) {
                 if (pageStack.depth < 3) {
@@ -209,12 +209,12 @@ Kirigami.ApplicationWindow {
                 }
                 pageStack.currentIndex = 2
             } else if (pageStack.depth == 3) {
-                pageStack.pop(walletContentsPage)
+                pageStack.pop(collectionContentsPage)
             }
         }
         onStatusChanged: {
             if (!(status & StateTracker.CollectionReady)) {
-                pageStack.pop(walletContentsPage)
+                pageStack.pop(collectionContentsPage)
             }
         }
     }
@@ -222,7 +222,7 @@ Kirigami.ApplicationWindow {
     EntryPage {
         id: entryPage
         Kirigami.ColumnView.minimumWidth: minimumSidebarWidth
-        Kirigami.ColumnView.maximumWidth: root.width - walletListPage.width - root.pageStack.defaultColumnWidth
+        Kirigami.ColumnView.maximumWidth: root.width - collectionListPage.width - root.pageStack.defaultColumnWidth
         // An arbitrary big width by default
         Kirigami.ColumnView.preferredWidth: Kirigami.Units.gridUnit * 30
         Kirigami.ColumnView.interactiveResizeEnabled: true

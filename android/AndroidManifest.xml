@@ -4,7 +4,7 @@
   - SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.kde.kwallets"
+          package="org.kde.keepsecret"
           android:versionName="${versionName}"
           android:versionCode="${versionCode}"
           android:installLocation="auto">
