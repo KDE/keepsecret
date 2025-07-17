@@ -1,7 +1,0 @@
-// SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
-// SPDX-License-Identifier: BSD-3-Clause
-
-ext {
-    projectVersionFull = "@PROJECT_VERSION@"
-}
-

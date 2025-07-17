@@ -21,10 +21,8 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMSetupVersion)
 include(ECMFindQmlModule)
 include(ECMQtDeclareLoggingCategory)
-if (NOT ANDROID)
-    include(KDEGitCommitHooks)
-    include(KDEClangFormat)
-endif()
+include(KDEGitCommitHooks)
+include(KDEClangFormat)
 
 ecm_setup_version(${PROJECT_VERSION}
     VARIABLE_PREFIX KEEPSECRET
@@ -32,9 +30,7 @@ ecm_setup_version(${PROJECT_VERSION}
 )
 
 set(QT_EXTRA_COMPONENTS)
-if (NOT ANDROID)
-    list(APPEND QT_EXTRA_COMPONENTS Widgets)
-endif()
+list(APPEND QT_EXTRA_COMPONENTS Widgets)
 
 find_package(PkgConfig REQUIRED)
 
@@ -49,10 +45,6 @@ link_directories(${LIBSECRET_LIBRARY_DIRS})
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 
-if (ANDROID)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/android/version.gradle.in ${CMAKE_BINARY_DIR}/version.gradle)
-endif()
-
 add_subdirectory(src)
 
 install(FILES org.kde.keepsecret.desktop DESTINATION ${KDE_INSTALL_APPDIR})
@@ -61,8 +53,6 @@ ki18n_install(po)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
-if (NOT ANDROID)
-    file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp src/*.h)
-    kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
-    kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
-endif()
+file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp src/*.h)
+kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
+kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
