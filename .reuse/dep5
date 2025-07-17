@@ -1,0 +1,19 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Keepsecret
+Upstream-Contact: Marco Martin <mart@kde.org>
+Source: https://invent.kde.org/utils/keepsecret
+
+
+Files: README.md src/autotests/data/*
+Copyright: Marco Martin <mart@kde.org>
+License: CC0-1.0
+
+Files: src/qml/watermark.svg src/resources.qrc
+Copyright: Marco Martin <mart@kde.org>
+License: GPL-2.0-or-later
+
+Files: org.kde.keepsecret.json
+Copyright: Marco Martin <mart@kde.org>
+License: CC0-1.0
+
+
