@@ -16,4 +16,6 @@ Files: org.kde.keepsecret.json .flatpak-manifest.json
 Copyright: Marco Martin <mart@kde.org>
 License: CC0-1.0
 
-
+Files: org.kde.keepsecret.svg
+Copyright: Marco Martin <mart@kde.org>
+License: LGPL-3.0-only.txt
