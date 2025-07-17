@@ -57,7 +57,7 @@
             "buildsystem": "simple",
             "build-commands": [
                 "mkdir -p /app/share/icons/hicolor/32x32/apps/",
-                "install -D /usr/share/icons/breeze/mimetypes/64/kwalletmanager.svg /app/share/icons/hicolor/32x32/apps/kwalletmanager.svg"
+                "install -D /usr/share/icons/breeze/apps/48/kwalletmanager.svg /app/share/icons/hicolor/32x32/apps/kwalletmanager.svg"
             ]
         },
         {
