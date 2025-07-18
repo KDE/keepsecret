@@ -327,6 +327,7 @@ Kirigami.ScrollablePage {
                 right: parent.right
                 bottom: parent.bottom
             }
+            z: -1
             width: Math.round(Math.min(parent.width, parent.height) * 0.8)
             height: width
             sourceSize.width: width
