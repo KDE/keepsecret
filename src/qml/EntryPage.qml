@@ -17,14 +17,12 @@ Kirigami.ScrollablePage {
         Kirigami.Action {
             text: i18n("Save")
             icon.name: "document-save"
-            tooltip: i18n("Save changes")
             displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
             onTriggered: App.secretItem.save()
         },Kirigami.Action {
             text: i18n("Revert")
             icon.name: "document-revert-symbolic"
-            tooltip: i18n("Revert changes")
             enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
             onTriggered: App.secretItem.revert()
         },
@@ -38,7 +36,6 @@ Kirigami.ScrollablePage {
         Kirigami.Action {
             text: i18n("Delete")
             icon.name: "delete-symbolic"
-            tooltip: i18n("Delete this entry")
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(

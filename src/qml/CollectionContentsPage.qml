@@ -24,7 +24,6 @@ Kirigami.ScrollablePage {
             id: newAction
             text: i18n("New Entry")
             icon.name: "list-add-symbolic"
-            tooltip: i18n("Create a new entry in this wallet")
             enabled: App.stateTracker.status & StateTracker.CollectionReady
             onTriggered: creationDialog.open()
         },
@@ -32,7 +31,6 @@ Kirigami.ScrollablePage {
             id: searchAction
             text: i18n("Search")
             icon.name: "search-symbolic"
-            tooltip: i18n("Search entries in this wallet")
             enabled: App.stateTracker.status & StateTracker.CollectionReady
             checkable: true
         },
@@ -41,7 +39,6 @@ Kirigami.ScrollablePage {
             readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
             text: locked ? i18n("Unlock") : i18n("Lock")
             icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
-            tooltip: locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
             enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
             onTriggered: {
                 if (locked) {
@@ -54,7 +51,6 @@ Kirigami.ScrollablePage {
         Kirigami.Action {
             text: i18n("Delete")
             icon.name: "delete-symbolic"
-            tooltip: i18n("Delete this wallet")
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(

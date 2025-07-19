@@ -21,7 +21,6 @@ Kirigami.ScrollablePage {
             id: createAction
             text: i18n("New Wallet")
             icon.name: "list-add-symbolic"
-            tooltip: i18n("Create a new wallet")
             onTriggered: creationDialog.open()
         }
     ]
