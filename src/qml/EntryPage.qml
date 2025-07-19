@@ -39,11 +39,12 @@ Kirigami.ScrollablePage {
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(
+                    i18nc("@title:window", "Delete Secret"),
                     i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItem.label),
-                         i18nc("@option:check", "I understand that the item will be permanently deleted"),
-                         () => {
-                             App.secretItem.deleteItem()
-                         });
+                    i18nc("@option:check", "I understand that the item will be permanently deleted"),
+                    () => {
+                        App.secretItem.deleteItem()
+                    });
             }
         }
     ]

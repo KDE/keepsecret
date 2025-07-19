@@ -81,7 +81,8 @@ Kirigami.ApplicationWindow {
         text: visible ? App.stateTracker.errorMessage : ""
     }
 
-    function showDeleteDialog(message, confirmationMessage, callback) {
+    function showDeleteDialog(title, message, confirmationMessage, callback) {
+        deleteDialog.title = title
         deleteDialog.message = message;
         deleteDialog.confirmationMessage = confirmationMessage;
         deleteDialog.acceptedCallback = callback;

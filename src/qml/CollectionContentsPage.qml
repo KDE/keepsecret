@@ -57,6 +57,7 @@ Kirigami.ScrollablePage {
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(
+                    i18nc("@title:window", "Delete Wallet"),
                     i18nc("@label", "Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
                     i18nc("@action:check", "I understand that all the items will be permanently deleted"),
                     () => {
@@ -202,6 +203,7 @@ Kirigami.ScrollablePage {
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
                 showDeleteDialog(
+                    i18nc("@title:window", "Delete Secret"),
                     i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
                     i18nc("@action:check", "I understand that the item will be permanently deleted"),
                     () => {
