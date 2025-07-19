@@ -51,11 +51,6 @@ Kirigami.ApplicationWindow {
                 text: i18n("About KeepSecret")
                 icon.name: "help-about"
                 onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/keepsecret/qml/About.qml")
-            },
-            Kirigami.Action {
-                text: i18n("Quit")
-                icon.name: "application-exit"
-                onTriggered: Qt.quit()
             }
         ]
     }
