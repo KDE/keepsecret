@@ -32,6 +32,7 @@ Kirigami.ScrollablePage {
             text: i18n("Search")
             icon.name: "search-symbolic"
             enabled: App.stateTracker.status & StateTracker.CollectionReady
+            shortcut: checked ? "" : "Ctrl+F"
             checkable: true
         },
         Kirigami.Action {
