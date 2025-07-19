@@ -29,9 +29,8 @@ Kirigami.ScrollablePage {
             onTriggered: App.secretItem.revert()
         },
         Kirigami.Action {
-            text: i18n("Copy")
-            icon.name: "edit-copy-symbolic"
-            tooltip: i18n("Copy the secret password in the clipboard")
+            text: i18n("Copy Password")
+            icon.name: "password-copy-symbolic"
             displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.secretItem.secretValue.length > 0
             onTriggered: App.secretItem.copySecret()
