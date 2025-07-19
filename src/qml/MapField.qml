@@ -42,7 +42,7 @@ FormItem {
             icon.name: "delete-symbolic"
             QQC.ToolTip.delay: Kirigami.Units.toolTipDelay
             QQC.ToolTip.visible: hovered
-            QQC.ToolTip.text: i18n("Remove Row")
+            QQC.ToolTip.text: i18nc("@action:button", "Remove row")
             onClicked: {
                 tableRow.destroy();
                 saveJsonTimer.restart();
@@ -111,7 +111,7 @@ FormItem {
         QQC.CheckBox {
             id: showMapValuesCheck
             Layout.fillWidth: true
-            text: i18n("Show Secret Values")
+            text: i18nc("@action:button", "Show Secret Values")
         }
         Timer {
             id: saveJsonTimer
@@ -141,7 +141,7 @@ FormItem {
                     icon.name: "delete-symbolic"
                     QQC.ToolTip.delay: Kirigami.Units.toolTipDelay
                     QQC.ToolTip.visible: hovered
-                    QQC.ToolTip.text: i18n("Remove Row")
+                    QQC.ToolTip.text: i18nc("@action:button", "Remove row")
                     onClicked: {
                         tableRow.visible = false;
                         saveJsonTimer.restart();

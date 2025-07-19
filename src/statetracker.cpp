@@ -118,21 +118,21 @@ QString StateTracker::operationsReadableName() const
 {
     // Return a single name, regardless of the operations combination, one "wins"
     if (m_operations & ServiceConnecting) {
-        return i18nc("Single word explaining the current operation", "Connecting");
+        return i18nc("@info:status", "Connecting");
     } else if (m_operations & ItemCreating || m_operations & CollectionCreating) {
-        return i18nc("Single word explaining the current operation", "Creating");
+        return i18nc("@info:status", "Creating");
     } else if (m_operations & ItemSaving) {
-        return i18nc("Single word explaining the current operation", "Saving");
+        return i18nc("@info:status", "Saving");
     } else if (m_operations & ItemUnlocking || m_operations & CollectionUnlocking) {
-        return i18nc("Single word explaining the current operation", "Unlocking");
+        return i18nc("@info:status", "Unlocking");
     } else if (m_operations & ItemDeleting || m_operations & CollectionDeleting) {
-        return i18nc("Single word explaining the current operation", "Deleting");
+        return i18nc("@info:status", "Deleting");
     } else if (m_operations & CollectionLocking) {
-        return i18nc("Single word explaining the current operation", "Locking");
+        return i18nc("@info:status ", "Locking");
     }
 
     // Everything else is just "Loading"
-    return i18n("Loading");
+    return i18nc("@info:status", "Loading");
 }
 
 StateTracker::Error StateTracker::error() const

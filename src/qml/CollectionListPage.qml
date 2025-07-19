@@ -12,14 +12,14 @@ Kirigami.ScrollablePage {
     id: page
 
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
-    title: QQC.ApplicationWindow.window.pageStack.wideMode ? "" : i18n("Wallets")
+    title: QQC.ApplicationWindow.window.pageStack.wideMode ? "" : i18nc("@title:window List of wallets", "Wallets")
 
     readonly property string collectionPath: App.collectionModel.collectionPath
 
     actions: [
         Kirigami.Action {
             id: createAction
-            text: i18n("New Wallet")
+            text: i18nc("@action:button", "New Wallet")
             icon.name: "list-add-symbolic"
             onTriggered: creationDialog.open()
         }
@@ -28,7 +28,7 @@ Kirigami.ScrollablePage {
     QQC.Dialog {
         id: creationDialog
         modal: true
-        title: i18n("Create a new Wallet")
+        title: i18nc("@title:window", "Create a New Wallet")
         standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
 
         function checkSaveEnabled() {
@@ -47,7 +47,7 @@ Kirigami.ScrollablePage {
 
         contentItem: ColumnLayout {
             QQC.Label {
-                text: i18n("Wallet name:")
+                text: i18nc("@label:textbox", "Wallet name:")
             }
             QQC.TextField {
                 id: collectionNameField
@@ -77,12 +77,14 @@ Kirigami.ScrollablePage {
             "locked": false
         }
         QQC.MenuItem {
-            text: i18n("Set as Default")
+            text: i18nc("@action:inmenu make this wallet the default one", "Set as Default")
             enabled: App.secretService.defaultCollection !== contextMenu.model.dbusPath
             onClicked: App.secretService.defaultCollection = contextMenu.model.dbusPath
         }
         QQC.MenuItem {
-            text: contextMenu.model.locked ? i18n("Unlock") : i18n("Lock")
+            text: contextMenu.model.locked
+                ? i18nc("@action:inmenu unlock this wallet", "Unlock")
+                : i18nc("@action:inmenu lock this wallet", "Lock")
             icon.name: contextMenu.model.locked ? "unlock-symbolic" : "lock-symbolic"
             onClicked: {
                 if (contextMenu.model.locked) {
@@ -93,12 +95,12 @@ Kirigami.ScrollablePage {
             }
         }
         QQC.MenuItem {
-            text: i18n("Delete")
+            text: i18nc("@action:inmenu delete this wallet", "Delete")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
                 showDeleteDialog(
-                    i18n("Are you sure you want to delete the wallet “%1”?", contextMenu.model.display),
-                    i18n("I understand that all the items will be permanently deleted"),
+                    i18nc("@label", "Are you sure you want to delete the wallet “%1”?", contextMenu.model.display),
+                    i18nc("@action:check", "I understand that all the items will be permanently deleted"),
                     () => {
                         App.secretService.deleteCollection(contextMenu.model.dbusPath)
                     });

@@ -15,32 +15,32 @@ Kirigami.ScrollablePage {
 
     actions: [
         Kirigami.Action {
-            text: i18n("Save")
+            text: i18nc("@action:button Save changes made to this secret", "Save")
             icon.name: "document-save"
             displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
             onTriggered: App.secretItem.save()
         },Kirigami.Action {
-            text: i18n("Revert")
+            text: i18nc("@action:button Revert changes made to this secret", "Revert")
             icon.name: "document-revert-symbolic"
             enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
             onTriggered: App.secretItem.revert()
         },
         Kirigami.Action {
-            text: i18n("Copy Password")
+            text: i18nc("@action:button", "Copy Password")
             icon.name: "password-copy-symbolic"
             displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.secretItem.secretValue.length > 0
             onTriggered: App.secretItem.copySecret()
         },
         Kirigami.Action {
-            text: i18n("Delete")
+            text: i18nc("@action:button Delete this secret", "Delete")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(
-                    i18n("Are you sure you want to delete the item “%1”?", App.secretItem.label),
-                         i18n("I understand that the item will be permanently deleted"),
+                    i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItem.label),
+                         i18nc("@option:check", "I understand that the item will be permanently deleted"),
                          () => {
                              App.secretItem.deleteItem()
                          });
@@ -52,7 +52,7 @@ Kirigami.ScrollablePage {
         spacing: Kirigami.Units.gridUnit
         FormCard.FormCard {
             FormItem {
-                label: i18n("Label:")
+                label: i18nc("@label:textbox Name of this secret", "Label:")
                 contentItem: Kirigami.ActionTextField {
                     id: labelField
                     text: App.secretItem.label
@@ -66,7 +66,7 @@ Kirigami.ScrollablePage {
             }
             FormItem {
                 visible: App.secretItem.type !== SecretServiceClient.Binary && App.secretItem.type !== SecretServiceClient.Map
-                label: i18n("Password:")
+                label: i18nc("@label:textbox Password for this secret","Password:")
                 contentItem: Kirigami.PasswordField {
                     id: passwordField
                     text: App.secretItem.secretValue
@@ -79,7 +79,7 @@ Kirigami.ScrollablePage {
                     QQC.CheckBox {
                         id: showBinaryCheck
                         Layout.fillWidth: true
-                        text: i18n("Show Binary Secret")
+                        text: i18nc("@option:check", "Show binary secret")
                     }
                     QQC.Label {
                         Layout.fillWidth: true
@@ -113,11 +113,11 @@ Kirigami.ScrollablePage {
 
         FormCard.FormCard {
             FormCard.FormTextDelegate {
-                text: i18n("Created")
+                text: i18nc("@label The time this secret was created", "Created:")
                 description: Qt.formatDateTime(App.secretItem.creationTime, Locale.LongFormat)
             }
             FormCard.FormTextDelegate {
-                text: i18n("Modified")
+                text: i18nc("@label The time this secret was modified", "Modified:")
                 description: Qt.formatDateTime(App.secretItem.modificationTime, Locale.LongFormat)
             }
         }

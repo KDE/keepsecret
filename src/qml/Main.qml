@@ -11,7 +11,7 @@ import org.kde.keepsecret
 Kirigami.ApplicationWindow {
     id: root
 
-    title: i18n("KeepSecret")
+    title: i18nc("@title:window", "KeepSecret")
 
     minimumWidth: Kirigami.Units.gridUnit * 20
     minimumHeight: Kirigami.Units.gridUnit * 20
@@ -48,7 +48,7 @@ Kirigami.ApplicationWindow {
         isMenu: !Kirigami.Settings.isMobile
         actions: [
             Kirigami.Action {
-                text: i18n("About KeepSecret")
+                text: i18nc("@action:inMenu", "About KeepSecret")
                 icon.name: "help-about"
                 onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/keepsecret/qml/About.qml")
             }
@@ -140,7 +140,7 @@ Kirigami.ApplicationWindow {
         modal: true
         standardButtons: QQC.Dialog.Ok
         width: Math.round(Math.min(implicitWidth, root.width * 0.8))
-        title: i18n("Error")
+        title: i18nc("@title:window", "Error")
         contentItem: RowLayout {
             Kirigami.SelectableLabel {
                 id: errorLabel

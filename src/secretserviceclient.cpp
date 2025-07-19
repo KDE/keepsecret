@@ -232,7 +232,7 @@ void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, cons
     Q_EMIT serviceChanged();
 
     if (!available) {
-        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18n("Secret Service provider unavailable."));
+        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18nc("@info:status", "Secret Service provider unavailable."));
     }
 
     // Unconditionally attempt a connection, as the service might be DBus-activated
@@ -303,7 +303,7 @@ void SecretServiceClient::readDefaultCollection()
                                     QDBusConnection::sessionBus());
 
     if (!serviceInterface.isValid()) {
-        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18n("Failed to connect to the DBus SecretService object"));
+        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18nc("@info:status", "Failed to connect to the DBus SecretService object"));
         m_defaultCollection.clear();
         Q_EMIT defaultCollectionChanged(m_defaultCollection);
         return;

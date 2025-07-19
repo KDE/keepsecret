@@ -250,7 +250,7 @@ void CollectionModel::refreshWallet()
                 }
             }
             if (entry.folder.isEmpty()) {
-                entry.folder = i18n("Other");
+                entry.folder = i18nc("@info Other type of secret", "Other");
             }
 
             m_items << entry;
