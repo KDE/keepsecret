@@ -183,7 +183,7 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
             StateTracker::instance()->clearError();
             StateTracker::instance()->setState(StateTracker::ItemReady);
         } else {
-            StateTracker::instance()->setError(StateTracker::ItemLoadSecretError, i18n("Couldn't retrieve the secret value"));
+            StateTracker::instance()->setError(StateTracker::ItemLoadSecretError, i18nc("@info:status", "Couldn't retrieve the secret value"));
         }
     } else {
         StateTracker::instance()->setError(StateTracker::ItemLoadSecretError, message);
@@ -241,7 +241,7 @@ void SecretItemProxy::createItem(const QString &label,
 
     SecretValuePtr secretValue = SecretValuePtr(secret_value_new(data.constData(), -1, mimeType.toLatin1().constData()));
     if (!secretValue) {
-        StateTracker::instance()->setError(StateTracker::ItemCreationError, i18n("Failed to create SecretValue"));
+        StateTracker::instance()->setError(StateTracker::ItemCreationError, i18nc("@info:status", "Failed to create SecretValue"));
         return;
     } else {
         StateTracker::instance()->clearError();

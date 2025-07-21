@@ -22,26 +22,26 @@ Kirigami.ScrollablePage {
     actions: [
         Kirigami.Action {
             id: newAction
-            text: i18n("New Entry")
+            text: i18nc("@action:button Create a new secret", "New Entry")
             icon.name: "list-add-symbolic"
-            tooltip: i18n("Create a new entry in this wallet")
             enabled: App.stateTracker.status & StateTracker.CollectionReady
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
             id: searchAction
-            text: i18n("Search")
+            text: i18nc("@action:button", "Search")
             icon.name: "search-symbolic"
-            tooltip: i18n("Search entries in this wallet")
             enabled: App.stateTracker.status & StateTracker.CollectionReady
+            shortcut: checked ? "" : "Ctrl+F"
             checkable: true
         },
         Kirigami.Action {
             id: lockAction
             readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
-            text: locked ? i18n("Unlock") : i18n("Lock")
+            text: locked
+                ? i18nc("@action:inmenu unlock this wallet", "Unlock")
+                : i18nc("@action:inmenu lock this wallet", "Lock")
             icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
-            tooltip: locked ? i18n("Unlock this wallet") : i18n("Lock this wallet")
             enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
             onTriggered: {
                 if (locked) {
@@ -52,14 +52,14 @@ Kirigami.ScrollablePage {
             }
         },
         Kirigami.Action {
-            text: i18n("Delete")
+            text: i18nc("@title:window Delete this wallet", "Delete")
             icon.name: "delete-symbolic"
-            tooltip: i18n("Delete this wallet")
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
                 showDeleteDialog(
-                    i18n("Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
-                    i18n("I understand that all the items will be permanently deleted"),
+                    i18nc("@title:window", "Delete Wallet"),
+                    i18nc("@label", "Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
+                    i18nc("@action:check", "I understand that all the items will be permanently deleted"),
                     () => {
                         App.secretService.deleteCollection(App.collectionModel.collectionPath)
                     });
@@ -104,7 +104,7 @@ Kirigami.ScrollablePage {
     QQC.Dialog {
         id: creationDialog
         modal: true
-        title: i18n("Create a new Item")
+        title: i18nc("@title:window", "Create a New Item")
         standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
 
         function checkSaveEnabled() {
@@ -124,7 +124,7 @@ Kirigami.ScrollablePage {
 
         contentItem: ColumnLayout {
             QQC.Label {
-                text: i18n("Label:")
+                text: i18nc("@label:textbox name of this secret", "Label:")
             }
             QQC.TextField {
                 id: labelField
@@ -138,7 +138,7 @@ Kirigami.ScrollablePage {
                 onAccepted: creationDialog.maybeAccept()
             }
             QQC.Label {
-                text: i18n("Password:")
+                text: i18nc("@label:textbox password for this secret", "Password:")
             }
             Kirigami.PasswordField {
                 id: passwordField
@@ -147,7 +147,7 @@ Kirigami.ScrollablePage {
                 onAccepted: creationDialog.maybeAccept()
             }
             QQC.Label {
-                text: i18n("User:")
+                text: i18nc("@label:textbox user of this secret", "User:")
             }
             QQC.TextField {
                 id: userField
@@ -156,7 +156,7 @@ Kirigami.ScrollablePage {
                 onAccepted: creationDialog.maybeAccept()
             }
             QQC.Label {
-                text: i18n("Server:")
+                text: i18nc("@label:textbox server/provider of this secret", "Server:")
             }
             QQC.TextField {
                 id: serverField
@@ -193,26 +193,27 @@ Kirigami.ScrollablePage {
             App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, contextMenu.model.dbusPath);
         }
         QQC.MenuItem {
-            text: i18n("Copy Secret")
+            text: i18nc("@action:inmenu Copy this secret", "Copy Secret")
             icon.name: "edit-copy-symbolic"
             enabled: App.secretItemForContextMenu.status !== SecretItemProxy.Locked
             onClicked: App.secretItemForContextMenu.copySecret()
         }
         QQC.MenuItem {
-            text: i18n("Delete")
+            text: i18nc("@action:inmenu Delete this secret", "Delete")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
                 showDeleteDialog(
-                    i18n("Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
-                         i18n("I understand that the item will be permanently deleted"),
-                         () => {
-                             App.secretItemForContextMenu.deleteItem()
-                         })
+                    i18nc("@title:window", "Delete Secret"),
+                    i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
+                    i18nc("@action:check", "I understand that the item will be permanently deleted"),
+                    () => {
+                        App.secretItemForContextMenu.deleteItem()
+                    })
             }
         }
         QQC.MenuSeparator {}
         QQC.MenuItem {
-            text: i18n("Properties")
+            text: i18nc("@action:inmenu Show properties", "Properties")
             icon.name: "configure-symbolic"
             onClicked: {
                 view.currentIndex = contextMenu.model.index
@@ -301,13 +302,13 @@ Kirigami.ScrollablePage {
                 if (App.stateTracker.status & StateTracker.ServiceDisconnected) {
                     return "";
                 } else if (App.stateTracker.status & StateTracker.CollectionLocked) {
-                    return i18n("Wallet is locked");
+                    return i18nc("@info:status", "Wallet is locked");
                 } else if (searchField.text.length > 0) {
-                    return i18n("No search results");
+                    return i18nc("@info:status", "No search results");
                 } else if (App.stateTracker.status & StateTracker.CollectionReady) {
-                    return i18n("Wallet is empty");
+                    return i18nc("@info:status", "Wallet is empty");
                 } else {
-                    return i18n("Select a wallet to open from the list");
+                    return i18nc("@info:status", "Select a wallet to open from the list");
                 }
             }
             helpfulAction: {

@@ -66,11 +66,11 @@ int main(int argc, char *argv[])
         // The program version string.
         QStringLiteral(KEEPSECRET_VERSION_STRING),
         // Short description of what the app does.
-        i18n("Secret Service Password Manager"),
+        i18nc("@info:usagetip", "Secret Service Password Manager"),
         // The license this code is released under.
         KAboutLicense::GPL,
         // Copyright Statement.
-        i18n("(c) 2025"));
+        i18nc("@info:credit", "© 2025"));
     aboutData.addAuthor(i18nc("@info:credit", "Marco Martin"), i18nc("@info:credit", "Maintainer"), {}, u"https://notmart.org"_s);
     aboutData.setTranslator(i18nc("NAME OF TRANSLATORS", "Your names"), i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);

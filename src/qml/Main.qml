@@ -11,7 +11,7 @@ import org.kde.keepsecret
 Kirigami.ApplicationWindow {
     id: root
 
-    title: i18n("KeepSecret")
+    title: i18nc("@title:window", "KeepSecret")
 
     minimumWidth: Kirigami.Units.gridUnit * 20
     minimumHeight: Kirigami.Units.gridUnit * 20
@@ -48,14 +48,9 @@ Kirigami.ApplicationWindow {
         isMenu: !Kirigami.Settings.isMobile
         actions: [
             Kirigami.Action {
-                text: i18n("About KeepSecret")
+                text: i18nc("@action:inMenu", "About KeepSecret")
                 icon.name: "help-about"
                 onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/keepsecret/qml/About.qml")
-            },
-            Kirigami.Action {
-                text: i18n("Quit")
-                icon.name: "application-exit"
-                onTriggered: Qt.quit()
             }
         ]
     }
@@ -86,7 +81,8 @@ Kirigami.ApplicationWindow {
         text: visible ? App.stateTracker.errorMessage : ""
     }
 
-    function showDeleteDialog(message, confirmationMessage, callback) {
+    function showDeleteDialog(title, message, confirmationMessage, callback) {
+        deleteDialog.title = title
         deleteDialog.message = message;
         deleteDialog.confirmationMessage = confirmationMessage;
         deleteDialog.acceptedCallback = callback;
@@ -98,10 +94,17 @@ Kirigami.ApplicationWindow {
         property alias confirmationMessage: deletionConfirmation.text
         property var acceptedCallback: () => {}
         modal: true
-        standardButtons: QQC.Dialog.Yes | QQC.Dialog.No
+        standardButtons: QQC.Dialog.Discard | QQC.Dialog.Cancel
 
         onClosed: deletionConfirmation.checked = false
-        Component.onCompleted: standardButton(QQC.Dialog.Yes).enabled = false
+        Component.onCompleted: {
+            standardButton(QQC.Dialog.Discard).text = i18nc("@action:button permanently delete the wallet", "Permanently Delete")
+            standardButton(QQC.Dialog.Discard).icon.name = "edit-delete"
+            standardButton(QQC.Dialog.Discard).enabled = false
+
+            standardButton(QQC.Dialog.Cancel).text = i18nc("@action:button keep the wallet", "Keep")
+            standardButton(QQC.Dialog.Cancel).icon.name = "love-symbolic"
+        }
 
         contentItem: ColumnLayout {
             QQC.Label {
@@ -110,7 +113,7 @@ Kirigami.ApplicationWindow {
             }
             QQC.CheckBox {
                 id: deletionConfirmation
-                onCheckedChanged: deleteDialog.standardButton(QQC.Dialog.Yes).enabled = checked
+                onCheckedChanged: deleteDialog.standardButton(QQC.Dialog.Discard).enabled = checked
             }
         }
 
@@ -138,7 +141,7 @@ Kirigami.ApplicationWindow {
         modal: true
         standardButtons: QQC.Dialog.Ok
         width: Math.round(Math.min(implicitWidth, root.width * 0.8))
-        title: i18n("Error")
+        title: i18nc("@title:window", "Error")
         contentItem: RowLayout {
             Kirigami.SelectableLabel {
                 id: errorLabel
