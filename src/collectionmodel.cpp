@@ -18,8 +18,13 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
 {
     connect(StateTracker::instance(), &StateTracker::serviceConnectedChanged, this, [this](bool connected) {
         if (m_currentCollectionPath.isEmpty()) {
-            return;
+            KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
+            setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
         }
+        if (m_currentCollectionPath.isEmpty()) {
+            setCollectionPath(m_secretServiceClient->listCollections().first().dbusPath);
+        }
+
         if (connected) {
             loadWallet();
         } else {
@@ -50,11 +55,10 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
         }
     });
 
-    // FIXME: needed the timer?
-    QTimer::singleShot(0, this, [this]() {
+    if (StateTracker::instance()->status() & StateTracker::ServiceConnected) {
         KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
         setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
-    });
+    }
 }
 
 CollectionModel::~CollectionModel()
