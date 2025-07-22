@@ -25,6 +25,12 @@ Kirigami.ScrollablePage {
         }
     ]
 
+    onFocusChanged: {
+        if (focus) {
+            view.forceActiveFocus();
+        }
+    }
+
     QQC.Dialog {
         id: creationDialog
         modal: true
@@ -112,6 +118,8 @@ Kirigami.ScrollablePage {
     ListView {
         id: view
         currentIndex: App.collectionsModel.currentIndex
+        keyNavigationEnabled: true
+        activeFocusOnTab: true
         model: App.collectionsModel
         delegate: QQC.ItemDelegate {
             id: delegate
@@ -123,12 +131,25 @@ Kirigami.ScrollablePage {
             highlighted: view.currentIndex == index
             font.bold: App.secretService.defaultCollection === model.dbusPath
 
-            onClicked: {
+            function click() {
                 if (contextMenu.visible) {
                     return;
                 }
-                App.collectionModel.collectionPath = model.dbusPath
-                page.Kirigami.ColumnView.view.currentIndex = 1
+                App.collectionModel.collectionPath = model.dbusPath;
+                if (!Kirigami.PageStack.pageStack.wideMode) {
+                    Kirigami.PageStack.pageStack.wideMode.currentIndex = 1;
+                } else {
+                    view.forceActiveFocus();
+                }
+            }
+            onClicked: click()
+            Keys.onPressed: (event) => {
+                if (!view.activeFocus) {
+                    return;
+                }
+                if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
+                    delegate.click();
+                }
             }
 
             TapHandler {

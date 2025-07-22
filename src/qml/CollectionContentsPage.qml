@@ -19,6 +19,12 @@ Kirigami.ScrollablePage {
     // FIXME: why int?
     property int status: App.stateTracker.status
 
+    onFocusChanged: {
+        if (focus) {
+            view.forceActiveFocus();
+        }
+    }
+
     actions: [
         Kirigami.Action {
             id: newAction
@@ -218,7 +224,7 @@ Kirigami.ScrollablePage {
             onClicked: {
                 view.currentIndex = contextMenu.model.index
                 App.secretItem.loadItem(App.collectionModel.collectionPath, contextMenu.model.dbusPath);
-                page.Kirigami.ColumnView.view.currentIndex = 2;
+                Kirigami.PageStack.pageStack.currentIndex = 2;
             }
         }
     }
@@ -226,6 +232,8 @@ Kirigami.ScrollablePage {
     ListView {
         id: view
         currentIndex: -1
+        keyNavigationEnabled: true
+        activeFocusOnTab: true
         model: KSortFilterProxyModel {
             sourceModel: App.collectionModel
             sortRoleName: "folder"
@@ -254,13 +262,26 @@ Kirigami.ScrollablePage {
             text: model.display
             highlighted: view.currentIndex == index
 
-            onClicked: {
+            function click() {
                 if (contextMenu.visible) {
                     return;
                 }
                 view.currentIndex = index
                 App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath);
-                page.Kirigami.ColumnView.view.currentIndex = 2;
+                if (!Kirigami.PageStack.pageStack.wideMode) {
+                    Kirigami.PageStack.pageStack.currentIndex = 2;
+                } else {
+                    view.forceActiveFocus();
+                }
+            }
+            onClicked: click()
+            Keys.onPressed: (event) => {
+                if (contextMenu.visible) {
+                    return;
+                }
+                if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
+                    delegate.click();
+                }
             }
 
             TapHandler {

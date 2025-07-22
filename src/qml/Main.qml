@@ -29,9 +29,10 @@ Kirigami.ApplicationWindow {
     Component.onCompleted: {
         App.restoreWindowGeometry(root);
         if (width >= pageStack.defaultColumnWidth * 2 ) {
-            pageStack.push(collectionContentsPage);
+            pageStack.insertPage(1, collectionContentsPage);
         }
         pageStack.columnView.savedState = App.sidebarState;
+        collectionListPage.forceActiveFocus();
     }
 
     // This timer allows to batch update the window size change to reduce
@@ -188,12 +189,14 @@ Kirigami.ApplicationWindow {
             collectionContentsPage.currentEntry = -1
             if (collectionPath.length >= 0) {
                 if (pageStack.depth < 2) {
-                    pageStack.push(collectionContentsPage)
+                    pageStack.insertPage(1, collectionContentsPage)
                 }
 
-                pageStack.currentIndex = 1
+                if (!pageStack.wideMode) {
+                    pageStack.currentIndex = 1;
+                }
             } else if (pageStack.wideMode) {
-                pageStack.currentIndex = 0
+                pageStack.currentIndex = 0;
             } else {
                 pageStack.pop(collectionListPage)
             }
@@ -207,16 +210,22 @@ Kirigami.ApplicationWindow {
         Kirigami.ColumnView.reservedSpace: collectionListPage.width + (pageStack.depth === 3 ? entryPage.width : 0)
         onCurrentEntryChanged: {
             if (currentEntry > -1) {
-                if (pageStack.depth < 3) {
-                    pageStack.push(entryPage)
+                if (!pageStack.wideMode) {
+                    pageStack.currentIndex = 2;
                 }
-                pageStack.currentIndex = 2
-            } else if (pageStack.depth == 3) {
+            } else if (pageStack.depth == 3 && pageStack.depth > 1) {
                 pageStack.pop(collectionContentsPage)
             }
         }
         onStatusChanged: {
-            if (!(status & StateTracker.CollectionReady)) {
+            if (!(status & StateTracker.CollectionReady) && pageStack.depth > 1) {
+                pageStack.pop(collectionContentsPage)
+            } else if (App.stateTracker.status & StateTracker.ItemReady) {
+                if (pageStack.depth < 3) {
+                    pageStack.insertPage(2, entryPage);
+                    collectionContentsPage.forceActiveFocus();
+                }
+            } else if (!pageStack.wideMode && pageStack.depth > 1) {
                 pageStack.pop(collectionContentsPage)
             }
         }
