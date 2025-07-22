@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
         // The program version string.
         QStringLiteral(KEEPSECRET_VERSION_STRING),
         // Short description of what the app does.
-        i18nc("@info:usagetip", "Secret Service Password Manager"),
+        i18nc("@info:usagetip", "Password Manager"),
         // The license this code is released under.
         KAboutLicense::GPL,
         // Copyright Statement.
