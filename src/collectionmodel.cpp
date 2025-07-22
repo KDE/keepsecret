@@ -10,6 +10,7 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
+#include <KSharedConfig>
 
 CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
@@ -51,8 +52,7 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
 
     // FIXME: needed the timer?
     QTimer::singleShot(0, this, [this]() {
-        KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
-        KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+        KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
         setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
     });
 }
@@ -95,11 +95,8 @@ void CollectionModel::setCollectionPath(const QString &collectionPath)
         loadWallet();
     }
 
-    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
-    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
     windowGroup.writeEntry(QStringLiteral("CurrentCollectionPath"), collectionPath);
-
-    dataResource.sync();
 
     Q_EMIT collectionPathChanged(m_currentCollectionPath);
     Q_EMIT collectionNameChanged(collectionName());

@@ -58,8 +58,7 @@ SecretItemProxy *App::secretItemForContextMenu() const
 
 void App::restoreWindowGeometry(QQuickWindow *window, const QString &group) const
 {
-    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
-    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-") + group);
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-") + group);
 
     KWindowConfig::restoreWindowSize(window, windowGroup);
     KWindowConfig::restoreWindowPosition(window, windowGroup);
@@ -67,28 +66,22 @@ void App::restoreWindowGeometry(QQuickWindow *window, const QString &group) cons
 
 void App::saveWindowGeometry(QQuickWindow *window, const QString &group) const
 {
-    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
-    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-") + group);
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-") + group);
     KWindowConfig::saveWindowPosition(window, windowGroup);
     KWindowConfig::saveWindowSize(window, windowGroup);
-
-    dataResource.sync();
 }
 
 QString App::sidebarState() const
 {
-    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
-    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
     return windowGroup.readEntry(QStringLiteral("sidebarState"), QString());
 }
 
 void App::setSidebarState(const QString &state)
 {
-    KConfig dataResource(QStringLiteral("data"), KConfig::SimpleConfig, QStandardPaths::AppDataLocation);
-    KConfigGroup windowGroup(&dataResource, QStringLiteral("Window-main"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
     windowGroup.writeEntry(QStringLiteral("sidebarState"), state);
 
-    dataResource.sync();
     Q_EMIT sidebarStateChanged();
 }
 
