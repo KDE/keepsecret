@@ -34,6 +34,7 @@ ecm_qt_declare_logging_category(keepsecret
 
 target_include_directories(keepsecret PRIVATE
     ${CMAKE_BINARY_DIR}
+    ${LIBSECRET_INCLUDE_DIRS}
 )
 target_link_libraries(keepsecret PRIVATE
     Qt6::Core

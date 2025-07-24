@@ -32,16 +32,13 @@ ecm_setup_version(${PROJECT_VERSION}
 set(QT_EXTRA_COMPONENTS)
 list(APPEND QT_EXTRA_COMPONENTS Widgets)
 
-find_package(PkgConfig REQUIRED)
-
 find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickControls2 Svg ${QT_EXTRA_COMPONENTS})
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Kirigami CoreAddons Config I18n ItemModels)
 
 qt_policy(SET QTP0001 NEW)
 
+find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
-include_directories(${LIBSECRET_INCLUDE_DIRS})
-link_directories(${LIBSECRET_LIBRARY_DIRS})
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 
