@@ -19,7 +19,7 @@ Kirigami.ApplicationWindow {
 
     Config.WindowStateSaver {
         id: windowStateSaver
-        configGroupName: "Window"
+        configGroupName: "MainWindow"
     }
 
     readonly property real minimumSidebarWidth: pageStack.defaultColumnWidth / 2

@@ -58,13 +58,13 @@ SecretItemProxy *App::secretItemForContextMenu() const
 
 QString App::sidebarState() const
 {
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
     return windowGroup.readEntry(QStringLiteral("sidebarState"), QString());
 }
 
 void App::setSidebarState(const QString &state)
 {
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
     windowGroup.writeEntry(QStringLiteral("sidebarState"), state);
 
     Q_EMIT sidebarStateChanged();

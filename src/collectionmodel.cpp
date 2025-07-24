@@ -18,7 +18,7 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
 {
     connect(StateTracker::instance(), &StateTracker::serviceConnectedChanged, this, [this](bool connected) {
         if (m_currentCollectionPath.isEmpty()) {
-            KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
+            KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
             setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
         }
         if (m_currentCollectionPath.isEmpty()) {
@@ -56,7 +56,7 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
     });
 
     if (StateTracker::instance()->status() & StateTracker::ServiceConnected) {
-        KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
+        KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
         setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
     }
 }
@@ -99,7 +99,7 @@ void CollectionModel::setCollectionPath(const QString &collectionPath)
         loadWallet();
     }
 
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
     windowGroup.writeEntry(QStringLiteral("CurrentCollectionPath"), collectionPath);
 
     Q_EMIT collectionPathChanged(m_currentCollectionPath);
