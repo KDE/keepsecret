@@ -62,6 +62,15 @@ else()
     target_link_libraries(keepsecret PRIVATE Qt::Widgets)
 endif()
 
-kconfig_add_kcfg_files(keepsecret_static GENERATE_MOC keepsecretconfig.kcfgc)
+kconfig_target_kcfg_file(keepsecret
+    FILE keepsecretconfig.kcfg
+    CLASS_NAME keepsecretConfig
+    GENERATE_MOC
+    MUTATORS
+    DEFAULT_VALUE_GETTERS
+    GENERATE_PROPERTIES
+    PARENT_IN_CONSTRUCTOR
+    SINGLETON
+)
 
 install(TARGETS keepsecret ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
