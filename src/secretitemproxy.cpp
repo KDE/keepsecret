@@ -367,6 +367,7 @@ static void onItemUnlockFinished(GObject *source, GAsyncResult *result, gpointer
     }
 
     StateTracker::instance()->clearOperation(StateTracker::ItemUnlocking);
+    StateTracker::instance()->setStatus(StateTracker::instance()->status() & (~StateTracker::State::ItemLocked) | StateTracker::State::ItemReady);
 }
 
 void SecretItemProxy::unlock()
