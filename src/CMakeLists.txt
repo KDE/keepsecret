@@ -71,6 +71,7 @@ kconfig_target_kcfg_file(keepsecret
     GENERATE_PROPERTIES
     PARENT_IN_CONSTRUCTOR
     SINGLETON
+    QML_REGISTRATION
 )
 
 install(TARGETS keepsecret ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
