@@ -56,6 +56,7 @@ Kirigami.ScrollablePage {
                 label: i18nc("@label:textbox Name of this secret", "Label:")
                 contentItem: Kirigami.ActionTextField {
                     id: labelField
+                    focus: true
                     text: App.secretItem.label
                     rightActions: Kirigami.Action {
                         icon.name: "edit-clear"

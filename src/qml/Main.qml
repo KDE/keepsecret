@@ -211,7 +211,11 @@ Kirigami.ApplicationWindow {
             } else if (App.stateTracker.status & StateTracker.ItemReady) {
                 if (pageStack.depth < 3) {
                     pageStack.insertPage(2, entryPage);
-                    collectionContentsPage.forceActiveFocus();
+                    if (pageStack.wideMode) {
+                        collectionContentsPage.forceActiveFocus();
+                    } else {
+                        pageStack.currentIndex = 2;
+                    }
                 }
             } else if (!pageStack.wideMode && pageStack.depth > 1) {
                 pageStack.pop(collectionContentsPage)

@@ -137,7 +137,7 @@ Kirigami.ScrollablePage {
                 }
                 App.collectionModel.collectionPath = model.dbusPath;
                 if (!Kirigami.PageStack.pageStack.wideMode) {
-                    Kirigami.PageStack.pageStack.wideMode.currentIndex = 1;
+                    Kirigami.PageStack.pageStack.currentIndex = 1;
                 } else {
                     view.forceActiveFocus();
                 }
