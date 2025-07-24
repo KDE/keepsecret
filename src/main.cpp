@@ -77,11 +77,6 @@ int main(int argc, char *argv[])
     QGuiApplication::setWindowIcon(QIcon::fromTheme(u"kwalletmanager"_s));
 
     QQmlApplicationEngine engine;
-
-    auto config = keepsecretConfig::self();
-
-    qmlRegisterSingletonInstance("org.kde.keepsecret.private", 1, 0, "Config", config);
-
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.loadFromModule("org.kde.keepsecret", u"Main");
 

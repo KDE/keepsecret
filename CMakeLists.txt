@@ -5,14 +5,11 @@ cmake_minimum_required(VERSION 3.16)
 
 project(keepsecret VERSION 0.1)
 
-include(FeatureSummary)
-
 set(QT6_MIN_VERSION 6.8.0)
 set(KF6_MIN_VERSION 6.0.0)
 
 find_package(ECM ${KF6_MIN_VERSION} REQUIRED NO_MODULE)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 include(FeatureSummary)
 include(KDEInstallDirs)
@@ -29,19 +26,17 @@ ecm_setup_version(${PROJECT_VERSION}
     VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/src/version-keepsecret.h"
 )
 
-set(QT_EXTRA_COMPONENTS)
-list(APPEND QT_EXTRA_COMPONENTS Widgets)
-
-find_package(PkgConfig REQUIRED)
-
-find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickControls2 Svg ${QT_EXTRA_COMPONENTS})
+find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickControls2 Svg)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Kirigami CoreAddons Config I18n ItemModels)
+
+if (NOT ANDROID)
+    find_package(Qt6Widgets ${QT6_MIN_VERSION} REQUIRED)
+endif()
 
 qt_policy(SET QTP0001 NEW)
 
+find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
-include_directories(${LIBSECRET_INCLUDE_DIRS})
-link_directories(${LIBSECRET_LIBRARY_DIRS})
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 
