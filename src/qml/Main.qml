@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import QtQuick.Window
+import org.kde.config as Config
 import org.kde.kirigami as Kirigami
 import org.kde.keepsecret
 
@@ -16,33 +17,20 @@ Kirigami.ApplicationWindow {
     minimumWidth: Kirigami.Units.gridUnit * 20
     minimumHeight: Kirigami.Units.gridUnit * 20
 
-    onClosing: App.saveWindowGeometry(root)
-
-    onWidthChanged: saveWindowGeometryTimer.restart()
-    onHeightChanged: saveWindowGeometryTimer.restart()
-    onXChanged: saveWindowGeometryTimer.restart()
-    onYChanged: saveWindowGeometryTimer.restart()
+    Config.WindowStateSaver {
+        id: windowStateSaver
+        configGroupName: "Window"
+    }
 
     readonly property real minimumSidebarWidth: pageStack.defaultColumnWidth / 2
     readonly property real maximumSidebarWidth: (width - pageStack.defaultColumnWidth) / 2
 
     Component.onCompleted: {
-        App.restoreWindowGeometry(root);
         if (width >= pageStack.defaultColumnWidth * 2 ) {
             pageStack.insertPage(1, collectionContentsPage);
         }
         pageStack.columnView.savedState = App.sidebarState;
         collectionListPage.forceActiveFocus();
-    }
-
-    // This timer allows to batch update the window size change to reduce
-    // the io load and also work around the fact that x/y/width/height are
-    // changed when loading the page and overwrite the saved geometry from
-    // the previous session.
-    Timer {
-        id: saveWindowGeometryTimer
-        interval: 1000
-        onTriggered: App.saveWindowGeometry(root)
     }
 
     globalDrawer: Kirigami.GlobalDrawer {

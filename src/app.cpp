@@ -56,30 +56,15 @@ SecretItemProxy *App::secretItemForContextMenu() const
     return m_secretItemForContextMenu;
 }
 
-void App::restoreWindowGeometry(QQuickWindow *window, const QString &group) const
-{
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-") + group);
-
-    KWindowConfig::restoreWindowSize(window, windowGroup);
-    KWindowConfig::restoreWindowPosition(window, windowGroup);
-}
-
-void App::saveWindowGeometry(QQuickWindow *window, const QString &group) const
-{
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-") + group);
-    KWindowConfig::saveWindowPosition(window, windowGroup);
-    KWindowConfig::saveWindowSize(window, windowGroup);
-}
-
 QString App::sidebarState() const
 {
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
     return windowGroup.readEntry(QStringLiteral("sidebarState"), QString());
 }
 
 void App::setSidebarState(const QString &state)
 {
-    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window-main"));
+    KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("Window"));
     windowGroup.writeEntry(QStringLiteral("sidebarState"), state);
 
     Q_EMIT sidebarStateChanged();
