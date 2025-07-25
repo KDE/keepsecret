@@ -8,6 +8,7 @@ import QtQuick.Window
 import org.kde.config as Config
 import org.kde.kirigami as Kirigami
 import org.kde.keepsecret
+import org.kde.coreaddons
 
 Kirigami.ApplicationWindow {
     id: root
@@ -37,9 +38,30 @@ Kirigami.ApplicationWindow {
         isMenu: !Kirigami.Settings.isMobile
         actions: [
             Kirigami.Action {
+                text: i18nc("@action:inMenu", "Report Bug...")
+                icon.name: "tools-report-bug"
+                onTriggered: Qt.openUrlExternally("https://bugs.kde.org/enter_bug.cgi?format=guided&product=keepsecret&version="+AboutData.version)
+            },
+            Kirigami.Action {
+                separator: true
+            },
+            Kirigami.Action {
+                text: i18nc("@action:inMenu", "Donate...")
+                icon.name: "help-donate-" + Qt.locale().currencySymbol(Locale.CurrencyIsoCode).toLowerCase()
+                onTriggered: Qt.openUrlExternally("https://kde.org/donate/?app=keepsecret")
+            },
+            Kirigami.Action {
+                separator: true
+            },
+            Kirigami.Action {
                 text: i18nc("@action:inMenu", "About KeepSecret")
                 icon.name: "help-about"
                 onTriggered: root.pageStack.pushDialogLayer("qrc:/qt/qml/org/kde/keepsecret/qml/About.qml")
+            },
+            Kirigami.Action {
+                text: i18nc("@action:inMenu", "About KDE")
+                icon.name: "kde"
+                onTriggered: root.pageStack.pushDialogLayer(Qt.createComponent("org.kde.kirigamiaddons.formcard", "AboutKDEPage"))
             }
         ]
     }
