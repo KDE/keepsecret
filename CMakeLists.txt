@@ -37,8 +37,7 @@ qt_policy(SET QTP0001 NEW)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
-include_directories(${LIBSECRET_INCLUDE_DIRS})
-link_directories(${LIBSECRET_LIBRARY_DIRS})
+
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 
 add_subdirectory(src)
