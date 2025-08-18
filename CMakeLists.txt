@@ -36,7 +36,7 @@ endif()
 qt_policy(SET QTP0001 NEW)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
+pkg_check_modules(LIBSECRET IMPORTED_TARGET REQUIRED libsecret-1)
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 

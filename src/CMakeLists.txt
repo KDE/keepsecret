@@ -32,10 +32,6 @@ ecm_qt_declare_logging_category(keepsecret
     EXPORT keepsecret
 )
 
-target_include_directories(keepsecret PRIVATE
-    ${CMAKE_BINARY_DIR}
-    ${LIBSECRET_INCLUDE_DIRS}
-)
 target_link_libraries(keepsecret PRIVATE
     Qt6::Core
     Qt6::Gui
@@ -48,7 +44,7 @@ target_link_libraries(keepsecret PRIVATE
     KF6::ConfigCore
     KF6::ConfigGui
     Qt::DBus
-    ${LIBSECRET_LIBRARIES}
+    PkgConfig::LIBSECRET
 )
 
 if (ANDROID)
