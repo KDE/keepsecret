@@ -105,13 +105,13 @@ Kirigami.ApplicationWindow {
         property alias confirmationMessage: deletionConfirmation.text
         property var acceptedCallback: () => {}
         modal: true
-        standardButtons: QQC.Dialog.Discard | QQC.Dialog.Cancel
+        standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
 
         onClosed: deletionConfirmation.checked = false
         Component.onCompleted: {
-            standardButton(QQC.Dialog.Discard).text = i18nc("@action:button permanently delete the wallet", "Permanently Delete")
-            standardButton(QQC.Dialog.Discard).icon.name = "edit-delete"
-            standardButton(QQC.Dialog.Discard).enabled = false
+            standardButton(QQC.Dialog.Save).text = i18nc("@action:button permanently delete the wallet", "Permanently Delete")
+            standardButton(QQC.Dialog.Save).icon.name = "edit-delete"
+            standardButton(QQC.Dialog.Save).enabled = false
 
             standardButton(QQC.Dialog.Cancel).text = i18nc("@action:button keep the wallet", "Keep")
             standardButton(QQC.Dialog.Cancel).icon.name = "love-symbolic"
@@ -124,7 +124,7 @@ Kirigami.ApplicationWindow {
             }
             QQC.CheckBox {
                 id: deletionConfirmation
-                onCheckedChanged: deleteDialog.standardButton(QQC.Dialog.Discard).enabled = checked
+                onCheckedChanged: deleteDialog.standardButton(QQC.Dialog.Save).enabled = checked
             }
         }
 
