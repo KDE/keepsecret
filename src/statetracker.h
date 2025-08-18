@@ -62,8 +62,8 @@ public:
         CollectionLocking = 1 << 17,
         CollectionDeleting = 1 << 18
     };
-    Q_ENUM(Operation);
-    Q_DECLARE_FLAGS(Operations, Operation);
+    Q_ENUM(Operation)
+    Q_DECLARE_FLAGS(Operations, Operation)
 
     enum Error {
         NoError = 0,
