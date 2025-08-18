@@ -7,6 +7,11 @@ SPDX-License-Identifier: FSFAP
 KeepSecret is a Password manager GUI intended to be a client for a Secret Service
 compatible provider.
 
+It can be used with KWallet, but also other systems such as oo7, Gnome-keyring or KeepassXC.
+
+When the service is running (or is dbus activated) this app will automatically find and use it,
+showing all the secret colletions and the secrets contained within.
+
 
 ## Contributing
 
