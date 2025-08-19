@@ -67,13 +67,13 @@ const SecretSchema *SecretServiceClient::qtKeychainSchema(void)
         SECRET_SCHEMA_DONT_MATCH_NAME,
         {{"user", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"server", SECRET_SCHEMA_ATTRIBUTE_STRING}, {"type", SECRET_SCHEMA_ATTRIBUTE_STRING}},
         0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0};
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL};
 
     return &schema;
 }
