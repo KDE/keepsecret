@@ -221,7 +221,11 @@ void SecretServiceClient::attemptConnection()
 
     StateTracker::instance()->setOperation(StateTracker::ServiceConnecting);
 
-    secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this);
+    // Since glib/libsecret doesn't have something like QFlags, this line
+    // will always do a warning
+    // clang-format off
+    secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this); // NOLINT
+    // clang-format on
 }
 
 void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner)
