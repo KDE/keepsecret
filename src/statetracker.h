@@ -114,9 +114,9 @@ public:
     void clearError();
 
 Q_SIGNALS:
-    void statusChanged(Status oldStatus, Status newStatus);
+    void statusChanged(StateTracker::Status oldStatus, StateTracker::Status newStatus);
     void serviceConnectedChanged(bool connected);
-    void operationsChanged(Operations oldOperations, Operations newOperations);
+    void operationsChanged(StateTracker::Operations oldOperations, StateTracker::Operations newOperations);
     void operationsReadableNameChanged(const QString &name);
     void errorChanged(Error error, const QString &errorMessage);
 

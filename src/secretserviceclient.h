@@ -135,7 +135,7 @@ Q_SIGNALS:
     void collectionUnlocked(const QDBusObjectPath &path);
 
 protected:
-    bool attemptConnection();
+    void attemptConnection();
     void onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner);
 
     QString collectionLabelForPath(const QDBusObjectPath &path);

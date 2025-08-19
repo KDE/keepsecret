@@ -213,17 +213,15 @@ void SecretServiceClient::attemptConnectionFinished(SecretService *service)
     }
 }
 
-bool SecretServiceClient::attemptConnection()
+void SecretServiceClient::attemptConnection()
 {
     if (m_service) {
-        return true;
+        return;
     }
 
     StateTracker::instance()->setOperation(StateTracker::ServiceConnecting);
 
     secret_service_get(static_cast<SecretServiceFlags>(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS), nullptr, onServiceGetFinished, this);
-
-    return true;
 }
 
 void SecretServiceClient::onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner)
@@ -302,8 +300,6 @@ void SecretServiceClient::readDefaultCollection()
         Q_EMIT defaultCollectionChanged(m_defaultCollection);
         return;
     }
-
-    QString label = QStringLiteral("kdewallet");
 
     QDBusInterface serviceInterface(m_serviceBusName,
                                     QStringLiteral("/org/freedesktop/secrets"),

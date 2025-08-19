@@ -22,7 +22,8 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
             setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
         }
         if (m_currentCollectionPath.isEmpty()) {
-            setCollectionPath(m_secretServiceClient->listCollections().first().dbusPath);
+            const auto &collections = m_secretServiceClient->listCollections();
+            setCollectionPath(collections.first().dbusPath);
         }
 
         if (connected) {
