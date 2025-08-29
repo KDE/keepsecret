@@ -38,6 +38,7 @@ qt_policy(SET QTP0001 NEW)
 # They clash with glib signals
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 add_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
+add_definitions(-DQT_NO_CONTEXTLESS_CONNECT)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET IMPORTED_TARGET REQUIRED libsecret-1)
