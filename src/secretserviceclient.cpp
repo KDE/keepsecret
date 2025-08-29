@@ -21,9 +21,8 @@
 
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
+    , m_serviceBusName(QStringLiteral("org.freedesktop.secrets"))
 {
-    m_serviceBusName = QStringLiteral("org.freedesktop.secrets");
-
     m_serviceWatcher = new QDBusServiceWatcher(m_serviceBusName, QDBusConnection::sessionBus(), QDBusServiceWatcher::WatchForOwnerChange, this);
 
     connect(m_serviceWatcher, &QDBusServiceWatcher::serviceOwnerChanged, this, &SecretServiceClient::onServiceOwnerChanged);
