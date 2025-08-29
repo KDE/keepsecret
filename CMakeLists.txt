@@ -20,6 +20,7 @@ include(ECMFindQmlModule)
 include(ECMQtDeclareLoggingCategory)
 include(KDEGitCommitHooks)
 include(KDEClangFormat)
+include(ECMDeprecationSettings)
 
 ecm_setup_version(${PROJECT_VERSION}
     VARIABLE_PREFIX KEEPSECRET
@@ -42,6 +43,10 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET IMPORTED_TARGET REQUIRED libsecret-1)
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
+
+ecm_set_disabled_deprecation_versions(QT 6.10.0
+    KF 6.7.0
+)
 
 add_subdirectory(src)
 
