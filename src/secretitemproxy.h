@@ -95,5 +95,5 @@ private:
     QVariantMap m_attributes;
 
     SecretItemPtr m_secretItem;
-    SecretServiceClient *m_secretServiceClient = nullptr;
+    SecretServiceClient *const m_secretServiceClient;
 };

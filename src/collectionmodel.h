@@ -59,6 +59,6 @@ private:
     QString m_currentCollectionPath;
     QList<Entry> m_items;
     SecretCollectionPtr m_secretCollection;
-    SecretServiceClient *m_secretServiceClient = nullptr;
+    SecretServiceClient *const m_secretServiceClient;
     ulong m_notifyHandlerId = 0;
 };

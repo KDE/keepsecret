@@ -40,7 +40,7 @@ protected:
     void reloadWallets();
 
 private:
-    SecretServiceClient *m_secretServiceClient = nullptr;
+    SecretServiceClient *const m_secretServiceClient;
     QList<SecretServiceClient::CollectionEntry> m_wallets;
     QString m_currentCollectionPath;
 };
