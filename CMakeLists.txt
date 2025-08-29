@@ -30,6 +30,10 @@ ecm_setup_version(${PROJECT_VERSION}
 find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickControls2 Svg)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Kirigami CoreAddons Config I18n ItemModels)
 
+if (NOT ANDROID AND NOT WIN32 AND NOT APPLE AND NOT HAIKU)
+    find_package(KF6DBusAddons ${KF6_MIN_VERSION} REQUIRED)
+endif()
+
 if (NOT ANDROID)
     find_package(Qt6Widgets ${QT6_MIN_VERSION} REQUIRED)
 endif()
