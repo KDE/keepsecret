@@ -5,8 +5,6 @@
 #include "secretserviceclient.h"
 #include "statetracker.h"
 
-#include <QTimer>
-
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>

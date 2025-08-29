@@ -5,7 +5,6 @@
 
 #include "secretserviceclient.h"
 #include <QAbstractListModel>
-#include <QQmlEngine>
 
 class SecretServiceClient;
 

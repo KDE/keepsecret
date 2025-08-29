@@ -4,7 +4,6 @@
 #pragma once
 
 #include <QObject>
-#include <QQmlEngine>
 
 #include "collectionmodel.h"
 #include "collectionsmodel.h"
