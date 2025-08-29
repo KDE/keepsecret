@@ -1,0 +1,22 @@
+version = 1
+SPDX-PackageName = "Keepsecret"
+SPDX-PackageSupplier = "Marco Martin <mart@kde.org>"
+SPDX-PackageDownloadLocation = "https://invent.kde.org/utils/keepsecret"
+
+[[annotations]]
+path = ["README.md", "src/autotests/data/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Marco Martin <mart@kde.org>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["src/qml/watermark.svg", "src/resources.qrc"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Marco Martin <mart@kde.org>"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = ["org.kde.keepsecret.json", ".flatpak-manifest.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Marco Martin <mart@kde.org>"
+SPDX-License-Identifier = "CC0-1.0"
