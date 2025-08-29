@@ -116,7 +116,7 @@ QString SecretItemProxy::formattedBinarySecret() const
     int i = 0;
     const QString hex = QString::fromUtf8(m_secretValue.toHex());
 
-    for (auto &c : hex) {
+    for (const auto &c : hex) {
         formatted.append(c);
         if ((i + 1) % 8 == 0) {
             formatted.append(QLatin1Char(' '));
