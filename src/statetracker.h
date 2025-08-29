@@ -90,8 +90,8 @@ public:
     };
     Q_ENUM(Error);
 
-    StateTracker(QObject *parent = nullptr);
-    ~StateTracker();
+    explicit StateTracker(QObject *parent = nullptr);
+    ~StateTracker() override;
 
     static StateTracker *instance();
 

@@ -29,8 +29,8 @@ class App : public QObject
     Q_PROPERTY(QString sidebarState READ sidebarState WRITE setSidebarState NOTIFY sidebarStateChanged)
 
 public:
-    App(QObject *parent = nullptr);
-    ~App();
+    explicit App(QObject *parent = nullptr);
+    ~App() override;
 
     SecretServiceClient *secretService() const;
     StateTracker *stateTracker() const;

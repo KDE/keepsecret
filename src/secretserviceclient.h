@@ -86,7 +86,7 @@ public:
         bool locked;
     };
 
-    SecretServiceClient(QObject *parent = nullptr);
+    explicit SecretServiceClient(QObject *parent = nullptr);
 
     static const SecretSchema *qtKeychainSchema(void);
 

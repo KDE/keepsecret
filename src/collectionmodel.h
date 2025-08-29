@@ -25,8 +25,8 @@ public:
     };
     Q_ENUM(Roles)
 
-    CollectionModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
-    ~CollectionModel();
+    explicit CollectionModel(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
+    ~CollectionModel() override;
 
     QString collectionName() const;
 

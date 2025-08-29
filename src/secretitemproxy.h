@@ -28,8 +28,8 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
 
 public:
-    SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
-    ~SecretItemProxy();
+    explicit SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
+    ~SecretItemProxy() override;
 
     QDateTime creationTime() const;
     QDateTime modificationTime() const;
