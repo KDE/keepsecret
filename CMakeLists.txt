@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 project(keepsecret VERSION 0.1)
 
 set(QT6_MIN_VERSION 6.8.0)
-set(KF6_MIN_VERSION 6.0.0)
+set(KF6_MIN_VERSION 6.8.0)
 
 find_package(ECM ${KF6_MIN_VERSION} REQUIRED NO_MODULE)
 list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
@@ -46,7 +46,7 @@ pkg_check_modules(LIBSECRET IMPORTED_TARGET REQUIRED libsecret-1)
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
 
 ecm_set_disabled_deprecation_versions(QT 6.10.0
-    KF 6.7.0
+    KF 6.17.0
 )
 
 add_subdirectory(src)
