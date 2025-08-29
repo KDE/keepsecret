@@ -22,6 +22,9 @@
 #include <KLocalizedContext>
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
+#ifdef HAVE_KDBUSADDONS
+#include <KDBusService>
+#endif
 
 #include "keepsecretconfig.h"
 
@@ -76,6 +79,10 @@ int main(int argc, char *argv[])
     aboutData.setTranslator(i18nc("NAME OF TRANSLATORS", "Your names"), i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);
     QGuiApplication::setWindowIcon(QIcon::fromTheme(u"kwalletmanager"_s));
+
+#ifdef HAVE_KDBUSADDONS
+    KDBusService service(KDBusService::Unique);
+#endif
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedQmlContext(&engine));

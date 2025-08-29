@@ -54,6 +54,11 @@ target_link_libraries(keepsecret PRIVATE
     PkgConfig::LIBSECRET
 )
 
+if(TARGET KF6::DBusAddons AND NOT WIN32)
+    target_link_libraries(keepsecret PUBLIC KF6::DBusAddons)
+    target_compile_definitions(keepsecret PUBLIC -DHAVE_KDBUSADDONS)
+endif()
+
 if (ANDROID)
     kirigami_package_breeze_icons(ICONS
         list-add
