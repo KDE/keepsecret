@@ -20,6 +20,7 @@
 #include "version-keepsecret.h"
 #include <KAboutData>
 #include <KLocalizedContext>
+#include <KLocalizedQmlContext>
 #include <KLocalizedString>
 
 #include "keepsecretconfig.h"
@@ -77,7 +78,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setWindowIcon(QIcon::fromTheme(u"kwalletmanager"_s));
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
+    engine.rootContext()->setContextObject(new KLocalizedQmlContext(&engine));
     engine.loadFromModule("org.kde.keepsecret", u"Main");
 
     if (engine.rootObjects().isEmpty()) {
