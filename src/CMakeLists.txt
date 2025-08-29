@@ -21,6 +21,12 @@ target_sources(keepsecret PRIVATE
     secretserviceclient.cpp
     statetracker.cpp
     collectionsmodel.cpp
+    app.h
+    collectionmodel.h
+    secretitemproxy.h
+    secretserviceclient.h
+    statetracker.h
+    collectionsmodel.h
     resources.qrc
 )
 
