@@ -12,8 +12,6 @@
 #include "secretserviceclient.h"
 #include "statetracker.h"
 
-class QQuickWindow;
-
 class SecretServiceClient;
 
 class App : public QObject

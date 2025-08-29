@@ -14,7 +14,6 @@
 #include <memory>
 
 class QDBusServiceWatcher;
-class QTimer;
 
 // To allow gobject derived things with std::unique_ptr
 struct GObjectDeleter {
