@@ -39,7 +39,7 @@ Kirigami.ScrollablePage {
 
         function checkSaveEnabled() {
             let button = standardButton(QQC.Dialog.Save);
-            button.enabled = collectionNameField.text.length > 0;
+            button.enabled = collectionNameField.text.trim().length > 0;
         }
 
         function maybeAccept() {

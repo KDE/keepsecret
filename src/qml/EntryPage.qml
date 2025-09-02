@@ -30,7 +30,7 @@ Kirigami.ScrollablePage {
             text: i18nc("@action:button", "Copy Password")
             icon.name: "password-copy-symbolic"
             displayHint: Kirigami.DisplayHint.KeepVisible
-            enabled: App.secretItem.secretValue.length > 0
+            enabled: App.secretItem.secretValue.trim().length > 0
             onTriggered: App.secretItem.copySecret()
         },
         Kirigami.Action {
@@ -60,7 +60,7 @@ Kirigami.ScrollablePage {
                     text: App.secretItem.label
                     rightActions: Kirigami.Action {
                         icon.name: "edit-clear"
-                        visible: labelField.text.length > 0
+                        visible: labelField.text.trim().length > 0
                         onTriggered: labelField.clear()
                     }
                     onTextEdited: App.secretItem.label = text
