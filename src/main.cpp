@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
     engine.loadFromModule("org.kde.keepsecret", u"Main");
 
     if (engine.rootObjects().isEmpty()) {
+        qWarning() << " Error during loading main.qml";
         return -1;
     }
 
