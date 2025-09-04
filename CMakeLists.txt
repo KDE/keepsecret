@@ -43,6 +43,7 @@ qt_policy(SET QTP0001 NEW)
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 add_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
 add_definitions(-DQT_NO_CONTEXTLESS_CONNECT)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET IMPORTED_TARGET REQUIRED libsecret-1)
