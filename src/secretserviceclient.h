@@ -124,7 +124,6 @@ public:
 Q_SIGNALS:
     // Emitted when the service availability changed, or the service owner of secretservice has changed to a new one
     void serviceChanged();
-    void collectionsChanged();
     void promptClosed(bool accepted);
     void collectionListDirty();
     void defaultCollectionChanged(const QString &collection);

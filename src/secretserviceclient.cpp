@@ -255,7 +255,11 @@ void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
         return;
     }
 
-    loadCollections();
+    // libsecret is connected too to this signal, and we have a race condition
+    // on who handles this before. We need this to be handled after
+    // libsecret did, otherwise when we do secret_service_load_collections
+    // it will still return an old cached version
+    QTimer::singleShot(0, this, &SecretServiceClient::loadCollections);
     Q_EMIT collectionCreated(path);
 }
 
@@ -266,7 +270,7 @@ void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
         return;
     }
 
-    loadCollections();
+    QTimer::singleShot(0, this, &SecretServiceClient::loadCollections);
     Q_EMIT collectionDeleted(path);
 }
 
@@ -277,7 +281,6 @@ void SecretServiceClient::onPropertiesChanged(const QString &interface, const QV
 
     if (interface == QStringLiteral("org.freedesktop.Secret.Service")) {
         readDefaultCollection();
-        Q_EMIT collectionsChanged();
     }
 }
 
@@ -429,7 +432,6 @@ void SecretServiceClient::loadCollections()
     }
 
     StateTracker::instance()->setOperation(StateTracker::ServiceLoadingCollections);
-
     secret_service_load_collections(m_service.get(), nullptr, onLoadCollectionsFinished, this);
 }
 
