@@ -16,8 +16,12 @@
 #include <QDBusReply>
 #include <QDBusServiceWatcher>
 #include <QEventLoop>
+#include <QGuiApplication>
 #include <QTimer>
+#include <QWindow>
 #include <memory>
+
+using namespace Qt::StringLiterals;
 
 SecretServiceClient::SecretServiceClient(QObject *parent)
     : QObject(parent)
@@ -511,20 +515,26 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
 
 void SecretServiceClient::unlockCollection(const QString &collectionPath)
 {
-    if (!StateTracker::instance()->isServiceConnected()) {
-        return;
-    }
+    QDBusInterface iface(u"org.freedesktop.secrets"_s, u"/org/freedesktop/secrets"_s, u"org.freedesktop.Secret.Service"_s, QDBusConnection::sessionBus());
 
-    SecretCollectionPtr collection;
-    // TODO dbus path
-    collection.reset(retrieveCollection(collectionPath));
+    const QList<QDBusObjectPath> path = {QDBusObjectPath(collectionPath)};
+    QDBusPendingCall call = iface.asyncCall(u"Unlock"_s, QVariant::fromValue(path));
+    QDBusPendingCallWatcher *w = new QDBusPendingCallWatcher(call, this);
 
-    if (!collection) {
-        return;
-    }
+    QObject::connect(w, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *w) {
+        QDBusPendingReply<QList<QDBusObjectPath>, QDBusObjectPath> reply = *w;
+        // FIXME error handling
+        QDBusInterface iface(u"org.freedesktop.secrets"_s,
+                             reply.argumentAt(1).value<QDBusObjectPath>().path(),
+                             u"org.freedesktop.Secret.Prompt"_s,
+                             QDBusConnection::sessionBus());
 
-    StateTracker::instance()->setOperation(StateTracker::CollectionUnlocking);
-    secret_service_unlock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onUnlockCollectionFinished, this);
+        QString platformName = QGuiApplication::platformName();
+        // FIXME: get proper window
+        QString winId = QString::number(QGuiApplication::allWindows().first()->winId());
+
+        QDBusPendingCall call = iface.asyncCall(u"Prompt"_s, winId);
+    });
 }
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
