@@ -139,7 +139,7 @@ protected:
     QString collectionLabelForPath(const QDBusObjectPath &path);
 
 protected Q_SLOTS:
-    void handlePrompt(bool dismissed);
+    void handlePrompt(bool dismissed, const QDBusVariant &result);
     void onCollectionCreated(const QDBusObjectPath &path);
     void onCollectionDeleted(const QDBusObjectPath &path);
     void onPropertiesChanged(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);

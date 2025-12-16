@@ -288,8 +288,17 @@ void SecretServiceClient::onPropertiesChanged(const QString &interface, const QV
     }
 }
 
-void SecretServiceClient::handlePrompt(bool dismissed)
+void SecretServiceClient::handlePrompt(bool dismissed, const QDBusVariant &result)
 {
+    StateTracker::instance()->clearOperation(StateTracker::CollectionUnlocking);
+
+    QDBusArgument arg = result.variant().value<QDBusArgument>();
+    QDBusVariant encapsulated;
+    arg >> encapsulated;
+    auto list = encapsulated.variant().value<QDBusObjectPath>();
+    qWarning() << encapsulated.variant();
+    loadCollections();
+    Q_EMIT collectionUnlocked(list);
     Q_EMIT promptClosed(!dismissed);
 }
 
@@ -515,16 +524,27 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
 
 void SecretServiceClient::unlockCollection(const QString &collectionPath)
 {
+    SecretCollectionPtr collection;
+    // TODO dbus path
+    collection.reset(retrieveCollection(collectionPath));
+    if (!collection) {
+        return;
+    }
+
     QDBusInterface iface(u"org.freedesktop.secrets"_s, u"/org/freedesktop/secrets"_s, u"org.freedesktop.Secret.Service"_s, QDBusConnection::sessionBus());
 
     const QList<QDBusObjectPath> path = {QDBusObjectPath(collectionPath)};
     QDBusPendingCall call = iface.asyncCall(u"Unlock"_s, QVariant::fromValue(path));
     QDBusPendingCallWatcher *w = new QDBusPendingCallWatcher(call, this);
 
-    QObject::connect(w, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *w) {
+    QObject::connect(w, &QDBusPendingCallWatcher::finished, this, [this, collectionPath](QDBusPendingCallWatcher *w) {
         QDBusPendingReply<QList<QDBusObjectPath>, QDBusObjectPath> reply = *w;
-        // FIXME error handling
-        QDBusInterface iface(u"org.freedesktop.secrets"_s,
+
+        if (reply.isError()) {
+            StateTracker::instance()->setError(StateTracker::CollectionUnlockError, reply.error().message());
+            return;
+        }
+        QDBusInterface iface(m_serviceBusName,
                              reply.argumentAt(1).value<QDBusObjectPath>().path(),
                              u"org.freedesktop.Secret.Prompt"_s,
                              QDBusConnection::sessionBus());
@@ -534,7 +554,36 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
         QString winId = QString::number(QGuiApplication::allWindows().first()->winId());
 
         QDBusPendingCall call = iface.asyncCall(u"Prompt"_s, winId);
+        /*
+                QDBusConnection::sessionBus().connect(m_serviceBusName,
+                                                      reply.argumentAt(1).value<QDBusObjectPath>().path(),
+                                                      QStringLiteral("org.freedesktop.Secret.Prompt"),
+                                                      QStringLiteral("Completed"),
+                                                      this,
+                                                      SLOT(handlePrompt(bool, QDBusVariant)));
+        */
+        /*StateTracker::instance()->clearError();
+        loadCollections();
+        qWarning()<<"collectionUnlocked"<<collectionPath;
+        Q_EMIT collectionUnlocked(QDBusObjectPath(collectionPath));*/
     });
+
+    /*
+    if (!StateTracker::instance()->isServiceConnected()) {
+        return;
+    }
+
+    SecretCollectionPtr collection;
+    // TODO dbus path
+    collection.reset(retrieveCollection(collectionPath));
+
+    if (!collection) {
+        return;
+    }
+
+    StateTracker::instance()->setOperation(StateTracker::CollectionUnlocking);
+    secret_service_unlock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onUnlockCollectionFinished, this);
+    */
 }
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)

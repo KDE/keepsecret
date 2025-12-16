@@ -9,6 +9,7 @@
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <KSharedConfig>
+#include <QDBusConnection>
 
 CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObject *parent)
     : QAbstractListModel(parent)
@@ -97,6 +98,13 @@ void CollectionModel::setCollectionPath(const QString &collectionPath)
     } else if (StateTracker::instance()->isServiceConnected()) {
         loadWallet();
     }
+
+    QDBusConnection::sessionBus().connect(QStringLiteral("org.freedesktop.secrets"),
+                                          QStringLiteral("/org/freedesktop/secrets"),
+                                          QStringLiteral("org.freedesktop.Secret.Service"),
+                                          QStringLiteral("CollectionChanged"),
+                                          this,
+                                          SLOT(refreshWallet2()));
 
     KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
     windowGroup.writeEntry(QStringLiteral("CurrentCollectionPath"), collectionPath);
@@ -195,12 +203,17 @@ void CollectionModel::loadWallet()
     refreshWallet();
 }
 
+void CollectionModel::refreshWallet2()
+{
+    qWarning() << "COLLECTIONCHANGED";
+    refreshWallet();
+}
+
 void CollectionModel::refreshWallet()
 {
     if (!m_secretCollection) {
         return;
     }
-
     if (m_notifyHandlerId > 0) {
         g_signal_handler_disconnect(m_secretCollection.get(), m_notifyHandlerId);
     }
@@ -227,7 +240,7 @@ void CollectionModel::refreshWallet()
         endResetModel();
         return;
     }
-
+    qWarning() << "REFRESH";
     GListPtr list = GListPtr(secret_collection_get_items(m_secretCollection.get()));
     if (list) {
         for (GList *l = list.get(); l != nullptr; l = l->next) {

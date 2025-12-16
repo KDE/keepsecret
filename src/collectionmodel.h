@@ -32,8 +32,6 @@ public:
     QString collectionPath() const;
     void setCollectionPath(const QString &collectionPath);
 
-    void refreshWallet();
-
     Q_INVOKABLE void lock();
     Q_INVOKABLE void unlock();
 
@@ -45,6 +43,10 @@ Q_SIGNALS:
     void collectionNameChanged(const QString &name);
     void collectionPathChanged(const QString &collectionPath);
     bool lockedChanged(bool locked);
+
+public Q_SLOTS:
+    void refreshWallet();
+    void refreshWallet2();
 
 protected:
     void loadWallet();
