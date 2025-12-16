@@ -57,6 +57,7 @@ ecm_set_disabled_deprecation_versions(QT 6.10.0
 add_subdirectory(src)
 
 install(FILES org.kde.keepsecret.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES org.kde.keepsecret.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(FILES org.kde.keepsecret.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 ki18n_install(po)
 
