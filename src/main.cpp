@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     aboutData.addAuthor(i18nc("@info:credit", "Marco Martin"), i18nc("@info:credit", "Maintainer"), {}, u"https://notmart.org"_s);
     aboutData.setTranslator(i18nc("NAME OF TRANSLATORS", "Your names"), i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);
-    QGuiApplication::setWindowIcon(QIcon::fromTheme(u"kwalletmanager"_s));
+    QGuiApplication::setWindowIcon(QIcon::fromTheme(u"org.kde.keepsecret"_s));
 
 #ifdef HAVE_KDBUSADDONS
     KDBusService service(KDBusService::Unique);
