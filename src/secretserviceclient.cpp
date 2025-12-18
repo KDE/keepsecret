@@ -11,6 +11,8 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
+#include <KWaylandExtras>
+#include <KWindowSystem>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
@@ -342,6 +344,8 @@ void SecretServiceClient::readDefaultCollection()
         if (oldDefaultCollection != m_defaultCollection) {
             Q_EMIT defaultCollectionChanged(m_defaultCollection);
         }
+
+        delete call;
     });
 }
 
@@ -480,34 +484,6 @@ void SecretServiceClient::lockCollection(const QString &collectionPath)
     secret_service_lock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onLockCollectionFinished, this);
 }
 
-static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
-{
-    GError *error = nullptr;
-    QString message;
-    SecretServiceClient *client = (SecretServiceClient *)inst;
-    GList *unlocked = nullptr;
-
-    secret_service_unlock_finish((SecretService *)source, result, &unlocked, &error);
-
-    QString path;
-    // FIXME: can there me more than one unlocked at once?
-    for (GList *l = unlocked; l != nullptr; l = l->next) {
-        SecretCollection *coll = SECRET_COLLECTION(l->data);
-        path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
-        break;
-    }
-    g_list_free(unlocked);
-
-    StateTracker::instance()->clearOperation(StateTracker::CollectionUnlocking);
-    if (SecretServiceClient::wasErrorFree(&error, message)) {
-        StateTracker::instance()->clearError();
-        client->loadCollections();
-        Q_EMIT client->collectionUnlocked(QDBusObjectPath(path));
-    } else {
-        StateTracker::instance()->setError(StateTracker::CollectionUnlockError, message);
-    }
-}
-
 static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, gpointer inst)
 {
     SecretServiceClient *client = (SecretServiceClient *)inst;
@@ -548,34 +524,36 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
             StateTracker::instance()->clearOperation(StateTracker::CollectionUnlocking);
             return;
         }
-        QDBusInterface iface(m_serviceBusName,
-                             reply.argumentAt(1).value<QDBusObjectPath>().path(),
-                             u"org.freedesktop.Secret.Prompt"_s,
-                             QDBusConnection::sessionBus());
+
+        const QString promptPath = reply.argumentAt<1>().path();
+
+        QDBusInterface iface(m_serviceBusName, promptPath, u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
 
         QString platformName = QGuiApplication::platformName();
         // FIXME: get proper window
-        QString winId = QString::number(QGuiApplication::allWindows().first()->winId());
+        QWindow *window = QGuiApplication::allWindows().first();
 
-        QDBusPendingCall call = iface.asyncCall(u"Prompt"_s, winId);
+        switch (KWindowSystem::platform()) {
+        case KWindowSystem::Platform::X11: {
+            const qulonglong wId = window->winId();
+            const QString winId = u"x11:%1"_s.arg(QString::number(wId));
+            iface.asyncCall(u"Prompt"_s, winId);
+            break;
+        }
+        case KWindowSystem::Platform::Wayland:
+            connect(KWaylandExtras::self(), &KWaylandExtras::windowExported, this, [this, promptPath](QWindow *window, const QString &handle) {
+                Q_UNUSED(window)
+                QDBusInterface iface(m_serviceBusName, promptPath, u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
+                iface.asyncCall(u"Prompt"_s, u"wayland:%1"_s.arg(handle));
+            });
+            KWaylandExtras::exportWindow(window);
+            break;
+        case KWindowSystem::Platform::Unknown:
+            qWarning() << "Unknown windowing system, cannot create prompt with valid window id";
+            iface.asyncCall(u"Prompt"_s, QString());
+            break;
+        }
     });
-
-    /*
-    if (!StateTracker::instance()->isServiceConnected()) {
-        return;
-    }
-
-    SecretCollectionPtr collection;
-    // TODO dbus path
-    collection.reset(retrieveCollection(collectionPath));
-
-    if (!collection) {
-        return;
-    }
-
-    StateTracker::instance()->setOperation(StateTracker::CollectionUnlocking);
-    secret_service_unlock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onUnlockCollectionFinished, this);
-    */
 }
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
