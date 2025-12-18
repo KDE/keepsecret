@@ -46,7 +46,6 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void refreshWallet();
-    void refreshWallet2();
 
 protected:
     void loadWallet();

@@ -41,20 +41,20 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
             setCollectionPath(QString());
         }
     });
+    /*
+        connect(m_secretServiceClient, &SecretServiceClient::collectionLocked, this, [this](const QDBusObjectPath &path) {
+            if (path.path() == m_currentCollectionPath) {
+                StateTracker::instance()->setState(StateTracker::CollectionLocked);
+            }
+        });
 
-    connect(m_secretServiceClient, &SecretServiceClient::collectionLocked, this, [this](const QDBusObjectPath &path) {
-        if (path.path() == m_currentCollectionPath) {
-            StateTracker::instance()->setState(StateTracker::CollectionLocked);
-        }
-    });
-
-    connect(m_secretServiceClient, &SecretServiceClient::collectionUnlocked, this, [this](const QDBusObjectPath &path) {
-        if (path.path() == m_currentCollectionPath) {
-            StateTracker::instance()->setState(StateTracker::CollectionReady);
-            loadWallet();
-        }
-    });
-
+        connect(m_secretServiceClient, &SecretServiceClient::collectionUnlocked, this, [this](const QDBusObjectPath &path) {
+            if (path.path() == m_currentCollectionPath) {
+                StateTracker::instance()->setState(StateTracker::CollectionReady);
+                loadWallet();
+            }
+        });
+    */
     if (StateTracker::instance()->status() & StateTracker::ServiceConnected) {
         KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
         setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
@@ -98,13 +98,6 @@ void CollectionModel::setCollectionPath(const QString &collectionPath)
     } else if (StateTracker::instance()->isServiceConnected()) {
         loadWallet();
     }
-
-    QDBusConnection::sessionBus().connect(QStringLiteral("org.freedesktop.secrets"),
-                                          QStringLiteral("/org/freedesktop/secrets"),
-                                          QStringLiteral("org.freedesktop.Secret.Service"),
-                                          QStringLiteral("CollectionChanged"),
-                                          this,
-                                          SLOT(refreshWallet2()));
 
     KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
     windowGroup.writeEntry(QStringLiteral("CurrentCollectionPath"), collectionPath);
@@ -179,13 +172,18 @@ QVariant CollectionModel::data(const QModelIndex &index, int role) const
 
 static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, gpointer inst)
 {
-    Q_UNUSED(collection)
-    if (g_strcmp0(pspec->name, "items") != 0) {
-        return;
+    if (g_strcmp0(pspec->name, "locked") == 0) {
+        gboolean locked;
+        g_object_get(collection, "locked", &locked, NULL);
+        if (locked) {
+            StateTracker::instance()->setState(StateTracker::CollectionLocked);
+        } else {
+            StateTracker::instance()->setState(StateTracker::CollectionReady);
+        }
+    } else if (g_strcmp0(pspec->name, "items") == 0) {
+        CollectionModel *collectionModel = (CollectionModel *)inst;
+        collectionModel->refreshWallet();
     }
-
-    CollectionModel *collectionModel = (CollectionModel *)inst;
-    collectionModel->refreshWallet();
 }
 
 void CollectionModel::loadWallet()
@@ -200,12 +198,6 @@ void CollectionModel::loadWallet()
         return;
     }
 
-    refreshWallet();
-}
-
-void CollectionModel::refreshWallet2()
-{
-    qWarning() << "COLLECTIONCHANGED";
     refreshWallet();
 }
 
@@ -228,19 +220,10 @@ void CollectionModel::refreshWallet()
     if (secret_collection_get_locked(m_secretCollection.get())) {
         StateTracker::instance()->setState(StateTracker::CollectionLocked);
         endResetModel();
+        m_notifyHandlerId = g_signal_connect(m_secretCollection.get(), "notify", G_CALLBACK(onCollectionNotify), this);
         return;
     }
 
-    GError *error = nullptr;
-    secret_collection_load_items_sync(m_secretCollection.get(), nullptr, &error);
-
-    if (error) {
-        StateTracker::instance()->setError(StateTracker::CollectionLoadError, QString::fromUtf8(error->message));
-        g_error_free(error);
-        endResetModel();
-        return;
-    }
-    qWarning() << "REFRESH";
     GListPtr list = GListPtr(secret_collection_get_items(m_secretCollection.get()));
     if (list) {
         for (GList *l = list.get(); l != nullptr; l = l->next) {
