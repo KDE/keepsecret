@@ -145,6 +145,32 @@ QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
     return reply.toString();
 }
 
+void SecretServiceClient::callPrompt(const QDBusObjectPath &path, QWindow *callerWindow)
+{
+    switch (KWindowSystem::platform()) {
+    case KWindowSystem::Platform::X11: {
+        const qulonglong wId = callerWindow->winId();
+        const QString winId = u"x11:%1"_s.arg(QString::number(wId));
+        QDBusInterface iface(m_serviceBusName, path.path(), u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
+        iface.asyncCall(u"Prompt"_s, winId);
+        break;
+    }
+    case KWindowSystem::Platform::Wayland:
+        connect(KWaylandExtras::self(), &KWaylandExtras::windowExported, this, [this, path](QWindow *window, const QString &handle) {
+            Q_UNUSED(window)
+            QDBusInterface iface(m_serviceBusName, path.path(), u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
+            iface.asyncCall(u"Prompt"_s, u"wayland:%1"_s.arg(handle));
+        });
+        KWaylandExtras::exportWindow(callerWindow);
+        break;
+    case KWindowSystem::Platform::Unknown:
+        qWarning() << "Unknown windowing system, cannot create prompt with valid window id";
+        QDBusInterface iface(m_serviceBusName, path.path(), u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
+        iface.asyncCall(u"Prompt"_s, QString());
+        break;
+    }
+}
+
 SecretCollection *SecretServiceClient::retrieveCollection(const QString &collectionPath)
 {
     if (!StateTracker::instance()->isServiceConnected()) {
@@ -486,6 +512,7 @@ void SecretServiceClient::lockCollection(const QString &collectionPath)
 
 static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, gpointer inst)
 {
+    Q_UNUSED(collection)
     SecretServiceClient *client = (SecretServiceClient *)inst;
 
     if (g_strcmp0(pspec->name, "locked") == 0) {
@@ -497,7 +524,6 @@ static void onCollectionNotify(SecretCollection *collection, GParamSpec *pspec, 
 void SecretServiceClient::unlockCollection(const QString &collectionPath)
 {
     SecretCollectionPtr collection;
-    // TODO dbus path
     collection.reset(retrieveCollection(collectionPath));
     if (!collection) {
         return;
@@ -510,6 +536,7 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
 
     StateTracker::instance()->setOperation(StateTracker::CollectionUnlocking);
 
+    // This is done via QDBus directly instead of libsecret as it doesn't support sending window_id
     QDBusInterface iface(u"org.freedesktop.secrets"_s, u"/org/freedesktop/secrets"_s, u"org.freedesktop.Secret.Service"_s, QDBusConnection::sessionBus());
 
     const QList<QDBusObjectPath> path = {QDBusObjectPath(collectionPath)};
@@ -525,34 +552,13 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
             return;
         }
 
-        const QString promptPath = reply.argumentAt<1>().path();
+        const QDBusObjectPath promptPath = reply.argumentAt<1>();
 
-        QDBusInterface iface(m_serviceBusName, promptPath, u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
-
-        QString platformName = QGuiApplication::platformName();
         // FIXME: get proper window
         QWindow *window = QGuiApplication::allWindows().first();
 
-        switch (KWindowSystem::platform()) {
-        case KWindowSystem::Platform::X11: {
-            const qulonglong wId = window->winId();
-            const QString winId = u"x11:%1"_s.arg(QString::number(wId));
-            iface.asyncCall(u"Prompt"_s, winId);
-            break;
-        }
-        case KWindowSystem::Platform::Wayland:
-            connect(KWaylandExtras::self(), &KWaylandExtras::windowExported, this, [this, promptPath](QWindow *window, const QString &handle) {
-                Q_UNUSED(window)
-                QDBusInterface iface(m_serviceBusName, promptPath, u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
-                iface.asyncCall(u"Prompt"_s, u"wayland:%1"_s.arg(handle));
-            });
-            KWaylandExtras::exportWindow(window);
-            break;
-        case KWindowSystem::Platform::Unknown:
-            qWarning() << "Unknown windowing system, cannot create prompt with valid window id";
-            iface.asyncCall(u"Prompt"_s, QString());
-            break;
-        }
+        callPrompt(promptPath, window);
+        delete w;
     });
 }
 

@@ -14,6 +14,7 @@
 #include <memory>
 
 class QDBusServiceWatcher;
+class QWindow;
 
 // To allow gobject derived things with std::unique_ptr
 struct GObjectDeleter {
@@ -137,6 +138,7 @@ protected:
     void onServiceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner);
 
     QString collectionLabelForPath(const QDBusObjectPath &path);
+    void callPrompt(const QDBusObjectPath &path, QWindow *window);
 
 protected Q_SLOTS:
     void onCollectionCreated(const QDBusObjectPath &path);
