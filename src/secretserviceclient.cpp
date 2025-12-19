@@ -291,8 +291,11 @@ void SecretServiceClient::onCollectionCreated(const QDBusObjectPath &path)
     // on who handles this before. We need this to be handled after
     // libsecret did, otherwise when we do secret_service_load_collections
     // it will still return an old cached version
+    QTimer::singleShot(0, this, &SecretServiceClient::readDefaultCollection);
     QTimer::singleShot(0, this, &SecretServiceClient::loadCollections);
     Q_EMIT collectionCreated(path);
+
+    StateTracker::instance()->clearOperation(StateTracker::CollectionCreating);
 }
 
 void SecretServiceClient::onCollectionDeleted(const QDBusObjectPath &path)
@@ -562,25 +565,6 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
     });
 }
 
-static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
-{
-    Q_UNUSED(source);
-    GError *error = nullptr;
-    QString message;
-    SecretServiceClient *client = (SecretServiceClient *)inst;
-
-    secret_collection_create_finish(result, &error);
-
-    if (SecretServiceClient::wasErrorFree(&error, message)) {
-        StateTracker::instance()->clearError();
-    } else {
-        StateTracker::instance()->setError(StateTracker::CollectionCreationError, message);
-    }
-    StateTracker::instance()->clearOperation(StateTracker::CollectionCreating);
-    client->readDefaultCollection();
-    client->loadCollections();
-}
-
 void SecretServiceClient::createCollection(const QString &collectionName)
 {
     if (!StateTracker::instance()->isServiceConnected()) {
@@ -588,13 +572,31 @@ void SecretServiceClient::createCollection(const QString &collectionName)
     }
 
     StateTracker::instance()->setOperation(StateTracker::CollectionCreating);
-    secret_collection_create(m_service.get(),
-                             collectionName.toUtf8().data(),
-                             nullptr,
-                             SECRET_COLLECTION_CREATE_NONE,
-                             nullptr,
-                             onCreateCollectionFinished,
-                             this);
+
+    // This is done via QDBus directly instead of libsecret as it doesn't support sending window_id
+    QDBusInterface iface(u"org.freedesktop.secrets"_s, u"/org/freedesktop/secrets"_s, u"org.freedesktop.Secret.Service"_s, QDBusConnection::sessionBus());
+
+    QVariantMap labelMap = {{u"org.freedesktop.Secret.Collection.Label"_s, collectionName}};
+    QDBusPendingCall call = iface.asyncCall(u"CreateCollection"_s, labelMap, QString());
+    QDBusPendingCallWatcher *w = new QDBusPendingCallWatcher(call, this);
+
+    QObject::connect(w, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *w) {
+        QDBusPendingReply<QDBusObjectPath, QDBusObjectPath> reply = *w;
+
+        if (reply.isError()) {
+            StateTracker::instance()->setError(StateTracker::CollectionCreationError, reply.error().message());
+            StateTracker::instance()->clearOperation(StateTracker::CollectionCreating);
+            return;
+        }
+
+        const QDBusObjectPath promptPath = reply.argumentAt<1>();
+
+        // FIXME: get proper window
+        QWindow *window = QGuiApplication::allWindows().first();
+
+        callPrompt(promptPath, window);
+        delete w;
+    });
 }
 
 static void onDeleteCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)

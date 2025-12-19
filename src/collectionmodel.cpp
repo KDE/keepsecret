@@ -41,20 +41,7 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
             setCollectionPath(QString());
         }
     });
-    /*
-        connect(m_secretServiceClient, &SecretServiceClient::collectionLocked, this, [this](const QDBusObjectPath &path) {
-            if (path.path() == m_currentCollectionPath) {
-                StateTracker::instance()->setState(StateTracker::CollectionLocked);
-            }
-        });
 
-        connect(m_secretServiceClient, &SecretServiceClient::collectionUnlocked, this, [this](const QDBusObjectPath &path) {
-            if (path.path() == m_currentCollectionPath) {
-                StateTracker::instance()->setState(StateTracker::CollectionReady);
-                loadWallet();
-            }
-        });
-    */
     if (StateTracker::instance()->status() & StateTracker::ServiceConnected) {
         KConfigGroup windowGroup(KSharedConfig::openStateConfig(), QStringLiteral("MainWindow"));
         setCollectionPath(windowGroup.readEntry(QStringLiteral("CurrentCollectionPath"), QString()));
