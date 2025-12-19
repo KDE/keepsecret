@@ -150,16 +150,15 @@ void SecretServiceClient::callPrompt(const QDBusObjectPath &path, QWindow *calle
     switch (KWindowSystem::platform()) {
     case KWindowSystem::Platform::X11: {
         const qulonglong wId = callerWindow->winId();
-        const QString winId = u"x11:%1"_s.arg(QString::number(wId));
         QDBusInterface iface(m_serviceBusName, path.path(), u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
-        iface.asyncCall(u"Prompt"_s, winId);
+        iface.asyncCall(u"Prompt"_s, QString::number(wId));
         break;
     }
     case KWindowSystem::Platform::Wayland:
         connect(KWaylandExtras::self(), &KWaylandExtras::windowExported, this, [this, path](QWindow *window, const QString &handle) {
             Q_UNUSED(window)
             QDBusInterface iface(m_serviceBusName, path.path(), u"org.freedesktop.Secret.Prompt"_s, QDBusConnection::sessionBus());
-            iface.asyncCall(u"Prompt"_s, u"wayland:%1"_s.arg(handle));
+            iface.asyncCall(u"Prompt"_s, handle);
         });
         KWaylandExtras::exportWindow(callerWindow);
         break;
