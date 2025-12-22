@@ -9,13 +9,11 @@
 #include "statetracker.h"
 
 #include <KConfig>
-#include <KConfigGroup>
 #include <KLocalizedString>
 #include <QDBusConnection>
 #include <QDBusInterface>
-#include <QDBusReply>
+#include <QDBusPendingReply>
 #include <QDBusServiceWatcher>
-#include <QEventLoop>
 #include <QTimer>
 #include <memory>
 

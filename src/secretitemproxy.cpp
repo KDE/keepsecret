@@ -9,8 +9,6 @@
 #include <KLocalizedString>
 #include <QClipboard>
 #include <QGuiApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
 
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)

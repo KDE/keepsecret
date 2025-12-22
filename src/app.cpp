@@ -4,8 +4,8 @@
 #include "app.h"
 #include "collectionmodel.h"
 #include "secretserviceclient.h"
+#include <KConfigGroup>
 #include <KSharedConfig>
-#include <KWindowConfig>
 #include <QQuickWindow>
 
 App::App(QObject *parent)

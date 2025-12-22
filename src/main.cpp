@@ -3,7 +3,6 @@
     SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
 */
 
-#include <QtGlobal>
 #ifdef Q_OS_ANDROID
 #include <QGuiApplication>
 #else
@@ -14,12 +13,10 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
-#include <QUrl>
 
 #include "app.h"
 #include "version-keepsecret.h"
 #include <KAboutData>
-#include <KLocalizedContext>
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
 #ifdef HAVE_KDBUSADDONS
