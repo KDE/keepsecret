@@ -40,6 +40,11 @@ Kirigami.ScrollablePage {
             enabled: App.stateTracker.status & StateTracker.CollectionReady
             shortcut: checked ? "" : "Ctrl+F"
             checkable: true
+            onTriggered: {
+                if (checked) {
+                    searchField.forceActiveFocus()
+                }
+            }
         },
         Kirigami.Action {
             id: lockAction
