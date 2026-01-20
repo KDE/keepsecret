@@ -115,7 +115,7 @@ Kirigami.ScrollablePage {
     QQC.Dialog {
         id: creationDialog
         modal: true
-        title: i18nc("@title:window", "Create a New Item")
+        title: i18nc("@title:window", "Create New Entry")
         standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
 
         function checkSaveEnabled() {
