@@ -49,6 +49,14 @@ Kirigami.ScrollablePage {
         }
     ]
 
+    Connections {
+        target: App.secretItem
+        function onItemLoaded() {
+            passwordField.showPassword = false;
+            showBinaryCheck.checked = false;
+            mapField.showSecret = false;
+        }
+    }
     ColumnLayout {
         spacing: Kirigami.Units.gridUnit
         FormCard.FormCard {
@@ -93,6 +101,7 @@ Kirigami.ScrollablePage {
                 }
             }
             MapField {
+                id: mapField
                 visible: App.secretItem.type === SecretServiceClient.Map
             }
         }

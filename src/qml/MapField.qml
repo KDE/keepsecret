@@ -11,6 +11,7 @@ import org.kde.keepsecret
 
 FormItem {
 
+    property alias showSecret: showMapValuesCheck.checked
 
     component MapNewField: RowLayout {
         id: tableRow
