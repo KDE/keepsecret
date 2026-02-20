@@ -72,7 +72,7 @@ endif()
 
 kconfig_target_kcfg_file(keepsecret
     FILE keepsecretconfig.kcfg
-    CLASS_NAME keepsecretConfig
+    CLASS_NAME KeepsecretConfig
     GENERATE_MOC
     MUTATORS
     DEFAULT_VALUE_GETTERS
