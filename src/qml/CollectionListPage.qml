@@ -101,7 +101,7 @@ Kirigami.ScrollablePage {
             }
         }
         QQC.MenuItem {
-            text: i18nc("@action:inmenu delete this wallet", "Delete")
+            text: i18nc("@action:inmenu delete this wallet", "Delete Wallet")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
                 showDeleteDialog(

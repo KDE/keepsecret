@@ -34,7 +34,7 @@ Kirigami.ScrollablePage {
             onTriggered: App.secretItem.copySecret()
         },
         Kirigami.Action {
-            text: i18nc("@action:button Delete this secret", "Delete")
+            text: i18nc("@action:button Delete this secret", "Delete Secret")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {

@@ -63,7 +63,7 @@ Kirigami.ScrollablePage {
             }
         },
         Kirigami.Action {
-            text: i18nc("@title:window Delete this wallet", "Delete")
+            text: i18nc("@title:window Delete this wallet", "Delete Wallet")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
             onTriggered: {
