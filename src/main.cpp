@@ -17,6 +17,7 @@
 #include "app.h"
 #include "version-keepsecret.h"
 #include <KAboutData>
+#include <KCrash>
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
 #ifdef HAVE_KDBUSADDONS
@@ -76,6 +77,8 @@ int main(int argc, char *argv[])
     aboutData.setTranslator(i18nc("NAME OF TRANSLATORS", "Your names"), i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);
     QGuiApplication::setWindowIcon(QIcon::fromTheme(u"org.kde.keepsecret"_s));
+
+    KCrash::initialize();
 
 #ifdef HAVE_KDBUSADDONS
     KDBusService service(KDBusService::Unique);
