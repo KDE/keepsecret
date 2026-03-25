@@ -21,7 +21,10 @@ CollectionModel::CollectionModel(SecretServiceClient *secretServiceClient, QObje
         }
         if (m_currentCollectionPath.isEmpty()) {
             const auto &collections = m_secretServiceClient->listCollections();
-            setCollectionPath(collections.first().dbusPath);
+
+            if (!collections.isEmpty()) {
+                setCollectionPath(collections.first().dbusPath);
+            }
         }
 
         if (connected) {
