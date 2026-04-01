@@ -61,7 +61,7 @@ install(FILES org.kde.keepsecret.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hic
 install(FILES org.kde.keepsecret.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 ki18n_install(po)
 
-feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp src/*.h)
 kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
