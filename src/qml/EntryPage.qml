@@ -34,6 +34,19 @@ Kirigami.ScrollablePage {
             onTriggered: App.secretItem.copySecret()
         },
         Kirigami.Action {
+            text: i18nc("@action:button Close the entry detail panel", "Close")
+            icon.name: "view-right-close-symbolic"
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            visible: page.Kirigami.ColumnView.index >= 0 && 
+            page.Kirigami.ColumnView.view.columnResizeMode !== Kirigami.ColumnView.SingleColumn
+            onTriggered: App.secretItem.close()
+        },
+        Kirigami.Action {
+            separator: true
+            visible: page.Kirigami.ColumnView.index >= 0 && 
+            page.Kirigami.ColumnView.view.columnResizeMode !== Kirigami.ColumnView.SingleColumn
+        },
+        Kirigami.Action {
             text: i18nc("@action:button Delete this secret", "Delete Secret")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
