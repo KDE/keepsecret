@@ -276,7 +276,6 @@ Kirigami.ScrollablePage {
             width: view.width
             // FIXME: this imitates an item with the space for the icon even if there is none, there should be something to do that more cleanly
             leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
-            implicitHeight: Kirigami.Units.iconSizes.smallMedium + padding * 2
             text: model.display
             highlighted: view.currentIndex == index
  
