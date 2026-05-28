@@ -34,6 +34,7 @@ ecm_setup_version(${PROJECT_VERSION}
 
 find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml QuickControls2 Svg)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Kirigami CoreAddons Config I18n ItemModels Crash)
+find_package(KF6KirigamiAppComponents REQUIRED)
 
 if (NOT ANDROID AND NOT WIN32 AND NOT APPLE AND NOT HAIKU)
     find_package(KF6DBusAddons ${KF6_MIN_VERSION} REQUIRED)
@@ -54,6 +55,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET IMPORTED_TARGET REQUIRED libsecret-1)
 
 ecm_find_qmlmodule(org.kde.kirigamiaddons.formcard 1.0)
+ecm_find_qmlmodule(org.kde.kirigami.actioncollection 1.0)
 
 ecm_set_disabled_deprecation_versions(QT 6.10.0
     KF 6.17.0

@@ -6,6 +6,7 @@ import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import QtQuick.Window
 import org.kde.config as Config
+import org.kde.kirigami.actioncollection as AC
 import org.kde.kirigami as Kirigami
 import org.kde.keepsecret
 import org.kde.coreaddons
@@ -21,6 +22,8 @@ Kirigami.ApplicationWindow {
     Config.WindowStateSaver {
         id: windowStateSaver
         configGroupName: "MainWindow"
+    }
+    AC.ActionCollection {
     }
 
     readonly property real minimumSidebarWidth: pageStack.defaultColumnWidth / 2
@@ -143,7 +146,9 @@ Kirigami.ApplicationWindow {
             },
             Kirigami.Action {
                 text: i18nc("@action:inMenu", "New Wallet")
-                icon.name: "list-add-symbolic"  
+                icon.name: "list-add-symbolic"
+                AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+                AC.ActionCollection.action: "new-wallet"  
                 onTriggered: walletCreationDialog.open()
             
             }

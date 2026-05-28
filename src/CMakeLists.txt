@@ -51,6 +51,7 @@ target_link_libraries(keepsecret PRIVATE
     KF6::ConfigCore
     KF6::ConfigGui
     KF6::I18nQml
+    KF6::KirigamiActionCollection
     Qt::DBus
     PkgConfig::LIBSECRET
 )

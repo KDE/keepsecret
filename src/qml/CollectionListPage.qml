@@ -6,6 +6,7 @@ import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigamiaddons.components as KAC
+import org.kde.kirigami.actioncollection as AC
 import org.kde.keepsecret
 
 Kirigami.ScrollablePage {
@@ -28,6 +29,8 @@ Kirigami.ScrollablePage {
             id: createAction
             text: i18nc("@action:button", "New Wallet")
             icon.name: "list-add-symbolic"
+            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.action: "new-wallet"
             onTriggered: page.Window.window.walletCreationDialog.open()
         }
     ]

@@ -6,6 +6,7 @@ import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigamiaddons.components as KAC
+import org.kde.kirigami.actioncollection as AC
 import org.kde.kitemmodels
 import org.kde.keepsecret
 
@@ -32,7 +33,8 @@ Kirigami.ScrollablePage {
             text: i18nc("@action:button", "New Wallet")
             icon.name: "list-add-symbolic"
             visible: page.Window.window.shouldHideSidebar
-
+            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.action: "new-wallet"
             onTriggered: page.Window.window.openWalletCreationDialog()
         },
 
@@ -41,6 +43,8 @@ Kirigami.ScrollablePage {
             text: i18nc("@action:button Create a new secret", "New Entry")
             icon.name: "list-add-symbolic"
             enabled: App.stateTracker.status & StateTracker.CollectionReady
+            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.action: "new-entry"
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
@@ -50,6 +54,8 @@ Kirigami.ScrollablePage {
             enabled: App.stateTracker.status & StateTracker.CollectionReady
             shortcut: checked ? "" : "Ctrl+F"
             checkable: true
+            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.action: "search"
             onTriggered: {
                 if (checked) {
                     searchField.forceActiveFocus()
@@ -64,6 +70,8 @@ Kirigami.ScrollablePage {
                 : i18nc("@action:inmenu lock this wallet", "Lock")
             icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
             enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
+            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.action: "lock"
             onTriggered: {
                 if (locked) {
                     App.collectionModel.unlock()
