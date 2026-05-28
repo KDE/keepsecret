@@ -15,6 +15,7 @@ Dependencies:
       'frameworks/kcrash': '@latest-kf6'
       'frameworks/qqc2-desktop-style': '@latest-kf6'
       'frameworks/kdbusaddons': '@latest-kf6'
+      'libraries/kirigami-app-components': '@latest-kf6'
 
   - 'on': ['Linux', 'FreeBSD']
     'require':
