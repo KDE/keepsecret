@@ -30,31 +30,25 @@ Kirigami.ScrollablePage {
     actions: [
         Kirigami.Action {
             id: newWalletAction
-            text: i18nc("@action:button", "New Wallet")
-            icon.name: "list-add-symbolic"
             visible: page.Window.window.shouldHideSidebar
-            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.collection: "org.kde.keepsecret.collections"
             AC.ActionCollection.action: "new-wallet"
             onTriggered: page.Window.window.openWalletCreationDialog()
         },
 
         Kirigami.Action {
             id: newAction
-            text: i18nc("@action:button Create a new secret", "New Entry")
-            icon.name: "list-add-symbolic"
             enabled: App.stateTracker.status & StateTracker.CollectionReady
-            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
             AC.ActionCollection.action: "new-entry"
             onTriggered: creationDialog.open()
         },
         Kirigami.Action {
             id: searchAction
-            text: i18nc("@action:button", "Search")
-            icon.name: "search-symbolic"
             enabled: App.stateTracker.status & StateTracker.CollectionReady
             shortcut: checked ? "" : "Ctrl+F"
             checkable: true
-            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
             AC.ActionCollection.action: "search"
             onTriggered: {
                 if (checked) {
@@ -65,12 +59,8 @@ Kirigami.ScrollablePage {
         Kirigami.Action {
             id: lockAction
             readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
-            text: locked
-                ? i18nc("@action:inmenu unlock this wallet", "Unlock")
-                : i18nc("@action:inmenu lock this wallet", "Lock")
-            icon.name: locked ? "unlock-symbolic" : "lock-symbolic"
             enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
-            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
             AC.ActionCollection.action: "lock"
             onTriggered: {
                 if (locked) {

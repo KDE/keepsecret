@@ -27,9 +27,7 @@ Kirigami.ScrollablePage {
     actions: [ 
         Kirigami.Action {
             id: createAction
-            text: i18nc("@action:button", "New Wallet")
-            icon.name: "list-add-symbolic"
-            AC.ActionCollection.collection: "org.kde.keepsecret.wallet"
+            AC.ActionCollection.collection: "org.kde.keepsecret.collections"
             AC.ActionCollection.action: "new-wallet"
             onTriggered: page.Window.window.walletCreationDialog.open()
         }

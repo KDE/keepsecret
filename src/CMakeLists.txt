@@ -6,6 +6,7 @@ qt_add_qml_module(keepsecret URI org.kde.keepsecret
     QML_FILES
         qml/Main.qml
         qml/About.qml
+        qml/Actions.qml
         qml/EntryPage.qml
         qml/FormItem.qml
         qml/MapField.qml
