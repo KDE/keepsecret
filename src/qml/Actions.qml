@@ -38,5 +38,24 @@ AC.ActionCollectionManager {
             text: i18nc("@action:inmenu lock this wallet", "Lock")
             icon.name: "lock-symbolic"
         }
+        AC.ActionData {
+            name: "unlock"
+            text: i18nc("@action:inmenu unlock this wallet", "Unlock")
+            icon.name: "unlock-symbolic"
+        }
+        AC.ActionData {
+            name: "delete-wallet"
+            text: i18nc("@title:window Delete this wallet", "Delete Wallet")
+            icon.name: "delete-symbolic"
+        }
+    }
+    AC.ActionCollection {
+        name: "org.kde.keepsecret.item"
+        text: i18n("Item Actions")
+        AC.ActionData {
+            name: "copy-password"
+            text: i18nc("@action:button", "Copy Password")
+            icon.name: "edit-copy-symbolic"
+        }
     }
 }
