@@ -20,6 +20,20 @@
         "/share/qlogging-categories6"
     ],
     "modules": [
+        {    
+            "name": "kirigami-app-components",
+            "buildsystem": "cmake-ninja",
+            "config-opts": [
+                "-DBUILD_TESTING=OFF",
+                "-DBUILD_WITH_QT6=ON"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://invent.kde.org/libraries/kirigami-app-components"
+                }
+            ]
+        },
         {
             "name": "keepsecret",
             "buildsystem": "cmake-ninja",
