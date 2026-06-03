@@ -74,10 +74,12 @@ Kirigami.ScrollablePage {
             text: i18nc("@title:window Delete this wallet", "Delete Wallet")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "delete-wallet"
             onTriggered: {
                 showDeleteDialog(
                     i18nc("@title:window", "Delete Wallet"),
-                    i18nc("@label", "Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
+                    i18nc("@label", "Are you sure you want to delete the wallet \"%1\"?", App.collectionModel.collectionName),
                     i18nc("@action:check", "I understand that all the items will be permanently deleted"),
                     () => {
                         App.secretService.deleteCollection(App.collectionModel.collectionPath)
