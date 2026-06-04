@@ -181,7 +181,7 @@ static void onLoadSecretFinish(GObject *source, GAsyncResult *result, gpointer i
             StateTracker::instance()->clearError();
             StateTracker::instance()->setState(StateTracker::ItemReady);
         } else {
-            StateTracker::instance()->setError(StateTracker::ItemLoadSecretError, i18nc("@info:status", "Couldn't retrieve the secret value"));
+            StateTracker::instance()->setError(StateTracker::ItemLoadSecretError, i18nc("@info:status", "Could not retrieve the secret value"));
         }
     } else {
         StateTracker::instance()->setError(StateTracker::ItemLoadSecretError, message);

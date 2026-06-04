@@ -311,7 +311,7 @@ void SecretServiceClient::readDefaultCollection()
                                     QDBusConnection::sessionBus());
 
     if (!serviceInterface.isValid()) {
-        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18nc("@info:status", "Failed to connect to the DBus SecretService object"));
+        StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18nc("@info:status", "Failed to connect to the D-Bus SecretService object"));
         m_defaultCollection.clear();
         Q_EMIT defaultCollectionChanged(m_defaultCollection);
         return;

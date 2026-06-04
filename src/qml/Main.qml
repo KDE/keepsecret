@@ -121,7 +121,7 @@ Kirigami.ApplicationWindow {
         drawerOpen: false                          
         actions: [
             Kirigami.Action {
-                text: i18nc("@action:inMenu", "Report Bug...")
+                text: i18nc("@action:inMenu", "Report Bug…")
                 icon.name: "tools-report-bug"
                 onTriggered: Qt.openUrlExternally("https://bugs.kde.org/enter_bug.cgi?format=guided&product=keepsecret&version="+AboutData.version)
             },
@@ -129,7 +129,7 @@ Kirigami.ApplicationWindow {
                 separator: true
             },
             Kirigami.Action {
-                text: i18nc("@action:inMenu", "Donate...")
+                text: i18nc("@action:inMenu", "Donate…")
                 icon.name: "help-donate-" + Qt.locale().currencySymbol(Locale.CurrencyIsoCode).toLowerCase()
                 onTriggered: Qt.openUrlExternally("https://kde.org/donate/?app=keepsecret")
             },
@@ -228,7 +228,7 @@ Kirigami.ApplicationWindow {
     QQC.Dialog {
         id: walletCreationDialog
         modal: true
-        title: i18nc("@title:window", "Create a New Wallet")
+        title: i18nc("@title:window", "Create New Wallet")
         standardButtons: QQC.Dialog.Save | QQC.Dialog.Cancel
 
         function checkSaveEnabled() {

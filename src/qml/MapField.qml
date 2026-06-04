@@ -112,7 +112,7 @@ FormItem {
         QQC.CheckBox {
             id: showMapValuesCheck
             Layout.fillWidth: true
-            text: i18nc("@action:button", "Show Secret Values")
+            text: i18nc("@option:check", "Show secret values")
         }
         Timer {
             id: saveJsonTimer
