@@ -57,5 +57,20 @@ AC.ActionCollectionManager {
             text: i18nc("@action:button", "Copy Password")
             icon.name: "edit-copy-symbolic"
         }
+        AC.ActionData {
+            name: "save"
+            text: i18nc("@action:button Save changes made to this secret", "Save")
+            icon.name: "document-save"
+        }
+        AC.ActionData {
+            name: "revert"
+            text: i18nc("@action:button Revert changes made to this secret", "Revert")
+            icon.name: "document-revert-symbolic"
+        }
+        AC.ActionData {
+            name: "delete"
+            text: i18nc("@action:button Delete this secret", "Delete Secret")
+            icon.name: "delete-symbolic"
+        }
     }
 }

@@ -20,11 +20,15 @@ Kirigami.ScrollablePage {
             icon.name: "document-save"
             displayHint: Kirigami.DisplayHint.KeepVisible
             enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
+            AC.ActionCollection.collection: "org.kde.keepsecret.item"
+            AC.ActionCollection.action: "save"
             onTriggered: App.secretItem.save()
         },Kirigami.Action {
             text: i18nc("@action:button Revert changes made to this secret", "Revert")
             icon.name: "document-revert-symbolic"
             enabled: App.stateTracker.status & StateTracker.ItemNeedsSave
+            AC.ActionCollection.collection: "org.kde.keepsecret.item"
+            AC.ActionCollection.action: "revert"
             onTriggered: App.secretItem.revert()
         },
         Kirigami.Action {
@@ -53,6 +57,8 @@ Kirigami.ScrollablePage {
             text: i18nc("@action:button Delete this secret", "Delete Secret")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
+            AC.ActionCollection.collection: "org.kde.keepsecret.item"
+            AC.ActionCollection.action: "delete"
             onTriggered: {
                 showDeleteDialog(
                     i18nc("@title:window", "Delete Secret"),
