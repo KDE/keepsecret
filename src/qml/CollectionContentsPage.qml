@@ -61,7 +61,7 @@ Kirigami.ScrollablePage {
             readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
             enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
             AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "lock"
+            AC.ActionCollection.action: locked ? "unlock" : "lock"
             onTriggered: {
                 if (locked) {
                     App.collectionModel.unlock()
