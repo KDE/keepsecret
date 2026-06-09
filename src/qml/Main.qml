@@ -147,6 +147,12 @@ Kirigami.ApplicationWindow {
                 onTriggered: root.pageStack.pushDialogLayer(Qt.createComponent("org.kde.kirigamiaddons.formcard", "AboutKDEPage"))
             },
             Kirigami.Action {
+                text: i18nc("@action:inmenu", "Configure Shortcuts...")
+                icon.name: "configure-shortcuts"
+                AC.ActionCollection.collection: "org.kde.globalactions"
+                AC.ActionCollection.action: "KeyBindings"
+            },
+            Kirigami.Action {
                 text: i18nc("@action:inMenu", "New Wallet")
                 icon.name: "list-add-symbolic"
                 AC.ActionCollection.collection: "org.kde.keepsecret.collections"
