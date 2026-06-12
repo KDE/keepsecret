@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls as QQC
 import QtQuick.Layouts
 import QtQuick.Window
+import QtQuick.Dialogs 
 import org.kde.config as Config
 import org.kde.kirigami.actioncollection as AC
 import org.kde.kirigami as Kirigami
@@ -156,6 +157,19 @@ Kirigami.ApplicationWindow {
                 AC.ActionCollection.collection: "org.kde.keepsecret.collections"
                 AC.ActionCollection.action: "new-wallet"
                 onTriggered: walletCreationDialog.open()
+            },
+            Kirigami.Action {
+                separator: true
+            },
+            Kirigami.Action {
+                text: i18nc("@action:inMenu", "Export…")
+                icon.name: "document-export"
+                onTriggered: exportDialog.open()
+            },
+            Kirigami.Action {
+                text: i18nc("@action:inMenu", "Import…")
+                icon.name: "document-import"
+                onTriggered: importDialog.open()
             }
         ]
     }
@@ -270,6 +284,50 @@ Kirigami.ApplicationWindow {
             if (!visible) {
                 walletNameField.text = ""
             }
+        }
+    }
+    FileDialog {
+        id: exportDialog
+        title: i18nc("@title:window", "Export Wallet")
+        fileMode: FileDialog.SaveFile
+        nameFilters: [i18nc("@label file type filter", "KWallet XML files (*.xml)"), i18nc("@label file type filter", "All files (*)")]
+        onAccepted: {
+            App.importExportManager.exportToFile(
+                selectedFile.toString().replace("file://", ""),
+                App.collectionModel.collectionName,
+                App.collectionModel.exportItems()
+            )
+        }
+    }
+
+    FileDialog {
+        id: importDialog
+        title: i18nc("@title:window", "Import Wallet")
+        fileMode: QQC.FileDialog.OpenFile
+        nameFilters: [i18nc("@label file type filter", "KWallet XML files (*.xml)"), i18nc("@label file type filter", "All files (*)")]
+        onAccepted: {
+            App.importExportManager.importFromFile(
+                selectedFile.toString().replace("file://", "")
+            )
+        }
+    }
+    Connections {
+        target: App.importExportManager
+        function onImportSucceeded(items) {
+            for (let i = 0; i < items.length; i++) {
+                let item = items[i]
+                let label = item["label"] || ""
+                let secret = item["secretValue"] || ""
+                let folder = item["folder"] || ""
+                App.secretItem.createItem(label, secret, "", folder, App.collectionModel.collectionPath)
+            }
+        }
+        function onExportSucceeded(filePath) {
+            console.log("Export succeeded:", filePath)
+        }
+        function onErrorOccurred(message) {
+            errorLabel.text = message
+            errorDialog.open()
         }
     }
 

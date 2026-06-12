@@ -28,6 +28,8 @@ target_sources(keepsecret PRIVATE
     secretserviceclient.h
     statetracker.h
     collectionsmodel.h
+    importexportmanager.cpp
+    importexportmanager.h
     resources.qrc
 )
 
@@ -47,6 +49,7 @@ target_link_libraries(keepsecret PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Svg
+    Qt6::Xml
     KF6::I18n
     KF6::CoreAddons
     KF6::ConfigCore

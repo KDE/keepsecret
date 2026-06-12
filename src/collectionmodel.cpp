@@ -267,4 +267,51 @@ void CollectionModel::refreshWallet()
     m_notifyHandlerId = g_signal_connect(m_secretCollection.get(), "notify", G_CALLBACK(onCollectionNotify), this);
 }
 
+QVariantList CollectionModel::exportItems()
+{
+    QVariantList result;
+    if (!m_secretCollection) return result;
+
+    GListPtr list = GListPtr(secret_collection_get_items(m_secretCollection.get()));
+    if (!list) return result;
+
+    for (GList *l = list.get(); l != nullptr; l = l->next) {
+        SecretItemPtr item = SecretItemPtr(SECRET_ITEM(l->data));
+
+        GError *error = nullptr;
+        secret_item_load_secret_sync(item.get(), nullptr, &error);
+        if (error) {
+            g_error_free(error);
+            continue;
+        }
+
+        SecretValuePtr sv = SecretValuePtr(secret_item_get_secret(item.get()));
+        QString secretVal;
+        if (sv) {
+            gsize length = 0;
+            const gchar *pw = secret_value_get(sv.get(), &length);
+            secretVal = QString::fromUtf8(pw, length);
+        }
+
+        GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
+        QString folder;
+        const char *server = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "server"));
+        if (server) {
+            folder = QString::fromUtf8(server);
+        } else {
+            const char *service = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "service"));
+            if (service) folder = QString::fromUtf8(service);
+        }
+        if (folder.isEmpty()) folder = QStringLiteral("Other");
+
+        QVariantMap entry;
+        entry[QStringLiteral("label")]       = QString::fromUtf8(secret_item_get_label(item.get()));
+        entry[QStringLiteral("secretValue")] = secretVal;
+        entry[QStringLiteral("folder")]      = folder;
+        entry[QStringLiteral("type")]        = QStringLiteral("PlainText");
+        result.append(entry);
+    }
+    return result;
+}
+
 #include "moc_collectionmodel.cpp"
