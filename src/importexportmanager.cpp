@@ -50,7 +50,7 @@ void ImportExportManager::exportToFile(const QString &filePath, const QString &w
             } else if (type == QStringLiteral("Binary") || type == QStringLiteral("Base64")) {
                 QDomElement streamEl = doc.createElement(QStringLiteral("stream"));
                 streamEl.setAttribute(QStringLiteral("name"), label);
-                QByteArray raw = item.value(QStringLiteral("secretValue")).toString().toUtf8();
+                QByteArray raw = item.value(QStringLiteral("secretValue")).toByteArray();
                 streamEl.appendChild(doc.createTextNode(
                     QString::fromLatin1(raw.toBase64())));
                 folderEl.appendChild(streamEl);

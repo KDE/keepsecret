@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2025 Marco Martin <notmart@gmail.com>
+
 #pragma once
+
 #include <QObject>
+
 #include "collectionmodel.h"
 #include "collectionsmodel.h"
 #include "importexportmanager.h"
@@ -10,11 +13,13 @@
 #include "statetracker.h"
 
 class SecretServiceClient;
+
 class App : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
+
     Q_PROPERTY(SecretServiceClient *secretService READ secretService CONSTANT)
     Q_PROPERTY(StateTracker *stateTracker READ stateTracker CONSTANT)
     Q_PROPERTY(CollectionsModel *collectionsModel READ collectionsModel CONSTANT)
@@ -23,20 +28,25 @@ class App : public QObject
     Q_PROPERTY(SecretItemProxy *secretItemForContextMenu READ secretItemForContextMenu CONSTANT)
     Q_PROPERTY(ImportExportManager *importExportManager READ importExportManager CONSTANT)
     Q_PROPERTY(QString sidebarState READ sidebarState WRITE setSidebarState NOTIFY sidebarStateChanged)
+
 public:
     explicit App(QObject *parent = nullptr);
     ~App() override;
+
     SecretServiceClient *secretService() const;
     StateTracker *stateTracker() const;
     CollectionsModel *collectionsModel() const;
     CollectionModel *collectionModel() const;
     SecretItemProxy *secretItem() const;
     SecretItemProxy *secretItemForContextMenu() const;
+
     ImportExportManager *importExportManager() const;
     QString sidebarState() const;
     void setSidebarState(const QString &state);
+
 Q_SIGNALS:
     void sidebarStateChanged();
+
 private:
     SecretServiceClient *m_secretServiceClient = nullptr;
     CollectionsModel *m_collectionsModel = nullptr;

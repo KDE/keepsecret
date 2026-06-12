@@ -286,13 +286,12 @@ QVariantList CollectionModel::exportItems()
         }
 
         SecretValuePtr sv = SecretValuePtr(secret_item_get_secret(item.get()));
-        QString secretVal;
+        QByteArray secretBytes;
         if (sv) {
             gsize length = 0;
             const gchar *pw = secret_value_get(sv.get(), &length);
-            secretVal = QString::fromUtf8(pw, length);
+            secretBytes = QByteArray(pw, length);
         }
-
         GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
         QString folder;
         const char *server = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "server"));
@@ -306,10 +305,11 @@ QVariantList CollectionModel::exportItems()
 
         QVariantMap entry;
         entry[QStringLiteral("label")]       = QString::fromUtf8(secret_item_get_label(item.get()));
-        entry[QStringLiteral("secretValue")] = secretVal;
+        entry[QStringLiteral("secretValue")] = secretBytes;
         entry[QStringLiteral("folder")]      = folder;
         entry[QStringLiteral("type")]        = QStringLiteral("PlainText");
         result.append(entry);
+           
     }
     return result;
 }
