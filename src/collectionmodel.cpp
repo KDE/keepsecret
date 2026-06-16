@@ -255,7 +255,31 @@ void CollectionModel::refreshWallet()
             if (entry.folder.isEmpty()) {
                 entry.folder = i18nc("@info Other type of secret", "Other");
             }
-
+            
+            // Load secret value
+            GError *secretError = nullptr;
+            secret_item_load_secret_sync(item.get(), nullptr, &secretError);
+            if (!secretError) {
+                SecretValuePtr sv = SecretValuePtr(secret_item_get_secret(item.get()));
+                if (sv) {
+                    gsize length = 0;
+                    const gchar *pw = secret_value_get(sv.get(), &length);
+                    entry.secret = QByteArray(pw, length);
+                    entry.contentType = QString::fromUtf8(secret_value_get_content_type(sv.get()));
+                }
+            } else {
+                g_error_free(secretError);
+            }
+            
+            // Store all attributes
+            GHashTableIter iter;
+            gpointer key, value;
+            g_hash_table_iter_init(&iter, attributes.get());
+            while (g_hash_table_iter_next(&iter, &key, &value)) {
+                entry.attributes[QString::fromUtf8(static_cast<const gchar *>(key))] = 
+                QString::fromUtf8(static_cast<const gchar *>(value));
+            }
+            
             m_items << entry;
         }
     }
@@ -270,46 +294,14 @@ void CollectionModel::refreshWallet()
 QVariantList CollectionModel::exportItems()
 {
     QVariantList result;
-    if (!m_secretCollection) return result;
-
-    GListPtr list = GListPtr(secret_collection_get_items(m_secretCollection.get()));
-    if (!list) return result;
-
-    for (GList *l = list.get(); l != nullptr; l = l->next) {
-        SecretItemPtr item = SecretItemPtr(SECRET_ITEM(l->data));
-
-        GError *error = nullptr;
-        secret_item_load_secret_sync(item.get(), nullptr, &error);
-        if (error) {
-            g_error_free(error);
-            continue;
-        }
-
-        SecretValuePtr sv = SecretValuePtr(secret_item_get_secret(item.get()));
-        QByteArray secretBytes;
-        if (sv) {
-            gsize length = 0;
-            const gchar *pw = secret_value_get(sv.get(), &length);
-            secretBytes = QByteArray(pw, length);
-        }
-        GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));
-        QString folder;
-        const char *server = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "server"));
-        if (server) {
-            folder = QString::fromUtf8(server);
-        } else {
-            const char *service = static_cast<gchar *>(g_hash_table_lookup(attributes.get(), "service"));
-            if (service) folder = QString::fromUtf8(service);
-        }
-        if (folder.isEmpty()) folder = QStringLiteral("Other");
-
+    for (const Entry &e : m_items) {
         QVariantMap entry;
-        entry[QStringLiteral("label")]       = QString::fromUtf8(secret_item_get_label(item.get()));
-        entry[QStringLiteral("secretValue")] = secretBytes;
-        entry[QStringLiteral("folder")]      = folder;
-        entry[QStringLiteral("type")]        = QStringLiteral("PlainText");
+        entry[QStringLiteral("label")]       = e.label;
+        entry[QStringLiteral("secret")]      = e.secret;
+        entry[QStringLiteral("contentType")] = e.contentType;
+        entry[QStringLiteral("attributes")]  = e.attributes;
+        entry[QStringLiteral("folder")]      = e.folder;
         result.append(entry);
-           
     }
     return result;
 }

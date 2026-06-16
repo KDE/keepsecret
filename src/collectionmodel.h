@@ -4,6 +4,7 @@
 #pragma once
 
 #include "secretserviceclient.h"
+#include <QVariantMap>
 #include <QAbstractListModel>
 
 class SecretServiceClient;
@@ -55,6 +56,9 @@ private:
         QString label;
         QString dbusPath;
         QString folder;
+        QByteArray secret;
+        QString contentType;
+        QVariantMap attributes;
     };
     QString m_currentCollectionPath;
     QList<Entry> m_items;

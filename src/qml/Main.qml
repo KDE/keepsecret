@@ -317,9 +317,17 @@ Kirigami.ApplicationWindow {
             for (let i = 0; i < items.length; i++) {
                 let item = items[i]
                 let label = item["label"] || ""
-                let secret = item["secretValue"] || ""
-                let folder = item["folder"] || ""
-                App.secretItem.createItem(label, secret, "", folder, App.collectionModel.collectionPath)
+                let secret = item["secret"] || ""
+                let attrs = item["attributes"] || {}
+                let server = attrs["server"] || ""
+                let user = attrs["user"] || ""
+                App.secretItem.createItem(
+                    label,
+                    secret,
+                    user,
+                    server,
+                    App.collectionModel.collectionPath
+                )
             }
         }
         function onExportSucceeded(filePath) {

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+// SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumarii098@gmail.com>
 
 #include "importexportmanager.h"
 
-#include <QFile>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QFile>
 
 ImportExportManager::ImportExportManager(QObject *parent)
     : QObject(parent)
@@ -19,50 +19,33 @@ void ImportExportManager::exportToFile(const QString &filePath, const QString &w
     root.setAttribute(QStringLiteral("name"), walletName);
     doc.appendChild(root);
 
-    QMap<QString, QList<QVariantMap>> folders;
     for (const QVariant &item : items) {
         QVariantMap map = item.toMap();
-        QString folder = map.value(QStringLiteral("folder"), QStringLiteral("Passwords")).toString();
-        folders[folder].append(map);
-    }
+        QString label = map.value(QStringLiteral("label")).toString();
+        QByteArray secret = map.value(QStringLiteral("secret")).toByteArray();
+        QString contentType = map.value(QStringLiteral("contentType")).toString();
+        QVariantMap attributes = map.value(QStringLiteral("attributes")).toMap();
 
-    for (auto it = folders.begin(); it != folders.end(); ++it) {
-        QDomElement folderEl = doc.createElement(QStringLiteral("folder"));
-        folderEl.setAttribute(QStringLiteral("name"), it.key());
-        root.appendChild(folderEl);
+        QDomElement itemEl = doc.createElement(QStringLiteral("item"));
+        itemEl.setAttribute(QStringLiteral("label"), label);
+        itemEl.setAttribute(QStringLiteral("contentType"), contentType);
+        root.appendChild(itemEl);
 
-        for (const QVariantMap &item : it.value()) {
-            QString label = item.value(QStringLiteral("label")).toString();
-            QString type  = item.value(QStringLiteral("type")).toString();
+        // Secret as base64
+        QDomElement secretEl = doc.createElement(QStringLiteral("secret"));
+        secretEl.appendChild(doc.createTextNode(
+            QString::fromLatin1(secret.toBase64())));
+        itemEl.appendChild(secretEl);
 
-            if (type == QStringLiteral("Map")) {
-                QDomElement mapEl = doc.createElement(QStringLiteral("map"));
-                mapEl.setAttribute(QStringLiteral("name"), label);
-                QVariantMap attrs = item.value(QStringLiteral("attributes")).toMap();
-                for (auto a = attrs.begin(); a != attrs.end(); ++a) {
-                    QDomElement entry = doc.createElement(QStringLiteral("mapentry"));
-                    entry.setAttribute(QStringLiteral("name"), a.key());
-                    entry.appendChild(doc.createTextNode(a.value().toString()));
-                    mapEl.appendChild(entry);
-                }
-                folderEl.appendChild(mapEl);
-
-            } else if (type == QStringLiteral("Binary") || type == QStringLiteral("Base64")) {
-                QDomElement streamEl = doc.createElement(QStringLiteral("stream"));
-                streamEl.setAttribute(QStringLiteral("name"), label);
-                QByteArray raw = item.value(QStringLiteral("secretValue")).toByteArray();
-                streamEl.appendChild(doc.createTextNode(
-                    QString::fromLatin1(raw.toBase64())));
-                folderEl.appendChild(streamEl);
-
-            } else {
-                QDomElement passEl = doc.createElement(QStringLiteral("password"));
-                passEl.setAttribute(QStringLiteral("name"), label);
-                passEl.appendChild(doc.createTextNode(
-                    item.value(QStringLiteral("secretValue")).toString()));
-                folderEl.appendChild(passEl);
-            }
+        // All attributes
+        QDomElement attrsEl = doc.createElement(QStringLiteral("attributes"));
+        for (auto a = attributes.begin(); a != attributes.end(); ++a) {
+            QDomElement attr = doc.createElement(QStringLiteral("attribute"));
+            attr.setAttribute(QStringLiteral("name"), a.key());
+            attr.appendChild(doc.createTextNode(a.value().toString()));
+            attrsEl.appendChild(attr);
         }
+        itemEl.appendChild(attrsEl);
     }
 
     QFile file(filePath);
@@ -93,61 +76,36 @@ void ImportExportManager::importFromFile(const QString &filePath)
 
     QDomElement root = doc.documentElement();
     if (root.tagName().toLower() != QStringLiteral("wallet")) {
-        Q_EMIT errorOccurred(QStringLiteral("Not a valid KWallet XML file."));
+        Q_EMIT errorOccurred(QStringLiteral("Not a valid KeepSecret XML file."));
         return;
     }
 
     QVariantList items;
-    QDomNodeList folders = root.elementsByTagName(QStringLiteral("folder"));
+    QDomNodeList itemNodes = root.elementsByTagName(QStringLiteral("item"));
 
-    for (int i = 0; i < folders.count(); ++i) {
-        QDomElement folder = folders.at(i).toElement();
-        QString folderName = folder.attribute(QStringLiteral("name"));
+    for (int i = 0; i < itemNodes.count(); ++i) {
+        QDomElement e = itemNodes.at(i).toElement();
+        QVariantMap item;
+        item[QStringLiteral("label")]       = e.attribute(QStringLiteral("label"));
+        item[QStringLiteral("contentType")] = e.attribute(QStringLiteral("contentType"));
 
-        QDomNode child = folder.firstChild();
-        while (!child.isNull()) {
-            QDomElement e = child.toElement();
-            QString tag = e.tagName().toLower();
-            QString ename = e.attribute(QStringLiteral("name"));
+        // Secret from base64
+        QString secretB64 = e.firstChildElement(QStringLiteral("secret")).text();
+        item[QStringLiteral("secret")] = QByteArray::fromBase64(secretB64.toLatin1());
 
-            if (tag == QStringLiteral("password")) {
-                QVariantMap item;
-                item[QStringLiteral("label")]       = ename;
-                item[QStringLiteral("secretValue")] = e.text();
-                item[QStringLiteral("type")]        = QStringLiteral("PlainText");
-                item[QStringLiteral("folder")]      = folderName;
-                items.append(item);
-
-            } else if (tag == QStringLiteral("stream")) {
-                QVariantMap item;
-                item[QStringLiteral("label")]       = ename;
-                item[QStringLiteral("secretValue")] = QString::fromUtf8(
-                    QByteArray::fromBase64(e.text().toLatin1()));
-                item[QStringLiteral("type")]        = QStringLiteral("Binary");
-                item[QStringLiteral("folder")]      = folderName;
-                items.append(item);
-
-            } else if (tag == QStringLiteral("map")) {
-                QVariantMap item;
-                item[QStringLiteral("label")]  = ename;
-                item[QStringLiteral("type")]   = QStringLiteral("Map");
-                item[QStringLiteral("folder")] = folderName;
-                QVariantMap attrs;
-                QDomNode mapChild = e.firstChild();
-                while (!mapChild.isNull()) {
-                    QDomElement mapEntry = mapChild.toElement();
-                    if (mapEntry.tagName().toLower() == QStringLiteral("mapentry")) {
-                        attrs[mapEntry.attribute(QStringLiteral("name"))] =
-                            mapEntry.text();
-                    }
-                    mapChild = mapChild.nextSibling();
-                }
-                item[QStringLiteral("attributes")] = attrs;
-                items.append(item);
+        // All attributes
+        QVariantMap attrs;
+        QDomElement attrsEl = e.firstChildElement(QStringLiteral("attributes"));
+        QDomNode attrChild = attrsEl.firstChild();
+        while (!attrChild.isNull()) {
+            QDomElement attr = attrChild.toElement();
+            if (attr.tagName().toLower() == QStringLiteral("attribute")) {
+                attrs[attr.attribute(QStringLiteral("name"))] = attr.text();
             }
-
-            child = child.nextSibling();
+            attrChild = attrChild.nextSibling();
         }
+        item[QStringLiteral("attributes")] = attrs;
+        items.append(item);
     }
 
     Q_EMIT importSucceeded(items);
