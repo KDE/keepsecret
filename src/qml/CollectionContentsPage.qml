@@ -400,7 +400,7 @@ Kirigami.ScrollablePage {
         id: exportDialog
         title: i18nc("@title:window", "Export Wallet")
         fileMode: FileDialog.SaveFile
-        nameFilters: [i18nc("@label file type filter", "KeepSecret XML files (*.xml)"), i18nc("@label file type filter", "All files (*)")]
+        nameFilters: [i18nc("@label file type filter", "KeepSecret files (*.keepsecret)"), i18nc("@label file type filter", "All files (*)")]
         onAccepted: {
             App.importExportManager.exportToFile(
                 selectedFile.toString().replace("file://", ""),
@@ -414,7 +414,7 @@ Kirigami.ScrollablePage {
         id: importDialog
         title: i18nc("@title:window", "Import Wallet")
         fileMode: FileDialog.OpenFile
-        nameFilters: [i18nc("@label file type filter", "KeepSecret XML files (*.xml)"), i18nc("@label file type filter", "All files (*)")]
+        nameFilters: [i18nc("@label file type filter", "KeepSecret files (*.keepsecret)"), i18nc("@label file type filter", "All files (*)")]
         onAccepted: {
             App.importExportManager.importFromFile(
                 selectedFile.toString().replace("file://", "")
