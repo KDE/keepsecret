@@ -48,6 +48,16 @@ AC.ActionCollectionManager {
             text: i18nc("@title:window Delete this wallet", "Delete Wallet")
             icon.name: "delete-symbolic"
         }
+        AC.ActionData {
+            name: "export-wallet"
+            text: i18nc("@action:inmenu", "Export…")
+            icon.name: "document-export"
+        }
+        AC.ActionData {
+            name: "import-wallet"
+            text: i18nc("@action:inmenu", "Import…")
+            icon.name: "document-import"
+        }
     }
     AC.ActionCollection {
         name: "org.kde.keepsecret.item"
