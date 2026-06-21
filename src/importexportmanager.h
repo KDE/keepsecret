@@ -16,6 +16,7 @@ public:
     explicit ImportExportManager(QObject *parent = nullptr);
     Q_INVOKABLE void exportToFile(const QString &filePath, const QString &walletName, const QVariantList &items);
     Q_INVOKABLE void importFromFile(const QString &filePath);
+    Q_INVOKABLE void importFromKWalletXml(const QString &filePath);
 Q_SIGNALS:
     void exportSucceeded(const QString &filePath);
     void importSucceeded(const QVariantList &items);

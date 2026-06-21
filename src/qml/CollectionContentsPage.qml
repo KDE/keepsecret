@@ -95,10 +95,18 @@ Kirigami.ScrollablePage {
             onTriggered: exportDialog.open()
         },
         Kirigami.Action {
+            text: i18nc("@action:inmenu", "Import…")
+            icon.name: "document-import"
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "import-wallet"
-            onTriggered: importDialog.open()
+
+            Kirigami.Action {
+                text: i18nc("@action:inmenu", "KeepSecret…")
+                onTriggered: importDialog.open()
+            }
+            Kirigami.Action {
+                text: i18nc("@action:inmenu", "KWallet XML…")
+                onTriggered: importKWalletDialog.open()
+            }
         }
     ]
 
@@ -417,6 +425,18 @@ Kirigami.ScrollablePage {
         nameFilters: [i18nc("@label file type filter", "KeepSecret files (*.keepsecret)"), i18nc("@label file type filter", "All files (*)")]
         onAccepted: {
             App.importExportManager.importFromFile(
+                selectedFile.toString().replace("file://", "")
+            )
+        }
+    }
+
+    FileDialog {
+        id: importKWalletDialog
+        title: i18nc("@title:window", "Import KWallet XML")
+        fileMode: FileDialog.OpenFile
+        nameFilters: [i18nc("@label file type filter", "KWallet XML files (*.xml)"), i18nc("@label file type filter", "All files (*)")]
+        onAccepted: {
+            App.importExportManager.importFromKWalletXml(
                 selectedFile.toString().replace("file://", "")
             )
         }

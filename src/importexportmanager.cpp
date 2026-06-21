@@ -110,3 +110,85 @@ void ImportExportManager::importFromFile(const QString &filePath)
 
     Q_EMIT importSucceeded(items);
 }
+
+void ImportExportManager::importFromKWalletXml(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        Q_EMIT errorOccurred(QStringLiteral("Cannot open file for reading: ") + filePath);
+        return;
+    }
+
+    QDomDocument doc;
+    auto result = doc.setContent(&file);
+    file.close();
+    if (!result) {
+        Q_EMIT errorOccurred(QStringLiteral("XML parse error: ") + result.errorMessage);
+        return;
+    }
+
+    QDomElement root = doc.documentElement();
+    if (root.tagName().toLower() != QStringLiteral("wallet")) {
+        Q_EMIT errorOccurred(QStringLiteral("Not a valid KWallet XML file."));
+        return;
+    }
+
+    QVariantList items;
+    QDomNodeList folders = root.elementsByTagName(QStringLiteral("folder"));
+
+    for (int i = 0; i < folders.count(); ++i) {
+        QDomElement folder = folders.at(i).toElement();
+        QString folderName = folder.attribute(QStringLiteral("name"));
+
+        QDomNode child = folder.firstChild();
+        while (!child.isNull()) {
+            QDomElement e = child.toElement();
+            QString tag = e.tagName().toLower();
+            QString ename = e.attribute(QStringLiteral("name"));
+
+            if (tag == QStringLiteral("password")) {
+                QVariantMap item;
+                item[QStringLiteral("label")]       = ename;
+                item[QStringLiteral("secret")]      = e.text().toUtf8();
+                item[QStringLiteral("contentType")] = QStringLiteral("text/plain");
+                QVariantMap attrs;
+                attrs[QStringLiteral("server")] = folderName;
+                item[QStringLiteral("attributes")] = attrs;
+                items.append(item);
+
+            } else if (tag == QStringLiteral("stream")) {
+                QVariantMap item;
+                item[QStringLiteral("label")]       = ename;
+                item[QStringLiteral("secret")]      = QByteArray::fromBase64(e.text().toLatin1());
+                item[QStringLiteral("contentType")] = QStringLiteral("application/octet-stream");
+                QVariantMap attrs;
+                attrs[QStringLiteral("server")] = folderName;
+                item[QStringLiteral("attributes")] = attrs;
+                items.append(item);
+
+            } else if (tag == QStringLiteral("map")) {
+                QVariantMap item;
+                item[QStringLiteral("label")]       = ename;
+                item[QStringLiteral("secret")]      = QByteArray();
+                item[QStringLiteral("contentType")] = QStringLiteral("text/plain");
+
+                QVariantMap attrs;
+                attrs[QStringLiteral("server")] = folderName;
+                QDomNode mapChild = e.firstChild();
+                while (!mapChild.isNull()) {
+                    QDomElement mapEntry = mapChild.toElement();
+                    if (mapEntry.tagName().toLower() == QStringLiteral("mapentry")) {
+                        attrs[mapEntry.attribute(QStringLiteral("name"))] = mapEntry.text();
+                    }
+                    mapChild = mapChild.nextSibling();
+                }
+                item[QStringLiteral("attributes")] = attrs;
+                items.append(item);
+            }
+
+            child = child.nextSibling();
+        }
+    }
+
+    Q_EMIT importSucceeded(items);
+}
