@@ -54,8 +54,13 @@ AC.ActionCollectionManager {
             icon.name: "document-export"
         }
         AC.ActionData {
-            name: "import-wallet"
-            text: i18nc("@action:inmenu", "Import…")
+            name: "import-keepsecret"
+            text: i18nc("@action:inmenu", "Import KeepSecret…")
+            icon.name: "document-import"
+        }
+        AC.ActionData {
+            name: "import-kwallet-xml"
+            text: i18nc("@action:inmenu", "Import KWallet XML…")
             icon.name: "document-import"
         }
     }

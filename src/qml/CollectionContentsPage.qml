@@ -95,16 +95,18 @@ Kirigami.ScrollablePage {
             onTriggered: exportDialog.open()
         },
         Kirigami.Action {
-            text: i18nc("@action:inmenu", "Import…")
+            text: i18nc("@action:inmenu", "Import")
             icon.name: "document-import"
             displayHint: Kirigami.DisplayHint.AlwaysHide
 
             Kirigami.Action {
-                text: i18nc("@action:inmenu", "KeepSecret…")
+                AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+                AC.ActionCollection.action: "import-keepsecret"
                 onTriggered: importDialog.open()
             }
             Kirigami.Action {
-                text: i18nc("@action:inmenu", "KWallet XML…")
+                AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+                AC.ActionCollection.action: "import-kwallet-xml"
                 onTriggered: importKWalletDialog.open()
             }
         }
