@@ -50,6 +50,7 @@ public:
     QVariantMap attributes() const;
     Q_INVOKABLE void setAttribute(const QString &key, const QString &value);
     Q_INVOKABLE void copySecret();
+    Q_INVOKABLE QString generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const;
 
     SecretServiceClient::Type type() const;
 

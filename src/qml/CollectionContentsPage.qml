@@ -191,6 +191,14 @@ Kirigami.ScrollablePage {
                 onTextChanged: creationDialog.checkSaveEnabled()
                 onAccepted: creationDialog.maybeAccept()
             }
+            QQC.Button {
+                icon.name: "view-refresh-symbolic"
+                text: i18nc("@action:button generate a random password", "Generate")
+                Layout.alignment: Qt.AlignRight
+                onClicked: {
+                    passwordField.text = App.secretItem.generatePassword(16, true, true, true, true)
+                }
+            }
             QQC.Label {
                 text: i18nc("@label:textbox user of this secret", "User:")
             }

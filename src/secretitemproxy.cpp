@@ -8,6 +8,7 @@
 
 #include <KLocalizedString>
 #include <QClipboard>
+#include<QRandomGenerator>
 #include <QGuiApplication>
 
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
@@ -146,6 +147,36 @@ void SecretItemProxy::setAttribute(const QString &key, const QString &value)
 void SecretItemProxy::copySecret()
 {
     qApp->clipboard()->setText(QString::fromUtf8(m_secretValue));
+}
+
+QString SecretItemProxy::generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const
+{
+    QString charset;
+    if (includeLower) {
+        charset += QStringLiteral("abcdefghijklmnopqrstuvwxyz");
+    }
+    if (includeUpper) {
+        charset += QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    }
+    if (includeDigits) {
+        charset += QStringLiteral("0123456789");
+    }
+    if (includeSymbols) {
+        charset += QStringLiteral("!@#$%^&*()-_=+[]{}");
+    }
+
+    if (charset.isEmpty() || length <= 0) {
+        return QString();
+    }
+
+    QString password;
+    password.reserve(length);
+    for (int i = 0; i < length; ++i) {
+        int index = QRandomGenerator::global()->bounded(charset.length());
+        password.append(charset.at(index));
+    }
+
+    return password;
 }
 
 SecretServiceClient::Type SecretItemProxy::type() const
