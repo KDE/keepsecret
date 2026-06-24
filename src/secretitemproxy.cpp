@@ -149,7 +149,7 @@ void SecretItemProxy::copySecret()
     qApp->clipboard()->setText(QString::fromUtf8(m_secretValue));
 }
 
-QString SecretItemProxy::generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const
+QByteArray SecretItemProxy::generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const
 {
     QString charset;
     if (includeLower) {
@@ -166,14 +166,14 @@ QString SecretItemProxy::generatePassword(int length, bool includeLower, bool in
     }
 
     if (charset.isEmpty() || length <= 0) {
-        return QString();
+        return QByteArray();
     }
 
-    QString password;
+    QByteArray password;
     password.reserve(length);
     for (int i = 0; i < length; ++i) {
         int index = QRandomGenerator::global()->bounded(charset.length());
-        password.append(charset.at(index));
+        password.append(charset.at(index).toLatin1());
     }
 
     return password;
