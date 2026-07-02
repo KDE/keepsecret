@@ -13,6 +13,8 @@
 #include <QMimeData> 
 #include <QCoreApplication>
 
+using namespace std::literals::chrono_literals;
+
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)
     , m_secretServiceClient(secretServiceClient)
@@ -37,22 +39,18 @@ SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObje
                     Q_EMIT itemLoaded();
                 }
             });
-            m_clipboardClearTimer = new QTimer(this);
-            m_clipboardClearTimer->setSingleShot(true);
-            connect(m_clipboardClearTimer, &QTimer::timeout, this, [this]() {
-                clearClipboard();
-            });
-
-            m_clipboardCountdownTimer = new QTimer(this);
-            connect(m_clipboardCountdownTimer, &QTimer::timeout, this, [this]() {
+            m_clipboardTimer = new QTimer(this);
+            m_clipboardTimer->setInterval(std::chrono::seconds(1));
+            connect(m_clipboardTimer, &QTimer::timeout, this, [this]() {
                 m_clipboardSecondsRemaining--;
-                if (m_clipboardSecondsRemaining > 0) {
-                    Q_EMIT clipboardWillClear(m_clipboardSecondsRemaining);
+                if (m_clipboardSecondsRemaining <= 0) {
+                    m_clipboardTimer->stop();
+                    clearClipboard();
                 } else {
-                    m_clipboardCountdownTimer->stop();
+                Q_EMIT clipboardWillClear(m_clipboardSecondsRemaining);
                 }
             });
-            
+
             connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() {
                 clearClipboard();
             });
@@ -172,19 +170,17 @@ void SecretItemProxy::copySecret()
     mimeData->setData(QStringLiteral("x-kde-passwordManagerHint"), QByteArrayLiteral("secret"));
     qApp->clipboard()->setMimeData(mimeData);
 
-    m_clipboardSecondsRemaining = m_clipboardClearTimeout;
+    m_clipboardSecondsRemaining = m_clipboardClearTimeout.count();
     Q_EMIT clipboardWillClear(m_clipboardSecondsRemaining);
-
-    m_clipboardClearTimer->start(m_clipboardClearTimeout * 1000);
-    m_clipboardCountdownTimer->start(1000);
+    m_clipboardTimer->start();
 }
 
-int SecretItemProxy::clipboardClearTimeout() const
+std::chrono::seconds SecretItemProxy::clipboardClearTimeout() const
 {
     return m_clipboardClearTimeout;
 }
 
-void SecretItemProxy::setClipboardClearTimeout(int seconds)
+void SecretItemProxy::setClipboardClearTimeout(std::chrono::seconds seconds)
 {
     if (m_clipboardClearTimeout == seconds) {
         return;
@@ -198,8 +194,7 @@ void SecretItemProxy::clearClipboard()
     if (qApp->clipboard()->text() == QString::fromUtf8(m_secretValue)) {
         qApp->clipboard()->setText(QString());
     }
-    m_clipboardClearTimer->stop();
-    m_clipboardCountdownTimer->stop();
+    m_clipboardTimer->stop();
     Q_EMIT clipboardCleared();
 }
 
