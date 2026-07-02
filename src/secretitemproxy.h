@@ -5,6 +5,7 @@
 
 #include "secretserviceclient.h"
 #include <QDateTime>
+#include <QTimer>
 #include <QObject>
 #include <qqmlregistration.h>
 
@@ -26,6 +27,7 @@ class SecretItemProxy : public QObject
     Q_PROPERTY(QString formattedBinarySecret READ formattedBinarySecret NOTIFY secretValueChanged)
 
     Q_PROPERTY(QVariantMap attributes READ attributes NOTIFY attributesChanged)
+    Q_PROPERTY(int clipboardClearTimeout READ clipboardClearTimeout WRITE setClipboardClearTimeout NOTIFY clipboardClearTimeoutChanged)
 
 public:
     explicit SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent = nullptr);
@@ -50,6 +52,8 @@ public:
     QVariantMap attributes() const;
     Q_INVOKABLE void setAttribute(const QString &key, const QString &value);
     Q_INVOKABLE void copySecret();
+    int clipboardClearTimeout() const;
+    void setClipboardClearTimeout(int seconds);
     Q_INVOKABLE QByteArray generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const;
 
     SecretServiceClient::Type type() const;
@@ -81,8 +85,12 @@ Q_SIGNALS:
     void secretValueChanged();
     void typeChanged(SecretServiceClient::Type type);
     void attributesChanged(const QVariantMap &attribures);
+    void clipboardClearTimeoutChanged();
+    void clipboardWillClear(int secondsRemaining);
+    void clipboardCleared();
 
 private:
+    void clearClipboard();
     QString m_dbusPath;
     QString m_collectionPath;
     SecretServiceClient::Type m_type = SecretServiceClient::Unknown;
@@ -94,6 +102,10 @@ private:
     QString m_label;
     QByteArray m_secretValue;
     QVariantMap m_attributes;
+    QTimer *m_clipboardClearTimer = nullptr;
+    QTimer *m_clipboardCountdownTimer = nullptr;
+    int m_clipboardClearTimeout = 30; // default 30 seconds
+    int m_clipboardSecondsRemaining = 0;
 
     SecretItemPtr m_secretItem;
     SecretServiceClient *const m_secretServiceClient;

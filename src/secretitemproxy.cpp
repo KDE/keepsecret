@@ -10,6 +10,8 @@
 #include <QClipboard>
 #include<QRandomGenerator>
 #include <QGuiApplication>
+#include <QMimeData> 
+#include <QCoreApplication>
 
 SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObject *parent)
     : QObject(parent)
@@ -34,6 +36,25 @@ SecretItemProxy::SecretItemProxy(SecretServiceClient *secretServiceClient, QObje
                 } else if (oldOperations & StateTracker::ItemLoading && !(newOperations & StateTracker::ItemLoading)) {
                     Q_EMIT itemLoaded();
                 }
+            });
+            m_clipboardClearTimer = new QTimer(this);
+            m_clipboardClearTimer->setSingleShot(true);
+            connect(m_clipboardClearTimer, &QTimer::timeout, this, [this]() {
+                clearClipboard();
+            });
+
+            m_clipboardCountdownTimer = new QTimer(this);
+            connect(m_clipboardCountdownTimer, &QTimer::timeout, this, [this]() {
+                m_clipboardSecondsRemaining--;
+                if (m_clipboardSecondsRemaining > 0) {
+                    Q_EMIT clipboardWillClear(m_clipboardSecondsRemaining);
+                } else {
+                    m_clipboardCountdownTimer->stop();
+                }
+            });
+            
+            connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() {
+                clearClipboard();
             });
 }
 
@@ -146,8 +167,42 @@ void SecretItemProxy::setAttribute(const QString &key, const QString &value)
 
 void SecretItemProxy::copySecret()
 {
-    qApp->clipboard()->setText(QString::fromUtf8(m_secretValue));
+    auto *mimeData = new QMimeData();
+    mimeData->setText(QString::fromUtf8(m_secretValue));
+    mimeData->setData(QStringLiteral("x-kde-passwordManagerHint"), QByteArrayLiteral("secret"));
+    qApp->clipboard()->setMimeData(mimeData);
+
+    m_clipboardSecondsRemaining = m_clipboardClearTimeout;
+    Q_EMIT clipboardWillClear(m_clipboardSecondsRemaining);
+
+    m_clipboardClearTimer->start(m_clipboardClearTimeout * 1000);
+    m_clipboardCountdownTimer->start(1000);
 }
+
+int SecretItemProxy::clipboardClearTimeout() const
+{
+    return m_clipboardClearTimeout;
+}
+
+void SecretItemProxy::setClipboardClearTimeout(int seconds)
+{
+    if (m_clipboardClearTimeout == seconds) {
+        return;
+    }
+    m_clipboardClearTimeout = seconds;
+    Q_EMIT clipboardClearTimeoutChanged();
+}
+
+void SecretItemProxy::clearClipboard()
+{
+    if (qApp->clipboard()->text() == QString::fromUtf8(m_secretValue)) {
+        qApp->clipboard()->setText(QString());
+    }
+    m_clipboardClearTimer->stop();
+    m_clipboardCountdownTimer->stop();
+    Q_EMIT clipboardCleared();
+}
+K8kYGz/yV/uVyQFK+x0pkQ==
 
 QByteArray SecretItemProxy::generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const
 {

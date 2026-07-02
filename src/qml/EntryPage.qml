@@ -84,6 +84,36 @@ Kirigami.ScrollablePage {
     }
     ColumnLayout {
         spacing: Kirigami.Units.gridUnit
+
+        Kirigami.InlineMessage {
+            id: clipboardMessage
+            Layout.fillWidth: true
+            visible: false
+            showCloseButton: true
+            text: i18nc("@info clipboard auto-clear countdown", "Password copied. Clipboard will be cleared in %1 seconds.", clipboardSecondsRemaining)
+        
+            property int clipboardSecondsRemaining: 0
+        }
+
+        Connections {
+            target: App.secretItem
+            function onItemLoaded() {
+                passwordField.showPassword = false;
+                showBinaryCheck.checked = false;
+                mapField.showSecret = false;
+                if (page.Kirigami.ColumnView.view.columnResizeMode === Kirigami.ColumnView.SingleColumn) {
+                    page.Kirigami.ColumnView.view.currentIndex = page.Kirigami.ColumnView.index
+                }
+            }
+            function onClipboardWillClear(secondsRemaining) {
+                clipboardMessage.clipboardSecondsRemaining = secondsRemaining
+                clipboardMessage.visible = true
+            }
+            function onClipboardCleared() {
+                clipboardMessage.visible = false
+            }
+        }
+
         FormCard.FormCard {
             FormItem {
                 label: i18nc("@label:textbox Name of this secret", "Label:")
