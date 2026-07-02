@@ -202,7 +202,6 @@ void SecretItemProxy::clearClipboard()
     m_clipboardCountdownTimer->stop();
     Q_EMIT clipboardCleared();
 }
-K8kYGz/yV/uVyQFK+x0pkQ==
 
 QByteArray SecretItemProxy::generatePassword(int length, bool includeLower, bool includeUpper, bool includeDigits, bool includeSymbols) const
 {
