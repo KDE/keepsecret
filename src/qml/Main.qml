@@ -157,6 +157,11 @@ Kirigami.ApplicationWindow {
                 AC.ActionCollection.collection: "org.kde.keepsecret.collections"
                 AC.ActionCollection.action: "new-wallet"
                 onTriggered: walletCreationDialog.open()
+            },
+            Kirigami.Action {
+                text: i18nc("@action:inmenu", "KeepSecret Handbook")
+                icon.name: "help-contents"
+                onTriggered: Qt.openUrlExternally("help:/keepsecret")
             }
         ]
     }
