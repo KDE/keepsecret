@@ -1,0 +1,130 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application>KeepSecret</application>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % English "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname><firstname>Roshani</firstname><surname>Kumari</surname></personname>">
+    <!ENTITY Roshani.Kumari.mail "<email>roshnikumarii098@gmail.com</email>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title>The &keepsecret; Handbook</title>
+<authorgroup>
+<author>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year>2026</year>
+<holder>Roshani Kumari</holder>
+</copyright>
+<legalnotice>&CCBYSA4Notice;</legalnotice>
+<date>2026-07-06</date>
+<releaseinfo>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para>
+KeepSecret is a password manager for KDE that stores secrets securely
+using the freedesktop Secret Service API.
+</para>
+</abstract>
+<keywordset>
+<keyword>KDE</keyword>
+<keyword>kdeutils</keyword>
+<keyword>password</keyword>
+<keyword>secrets</keyword>
+<keyword>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title>Introduction</title>
+<para>
+&keepsecret; is a KDE password manager that stores and manages secrets
+securely using the freedesktop Secret Service API. It allows you to
+store passwords, keys, and other sensitive information in encrypted
+wallets.
+</para>
+<para>
+&keepsecret; works alongside other applications that use the Secret
+Service API, such as web browsers and development tools, providing a
+unified place to manage all your stored credentials.
+</para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title>Using KeepSecret</title>
+
+<sect1 id="wallets">
+<title>Wallets</title>
+<para>
+A wallet is a collection of secrets. &keepsecret; displays your
+wallets in the left sidebar. Click a wallet to view its contents.
+</para>
+<para>
+To create a new wallet, open the menu and select
+<guimenuitem>New Wallet</guimenuitem>. To delete a wallet, open
+the wallet action menu and select
+<guimenuitem>Delete Wallet</guimenuitem>.
+</para>
+</sect1>
+
+<sect1 id="entries">
+<title>Managing Entries</title>
+<para>
+Each wallet contains a list of secret entries. Click an entry to
+view its details in the right panel.
+</para>
+<para>
+To create a new entry, click the <guibutton>New Entry</guibutton>
+button in the toolbar. Fill in the label, password, user, and
+server fields. You can click <guibutton>Generate</guibutton>
+to automatically generate a strong random password.
+</para>
+<para>
+To copy a password to the clipboard, click the
+<guibutton>Copy Password</guibutton> button. The password will
+be automatically cleared from the clipboard after 30 seconds.
+</para>
+</sect1>
+
+<sect1 id="import-export">
+<title>Import and Export</title>
+<para>
+&keepsecret; can export your wallet to a
+<filename>.keepsecret</filename> file for backup or transfer.
+To export, open the wallet action menu and select
+<guimenuitem>Export…</guimenuitem>.
+</para>
+<para>
+To import secrets, select <guimenuitem>Import…</guimenuitem>
+from the wallet action menu. You can import both
+<filename>.keepsecret</filename> files and legacy KWallet XML files.
+</para>
+</sect1>
+
+<sect1 id="locking">
+<title>Locking and Unlocking</title>
+<para>
+You can lock a wallet to protect its contents. Click the
+<guibutton>Lock</guibutton> button in the toolbar to lock the
+current wallet. To unlock it, click <guibutton>Unlock</guibutton>.
+</para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title>Credits and License</title>
+<para>
+&keepsecret; is developed by Marco Martin and contributors.
+</para>
+<para>Documentation Copyright &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para>
+&underCCBYSA4;
+&underGPL;
+</chapter>
+
+&documentation.index;
+
+</book>
