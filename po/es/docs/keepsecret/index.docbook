@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Spanish "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>Manual de &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>2026-07-06</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>KeepSecret es un gestor de contraseñas para KDE que guarda datos confidenciales de forma segura usando la API de Secret Service de freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>contraseña</keyword>
+<keyword
+>datos confidenciales</keyword>
+<keyword
+>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Introducción</title>
+<para
+>&keepsecret; es un gestor de contraseñas de KDE que guarda y gestiona datos confidenciales usando la API de Secret Service de freedesktop. Permite guardar contraseñas, claves y otros tipos de información confidencial en carteras cifradas. </para>
+<para
+>&keepsecret; funciona junto a otras aplicaciones que usan la API de Secret Service, como navegadores web y herramientas de desarrollo, proporcionando un lugar unificado para la gestión de todas las credenciales guardadas. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>Uso de KeepSecret</title>
+
+<sect1 id="wallets">
+<title
+>Carteras</title>
+<para
+>Una cartera es una colección de datos confidenciales. &keepsecret; muestra las carteras en una barra lateral izquierda. Pulse sobre una cartera para ver su contenido. </para>
+<para
+>Para crear una nueva cartera, abra el menú y seleccione <guimenuitem
+>Nueva cartera</guimenuitem
+>. Para borrar una cartera, abre el menú de acciones de la cartera y seleccione <guimenuitem
+>Borrar cartera</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Gestión de entradas</title>
+<para
+>Cada cartera contiene una lista de entradas de datos confidenciales. Pulse sobre una entrada para ver sus detalles en el panel de la derecha. </para>
+<para
+>Para crear una nueva entrada, pulse el botón <guibutton
+>Nueva entrada</guibutton
+> en la barra de herramientas. Rellene los campos de etiqueta, contraseña, usuario y servidor. Puede pulsar <guibutton
+>Generar</guibutton
+> para generar automáticamente una contraseña fuerte de forma aleatoria. </para>
+<para
+>Para copiar una contraseña en el portapapeles, pulse el botón <guibutton
+>Copiar contraseña</guibutton
+>. La contraseña se borrará automáticamente del portapapeles al cabo de 30 segundos. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Importar y exportar</title>
+<para
+>&keepsecret; puede exportar una cartera a un archivo con la extensión <filename
+>.keepsecret</filename
+> para generar una copia de seguridad o transferirla a otro lugar. Para exportar, abra el menú de acciones de la cartera y seleccione <guimenuitem
+>Exportar…</guimenuitem
+>. </para>
+<para
+>Para importar datos confidenciales, seleccione <guimenuitem
+>Importar…</guimenuitem
+> en el menú de acciones de la cartera. Puede importar archivos <filename
+>.keepsecret</filename
+> y archivos XML heredados de KWallet. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Bloqueo y desbloqueo</title>
+<para
+>Se puede bloquear una cartera para proteger su contenido. Pulse el botón <guibutton
+>Bloquear</guibutton
+> en la barra de herramientas para bloquear la cartera actual. Para desbloquearla, pulse el botón <guibutton
+>Desbloquear</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Créditos y licencia</title>
+<para
+>&keepsecret; está desarrollado por los colaboradores de la comunidad KDE. </para>
+<para
+>Copyright de la documentación &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>

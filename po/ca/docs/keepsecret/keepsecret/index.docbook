@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Catalan  "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>El manual del &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>6 de juliol de 2026</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>El KeepSecret és un gestor de contrasenyes per a KDE que emmagatzema secrets de forma segura utilitzant l'API del servei de secrets de freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>contrasenya</keyword>
+<keyword
+>secrets</keyword>
+<keyword
+>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Introducció</title>
+<para
+>El &keepsecret; és un gestor de contrasenyes de KDE que emmagatzema i gestiona secrets de manera segura utilitzant l'API del servei de secrets de freedesktop. Permet emmagatzemar contrasenyes, claus i altra informació confidencial en carteres encriptades. </para>
+<para
+>El &keepsecret; funciona al costat d'altres aplicacions que utilitzen l'API del servei de secrets, com ara navegadors web i eines de desenvolupament, proporcionant un lloc unificat per a gestionar totes les vostres credencials emmagatzemades. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>Ús del KeepSecret</title>
+
+<sect1 id="wallets">
+<title
+>Carteres</title>
+<para
+>Una cartera és una col·lecció de secrets. El &keepsecret; mostra les vostres carteres a la barra lateral esquerra. Feu clic a una cartera per veure el seu contingut. </para>
+<para
+>Per a crear una cartera nova, obriu el menú i seleccioneu <guimenuitem
+>Cartera nova</guimenuitem
+>. Per a suprimir una cartera, obriu el menú d'acció de la cartera i seleccioneu <guimenuitem
+>Suprimeix la cartera</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Gestió de les entrades</title>
+<para
+>Cada cartera conté una llista d'entrades de secrets. Feu clic a una entrada per veure els seus detalls al plafó dret. </para>
+<para
+>Per a crear una entrada nova, feu clic al botó <guibutton
+>Entrada nova</guibutton
+> a la barra d'eines. Ompliu els camps etiqueta, contrasenya, usuari i servidor. Podeu fer clic a <guibutton
+>Genera</guibutton
+> per a generar automàticament una contrasenya aleatòria forta. </para>
+<para
+>Per a copiar una contrasenya al porta-retalls, feu clic al botó <guibutton
+>Copia la contrasenya</guibutton
+>. La contrasenya es netejarà automàticament del porta-retalls després de 30 segons. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Importar i exportar</title>
+<para
+>El &keepsecret; pot exportar la cartera a un fitxer <filename
+>.keepsecret</filename
+> per a una còpia de seguretat o transferir-lo. Per a exportar, obriu el menú d'acció cartera i seleccioneu <guimenuitem
+>Exporta…</guimenuitem
+>. </para>
+<para
+>Per a importar secrets, seleccioneu <guimenuitem
+>Importa…</guimenuitem
+> des del menú d'acció de cartera. Podeu importar tant fitxers <filename
+>.keepsecret</filename
+> com fitxers XML de l'antic KWallet. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Bloqueig i desbloqueig</title>
+<para
+>Podeu bloquejar una cartera per protegir el seu contingut. Feu clic al botó <guibutton
+>Bloqueja</guibutton
+> a la barra d'eines per bloquejar la cartera actual. Per desbloquejar-lo, feu clic a <guibutton
+>Desbloquejar</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Crèdits i llicència</title>
+<para
+>Els col·laboradors de la comunitat KDE han desenvolupat el &keepsecret;. </para>
+<para
+>Copyright de la documentació &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>
