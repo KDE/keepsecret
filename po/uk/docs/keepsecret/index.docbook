@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Ukrainian "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>Підручник з &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Рошані Кумарі</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>6 липня 2026 року</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>KeepSecret — це програма KDE для керування паролями, яка безпечно зберігає ключі за допомогою програмного інтерфейсу Secret Service freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>пароль</keyword>
+<keyword
+>ключі</keyword>
+<keyword
+>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Вступ</title>
+<para
+>&keepsecret; — це програма KDE для керування паролями, яка безпечно зберігає та керує ключами за допомогою програмного інтерфейсу Secret Service freedesktop. Вона уможливлює зберігання паролів, ключів та інших конфіденційний даних у зашифрованих гаманцях. </para>
+<para
+>&keepsecret; працює разом з іншими програмами, що використовують програмний інтерфейс Secret Service, такими як програми для перегляду інтернету та інструменти розробки, забезпечуючи єдине місце для керування всіма вашими збереженими обліковими даними. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>Користування KeepSecret</title>
+
+<sect1 id="wallets">
+<title
+>Гаманці</title>
+<para
+>Гаманець — це збірка ключів. &keepsecret; показує ваші гаманці на лівій бічній панелі. Натисніть пункт гаманця, щоб переглянути його вміст. </para>
+<para
+>Щоб створити гаманець, відкрийте меню та виберіть <guimenuitem
+>Створити гаманець</guimenuitem
+>. Щоб вилучити гаманець, відкрийте меню дій гаманця та виберіть <guimenuitem
+>Вилучити гаманець</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Керування записами</title>
+<para
+>Кожен гаманець містить список записів ключів. Натисніть на записі, щоб переглянути його параметри на правій панелі. </para>
+<para
+>Щоб створити запис, натисніть кнопку <guibutton
+>Створити запис</guibutton
+> на панелі інструментів. Заповніть поля мітки, пароля, користувача та сервера. Ви можете натиснути <guibutton
+>Створити</guibutton
+>, щоб автоматично створити надійний випадковий пароль. </para>
+<para
+>Щоб скопіювати пароль до буфера обміну, натисніть кнопку <guibutton
+>Скопіювати пароль</guibutton
+>. Пароль буде автоматично вилучено з буфера обміну за 30 секунд. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Імпортування та експортування</title>
+<para
+>&keepsecret; може експортувати ваш гаманець до файла <filename
+>.keepsecret</filename
+> для резервного копіювання або перенесення. Щоб експортувати дані, відкрийте меню дій гаманця та виберіть <guimenuitem
+>Експортувати…</guimenuitem
+>. </para>
+<para
+>Щоб імпортувати ключі, виберіть пункт <guimenuitem
+>Імпортувати…</guimenuitem
+> з меню дій гаманця. Ви можете імпортувати як файли <filename
+>.keepsecret</filename
+>, так і застарілі XML-файли KWallet. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Блокування і розблокування</title>
+<para
+>Ви можете заблокувати гаманець, щоб захистити його вміст. Натисніть кнопку <guibutton
+>Заблокувати</guibutton
+> на панелі інструментів, щоб заблокувати поточний гаманець. Щоб розблокувати його, натисніть <guibutton
+>Розблокувати</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Подяки і ліцензія</title>
+<para
+>&keepsecret; створено учасниками спільноти KDE. </para>
+<para
+>Авторські права на документацію належать &Roshani.Kumari; &Roshani.Kumari.mail;, 2026</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>

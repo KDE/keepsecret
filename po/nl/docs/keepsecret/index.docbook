@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Dutch "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>Het handboek van &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>2026-07-06</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>KeepSecret is een wachtwoordbeheerder voor KDE die geheimen veilig opslaat met behulp van de freedesktop Secret Service API. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>wachtwoord</keyword>
+<keyword
+>geheimen</keyword>
+<keyword
+>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Inleiding</title>
+<para
+>&keepsecret; is een wachtwoordbeheerder voor KDE die geheimen veilig opslaat en beheert met behulp van de Secret Service-API van freedesktop. Hiermee kunt u wachtwoorden, sleutels en andere gevoelige informatie opslaan in versleutelde portefeuilles. </para>
+<para
+>&keepsecret; werkt samen met andere toepassingen die gebruikmaken van de Secret Service-API, zoals webbrowsers en ontwikkeltools, en biedt een centrale plek voor het beheren van al uw opgeslagen aanmeldgegevens. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>KeepSecret gebruiken</title>
+
+<sect1 id="wallets">
+<title
+>Portefeuilles</title>
+<para
+>Een portefeuille is een verzameling geheimen. &keepsecret; toont uw portefeuilles in de linkerzijbalk. Klik op een portefeuille om de inhoud ervan te bekijken. </para>
+<para
+>Om een ​​nieuwe portefeuille aan te maken, opent u het menu en selecteert u <guimenuitem
+>Nieuwe portefeuille</guimenuitem
+>. Om een ​​portefeuille te verwijderen, opent u het actiemenu van de portefeuille en selecteert u <guimenuitem
+>Portefeuille verwijderen</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Items beheren</title>
+<para
+>Elke portefeuille bevat een lijst met geheime vermeldingen. Klik op een vermelding om de details ervan in het rechter paneel te bekijken. </para>
+<para
+>Klik op de knop <guibutton
+>Nieuw item</guibutton
+> in de werkbalk om een ​​nieuw item aan te maken. Vul de velden voor label, wachtwoord, gebruiker en server in. U kunt op <guibutton
+>Genereren</guibutton
+> klikken om automatisch een sterk, willekeurig wachtwoord te genereren. </para>
+<para
+>Om een ​​wachtwoord naar het klembord te kopiëren, klikt u op de knop <guibutton
+>Wachtwoord kopiëren</guibutton
+>. Het wachtwoord wordt na 30 seconden automatisch van het klembord verwijderd. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Importeren en exporteren</title>
+<para
+>&keepsecret; kan uw portefeuille exporteren naar een bestand <filename
+>.keepsecret</filename
+> voor reservekopieën of overdracht. Om te exporteren opent u het actiemenu van de portefeuille en kiest u <guimenuitem
+>Exporteren…</guimenuitem
+>. </para>
+<para
+>Om geheimen te importeren, selecteert u <guimenuitem
+>Importeren…</guimenuitem
+> in het actiemenu van de wallet. U kunt zowel bestanden <filename
+>.keepsecret</filename
+> als oudere KWallet-XML-bestanden importeren. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Vergrendelen en ontgrendelen</title>
+<para
+>U kunt een portefeuille vergrendelen om de inhoud ervan te beschermen. Klik op de knop <guibutton
+>Vergrendelen</guibutton
+> in de werkbalk om de huidige portefeuille te vergrendelen. Klik op <guibutton
+>Ontgrendelen</guibutton
+> om deze te ontgrendelen. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Dankbetuigingen en licentie</title>
+<para
+>&keepsecret; is ontwikkeld door bijdragers uit de KDE-gemeenschap. </para>
+<para
+>Documentatie Copyright &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>
