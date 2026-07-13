@@ -152,6 +152,10 @@ Kirigami.ApplicationWindow {
                 AC.ActionCollection.action: AC.StandardActionData.KeyBindings
             },
             Kirigami.Action {
+                AC.ActionCollection.collection: "org.kde.globalactions"
+                AC.ActionCollection.action: AC.StandardActionData.FindAction
+            },
+            Kirigami.Action {
                 text: i18nc("@action:inMenu", "New Wallet")
                 icon.name: "list-add-symbolic"
                 AC.ActionCollection.collection: "org.kde.keepsecret.collections"
