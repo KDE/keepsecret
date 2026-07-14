@@ -153,7 +153,7 @@ Kirigami.ApplicationWindow {
             },
             Kirigami.Action {
                 AC.ActionCollection.collection: "org.kde.globalactions"
-                AC.ActionCollection.action: AC.StandardActionData.FindAction
+                AC.ActionCollection.action: "FindAction"
             },
             Kirigami.Action {
                 text: i18nc("@action:inMenu", "New Wallet")
