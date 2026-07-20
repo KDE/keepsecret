@@ -86,6 +86,7 @@ AC.ActionCollectionManager {
             name: "delete"
             text: i18nc("@action:button Delete this secret", "Delete Secret")
             icon.name: "delete-symbolic"
+            defaultShortcut: "Delete"
         }
     }
 }
