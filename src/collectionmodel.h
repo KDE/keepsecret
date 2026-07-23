@@ -37,6 +37,7 @@ public:
 
     Q_INVOKABLE void lock();
     Q_INVOKABLE void unlock();
+    Q_INVOKABLE QString dbusPathAt(int row) const;
 
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

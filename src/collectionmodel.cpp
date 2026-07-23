@@ -306,4 +306,12 @@ QVariantList CollectionModel::exportItems()
     return result;
 }
 
+QString CollectionModel::dbusPathAt(int row) const
+{
+    if (row < 0 || row >= m_items.count()) {
+        return QString();
+    }
+    return m_items.at(row).dbusPath;
+}
+
 #include "moc_collectionmodel.cpp"

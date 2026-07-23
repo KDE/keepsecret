@@ -15,6 +15,9 @@ Kirigami.ScrollablePage {
     id: page
 
     property alias currentEntry: view.currentIndex
+    property var selectedIndices: []
+    property int lastSelectedIndex: -1
+    property int selectedCount: 0
 
     title: App.collectionModel.collectionName
 
@@ -93,6 +96,36 @@ Kirigami.ScrollablePage {
             AC.ActionCollection.collection: "org.kde.keepsecret.collection"
             AC.ActionCollection.action: "export-wallet"
             onTriggered: exportDialog.open()
+        },
+        Kirigami.Action {
+            id: deleteSelectedAction
+            text: i18nc("@action:button Delete selected secrets", "Delete Selected")
+            icon.name: "delete-symbolic"
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            visible: true
+            enabled: page.selectedCount > 1
+            onTriggered: {
+                console.log("Delete Selected triggered, count:", page.selectedIndices.length)
+                showDeleteDialog(
+                    i18nc("@title:window", "Delete Secrets"),
+                    i18nc("@label", "Are you sure you want to delete %1 items?", page.selectedIndices.length),
+                    i18nc("@action:check", "I understand that the items will be permanently deleted"),
+                    () => {
+                        const indices = [...page.selectedIndices]
+                        // First collect all dbus paths
+                        console.log("Selected indices:", JSON.stringify(indices))
+                        const paths = indices.map(idx => App.collectionModel.dbusPathAt(idx)).filter(p => p)
+                        // Then delete all
+                        console.log("Paths to delete:", JSON.stringify(paths))
+                        paths.forEach(dbusPath => {
+                            console.log("Deleting:", dbusPath)
+                            App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, dbusPath)
+                            App.secretItemForContextMenu.deleteItem()
+                        })
+                        page.selectedIndices = []
+                    }
+                );
+            }
         },
         Kirigami.Action {
             text: i18nc("@action:inmenu", "Import")
@@ -306,27 +339,57 @@ Kirigami.ScrollablePage {
             required property var model
             required property int index
             width: view.width
-            // FIXME: this imitates an item with the space for the icon even if there is none, there should be something to do that more cleanly
             leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
             text: model.display
-            highlighted: view.currentIndex == index
- 
-            function click() {
-                if (contextMenu.visible) {
-                    return;
+            highlighted: view.currentIndex == index || page.selectedIndices.indexOf(index) !== -1
+
+            TapHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                acceptedModifiers: Qt.NoModifier
+                onTapped: {
+                    if (contextMenu.visible) return
+                    page.selectedIndices = []
+                    page.selectedCount = 0
+                    page.lastSelectedIndex = index
+                    view.currentIndex = index
+                    App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
+                    view.forceActiveFocus()
                 }
-                view.currentIndex = index
-                App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath);
-                view.forceActiveFocus();
             }
 
-            onClicked: click()
-            Keys.onPressed: (event) => {
-                if (contextMenu.visible) {
-                    return;
+            TapHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                acceptedModifiers: Qt.ControlModifier
+                onTapped: {
+                if (contextMenu.visible) return
+                let newSelection = [...page.selectedIndices]
+                const idx = newSelection.indexOf(index)
+                if (idx === -1) {
+                    newSelection.push(index)
+                } else {
+                    newSelection.splice(idx, 1)
                 }
-                if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
-                    delegate.click();
+                page.selectedIndices = newSelection
+                page.selectedCount = page.selectedIndices.length
+                page.lastSelectedIndex = index
+                console.log("selectedCount:", page.selectedCount)
+                }
+            }
+
+            TapHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                acceptedModifiers: Qt.ShiftModifier
+                onTapped: {
+                    if (contextMenu.visible) return
+                    if (page.lastSelectedIndex === -1) return
+                    const start = Math.min(page.lastSelectedIndex, index)
+                    const end = Math.max(page.lastSelectedIndex, index)
+                    let newSelection = []
+                    for (let i = start; i <= end; i++) {
+                        newSelection.push(i)
+                    }
+                    page.selectedIndices = newSelection
+                    page.selectedCount = page.selectedIndices.length
                 }
             }
 
@@ -335,16 +398,29 @@ Kirigami.ScrollablePage {
                 acceptedButtons: Qt.RightButton
                 onPressedChanged: {
                     if (pressed) {
-                        contextMenu.model = model
-                        contextMenu.popup(delegate)
+                    contextMenu.model = model
+                    contextMenu.popup(delegate)
                     }
                 }
             }
+
+            // Long press (touch)
             TapHandler {
                 acceptedDevices: PointerDevice.TouchScreen
                 onLongPressed: {
                     contextMenu.model = model
                     contextMenu.popup(delegate)
+                }
+            }
+
+            Keys.onPressed: (event) => {
+                if (contextMenu.visible) return
+                if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
+                    page.selectedIndices = []
+                    page.selectedCount = 0
+                    view.currentIndex = index
+                    App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
+                    view.forceActiveFocus()
                 }
             }
         }
