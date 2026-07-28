@@ -112,10 +112,8 @@ Kirigami.ScrollablePage {
                     i18nc("@action:check", "I understand that the items will be permanently deleted"),
                     () => {
                         const indices = [...page.selectedIndices]
-                        // First collect all dbus paths
                         console.log("Selected indices:", JSON.stringify(indices))
                         const paths = indices.map(idx => App.collectionModel.dbusPathAt(idx)).filter(p => p)
-                        // Then delete all
                         console.log("Paths to delete:", JSON.stringify(paths))
                         paths.forEach(dbusPath => {
                             console.log("Deleting:", dbusPath)
@@ -285,16 +283,22 @@ Kirigami.ScrollablePage {
             onClicked: App.secretItemForContextMenu.copySecret()
         }
         QQC.MenuItem {
-            text: i18nc("@action:inmenu Delete this secret", "Delete")
+            text: page.selectedCount > 1
+                ? i18nc("@action:inmenu Delete selected secrets", "Delete %1 Items", page.selectedCount)
+                : i18nc("@action:inmenu Delete this secret", "Delete")
             icon.name: "usermenu-delete-symbolic"
             onClicked: {
-                showDeleteDialog(
-                    i18nc("@title:window", "Delete Secret"),
-                    i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
-                    i18nc("@action:check", "I understand that the item will be permanently deleted"),
-                    () => {
-                        App.secretItemForContextMenu.deleteItem()
-                    })
+                if (page.selectedCount > 1) {
+                    deleteSelectedAction.trigger()
+                } else {
+                    showDeleteDialog(
+                        i18nc("@title:window", "Delete Secret"),
+                        i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
+                        i18nc("@action:check", "I understand that the item will be permanently deleted"),
+                        () => {
+                            App.secretItemForContextMenu.deleteItem()
+                        })
+                }
             }
         }
         QQC.MenuSeparator {}
@@ -361,21 +365,25 @@ Kirigami.ScrollablePage {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 acceptedModifiers: Qt.ControlModifier
                 onTapped: {
-                if (contextMenu.visible) return
-                let newSelection = [...page.selectedIndices]
-                const idx = newSelection.indexOf(index)
-                if (idx === -1) {
-                    newSelection.push(index)
-                } else {
-                    newSelection.splice(idx, 1)
-                }
-                page.selectedIndices = newSelection
-                page.selectedCount = page.selectedIndices.length
-                page.lastSelectedIndex = index
-                console.log("selectedCount:", page.selectedCount)
+                    if (contextMenu.visible) return
+                    let newSelection = [...page.selectedIndices]
+                    if (newSelection.length === 0 && view.currentIndex !== -1 && view.currentIndex !== index) {
+                        newSelection.push(view.currentIndex)
+                    }
+                    const idx = newSelection.indexOf(index)  
+                    if (idx === -1) {
+                        newSelection.push(index) 
+                    } else {
+                        newSelection.splice(idx, 1)
+                    }
+                    page.selectedIndices = newSelection
+                    page.selectedCount = page.selectedIndices.length
+                    page.lastSelectedIndex = index
+                    if (page.selectedCount > 1) {
+                        App.secretItem.close()
+                    }
                 }
             }
-
             TapHandler {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 acceptedModifiers: Qt.ShiftModifier
@@ -390,6 +398,10 @@ Kirigami.ScrollablePage {
                     }
                     page.selectedIndices = newSelection
                     page.selectedCount = page.selectedIndices.length
+                    page.lastSelectedIndex = index
+                    if (page.selectedCount > 1) {
+                        App.secretItem.close()
+                    }
                 }
             }
 
