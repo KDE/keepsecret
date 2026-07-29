@@ -102,7 +102,6 @@ Kirigami.ScrollablePage {
             text: i18nc("@action:button Delete selected secrets", "Delete Selected")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            visible: true
             enabled: page.selectedCount > 1
             onTriggered: {
                 console.log("Delete Selected triggered, count:", page.selectedIndices.length)
