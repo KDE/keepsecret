@@ -283,14 +283,14 @@ Kirigami.ScrollablePage {
             "dbusPath": "",
             "folder": ""
         }
-        onOpened: {
-            App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, contextMenu.model.dbusPath);
-        }
         QQC.MenuItem {
             text: i18nc("@action:inmenu Copy this secret", "Copy Secret")
             icon.name: "edit-copy-symbolic"
             enabled: App.secretItemForContextMenu.status !== SecretItemProxy.Locked
-            onClicked: App.secretItemForContextMenu.copySecret()
+            onClicked: {
+                App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, contextMenu.model.dbusPath)
+                App.secretItemForContextMenu.copySecret()
+            }
         }
         QQC.MenuItem {
             text: page.selectedCount > 1
@@ -413,7 +413,6 @@ Kirigami.ScrollablePage {
                                 page.selectedIndices = [index]
                                 page.selectedCount = 1
                                 page.lastSelectedIndex = index
-                                view.currentIndex = index
                                 App.secretItem.close()
                             }
                         } else {
