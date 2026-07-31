@@ -75,6 +75,13 @@ Kirigami.ScrollablePage {
             }
         },
         Kirigami.Action {
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "export-wallet"
+            onTriggered: exportDialog.open()
+        },
+        Kirigami.Action {
             text: i18nc("@title:window Delete this wallet", "Delete Wallet")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
@@ -86,40 +93,44 @@ Kirigami.ScrollablePage {
                     i18nc("@label", "Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
                     i18nc("@action:check", "I understand that all the items will be permanently deleted"),
                     () => {
+                        App.secretItem.close()
                         App.secretService.deleteCollection(App.collectionModel.collectionPath)
                     });
             }
         },
         Kirigami.Action {
-            displayHint: Kirigami.DisplayHint.AlwaysHide
-            enabled: App.stateTracker.status & StateTracker.CollectionReady
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "export-wallet"
-            onTriggered: exportDialog.open()
-        },
-        Kirigami.Action {
             id: deleteSelectedAction
-            text: i18nc("@action:button Delete selected secrets", "Delete Selected")
+            text: page.selectedCount > 1
+                ? i18nc("@action:button Delete selected secrets", "Delete Selected Secrets")
+                : i18nc("@action:button Delete this secret", "Delete Secret")
             icon.name: "delete-symbolic"
             displayHint: Kirigami.DisplayHint.AlwaysHide
-            enabled: page.selectedCount > 1
+            AC.ActionCollection.collection: "org.kde.keepsecret.item"
+            AC.ActionCollection.action: "delete"
+            enabled: page.selectedCount > 0 || view.currentIndex !== -1
             onTriggered: {
-                console.log("Delete Selected triggered, count:", page.selectedIndices.length)
+                const indices = page.selectedIndices.length > 0
+                    ? [...page.selectedIndices]
+                    : (view.currentIndex !== -1 ? [view.currentIndex] : [])
+                if (indices.length === 0) return
+
                 showDeleteDialog(
-                    i18nc("@title:window", "Delete Secrets"),
-                    i18nc("@label", "Are you sure you want to delete %1 items?", page.selectedIndices.length),
-                    i18nc("@action:check", "I understand that the items will be permanently deleted"),
+                    indices.length > 1 ? i18nc("@title:window", "Delete Secrets") : i18nc("@title:window", "Delete Secret"),
+                    indices.length > 1
+                        ? i18nc("@label", "Are you sure you want to delete %1 items?", indices.length)
+                        : i18nc("@label", "Are you sure you want to delete this item?"),
+                    i18nc("@action:check", "I understand that the item(s) will be permanently deleted"),
                     () => {
-                        const indices = [...page.selectedIndices]
-                        console.log("Selected indices:", JSON.stringify(indices))
-                        const paths = indices.map(idx => App.collectionModel.dbusPathAt(idx)).filter(p => p)
-                        console.log("Paths to delete:", JSON.stringify(paths))
+                        const paths = indices
+                            .map(idx => view.model.mapToSource(view.model.index(idx, 0)))
+                            .map(sourceIndex => App.collectionModel.dbusPathAt(sourceIndex.row))
+                            .filter(p => p)
                         paths.forEach(dbusPath => {
-                            console.log("Deleting:", dbusPath)
                             App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, dbusPath)
                             App.secretItemForContextMenu.deleteItem()
                         })
                         page.selectedIndices = []
+                        page.selectedCount = 0
                     }
                 );
             }
@@ -286,24 +297,13 @@ Kirigami.ScrollablePage {
                 ? i18nc("@action:inmenu Delete selected secrets", "Delete %1 Items", page.selectedCount)
                 : i18nc("@action:inmenu Delete this secret", "Delete")
             icon.name: "usermenu-delete-symbolic"
-            onClicked: {
-                if (page.selectedCount > 1) {
-                    deleteSelectedAction.trigger()
-                } else {
-                    showDeleteDialog(
-                        i18nc("@title:window", "Delete Secret"),
-                        i18nc("@label", "Are you sure you want to delete the item “%1”?", App.secretItemForContextMenu.label),
-                        i18nc("@action:check", "I understand that the item will be permanently deleted"),
-                        () => {
-                            App.secretItemForContextMenu.deleteItem()
-                        })
-                }
-            }
+            onClicked: deleteSelectedAction.trigger()
         }
         QQC.MenuSeparator {}
         QQC.MenuItem {
             text: i18nc("@action:inmenu Show properties", "Properties")
             icon.name: "configure-symbolic"
+            enabled: page.selectedCount <= 1
             onClicked: {
                 view.currentIndex = contextMenu.model.index
                 App.secretItem.loadItem(
@@ -311,7 +311,6 @@ Kirigami.ScrollablePage {
                     contextMenu.model.dbusPath
                 );
             }
-
         }
     }
 
@@ -369,9 +368,9 @@ Kirigami.ScrollablePage {
                     if (newSelection.length === 0 && view.currentIndex !== -1 && view.currentIndex !== index) {
                         newSelection.push(view.currentIndex)
                     }
-                    const idx = newSelection.indexOf(index)  
+                    const idx = newSelection.indexOf(index)
                     if (idx === -1) {
-                        newSelection.push(index) 
+                        newSelection.push(index)
                     } else {
                         newSelection.splice(idx, 1)
                     }
@@ -409,8 +408,23 @@ Kirigami.ScrollablePage {
                 acceptedButtons: Qt.RightButton
                 onPressedChanged: {
                     if (pressed) {
-                    contextMenu.model = model
-                    contextMenu.popup(delegate)
+                        if (page.selectedCount > 1) {
+                            if (page.selectedIndices.indexOf(index) === -1) {
+                                page.selectedIndices = [index]
+                                page.selectedCount = 1
+                                page.lastSelectedIndex = index
+                                view.currentIndex = index
+                                App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
+                            }
+                        } else {
+                            page.selectedIndices = []
+                            page.selectedCount = 0
+                            view.currentIndex = index
+                            page.lastSelectedIndex = index
+                            App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
+                        }
+                        contextMenu.model = model
+                        contextMenu.popup(delegate)
                     }
                 }
             }
