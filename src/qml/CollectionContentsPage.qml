@@ -414,14 +414,14 @@ Kirigami.ScrollablePage {
                                 page.selectedCount = 1
                                 page.lastSelectedIndex = index
                                 view.currentIndex = index
-                                App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
+                                App.secretItem.close()
                             }
                         } else {
                             page.selectedIndices = []
                             page.selectedCount = 0
                             view.currentIndex = index
                             page.lastSelectedIndex = index
-                            App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
+                            App.secretItem.close()
                         }
                         contextMenu.model = model
                         contextMenu.popup(delegate)
