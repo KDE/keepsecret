@@ -66,6 +66,7 @@ public:
                                 const QString &server,
                                 const QString &collectionPath);
     Q_INVOKABLE void loadItem(const QString &collectionPath, const QString &itemPath);
+    Q_INVOKABLE void loadItemForDelete(const QString &collectionPath, const QString &itemPath);
     Q_INVOKABLE void unlock();
     Q_INVOKABLE void save();
     Q_INVOKABLE void revert();

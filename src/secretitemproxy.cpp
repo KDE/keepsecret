@@ -430,6 +430,29 @@ void SecretItemProxy::loadItem(const QString &collectionPath, const QString &ite
     Q_EMIT attributesChanged(m_attributes);
 }
 
+void SecretItemProxy::loadItemForDelete(const QString &collectionPath, const QString &itemPath)
+{
+    if (collectionPath.isEmpty() || itemPath.isEmpty()) {
+        return;
+    }
+
+    m_dbusPath = itemPath;
+    m_collectionPath = collectionPath;
+
+    if (!StateTracker::instance()->isServiceConnected()) {
+        return;
+    }
+
+    bool ok;
+    m_secretItem = m_secretServiceClient->retrieveItem(itemPath, collectionPath, &ok);
+
+    if (ok) {
+        StateTracker::instance()->clearError();
+    } else {
+        StateTracker::instance()->setError(StateTracker::ItemLoadError, QStringLiteral("Failed to load the secret item"));
+    }
+}
+
 static void onItemUnlockFinished(GObject *source, GAsyncResult *result, gpointer inst)
 {
     Q_UNUSED(inst);

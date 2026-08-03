@@ -114,23 +114,45 @@ Kirigami.ScrollablePage {
                     : (view.currentIndex !== -1 ? [view.currentIndex] : [])
                 if (indices.length === 0) return
 
+                const singleLabel = indices.length === 1
+                    ? view.model.data(view.model.index(indices[0], 0), Qt.DisplayRole)
+                    : ""
+
                 showDeleteDialog(
                     indices.length > 1 ? i18nc("@title:window", "Delete Secrets") : i18nc("@title:window", "Delete Secret"),
                     indices.length > 1
                         ? i18nc("@label", "Are you sure you want to delete %1 items?", indices.length)
-                        : i18nc("@label", "Are you sure you want to delete this item?"),
+                        : i18nc("@label", "Are you sure you want to delete the item “%1”?", singleLabel),
                     i18nc("@action:check", "I understand that the item(s) will be permanently deleted"),
                     () => {
-                        const paths = indices
-                            .map(idx => view.model.mapToSource(view.model.index(idx, 0)))
-                            .map(sourceIndex => App.collectionModel.dbusPathAt(sourceIndex.row))
-                            .filter(p => p)
-                        paths.forEach(dbusPath => {
-                            App.secretItemForContextMenu.loadItem(App.collectionModel.collectionPath, dbusPath)
+                        const sourceRows = indices
+                            .map(idx => view.model.mapToSource(view.model.index(idx, 0)).row)
+                            .sort((a, b) => b - a)
+
+                        let i = 0
+                        function handler(oldOps, newOps) {
+                            if ((oldOps & StateTracker.ItemDeleting) && !(newOps & StateTracker.ItemDeleting)) {
+                                deleteNext()
+                            }
+                        }
+                        function deleteNext() {
+                            if (i >= sourceRows.length) {
+                                App.stateTracker.operationsChanged.disconnect(handler)
+                                page.selectedIndices = []
+                                page.selectedCount = 0
+                                return
+                            }
+                            const dbusPath = App.collectionModel.dbusPathAt(sourceRows[i])
+                            i++
+                            if (!dbusPath) {
+                                deleteNext()
+                                return
+                            }
+                            App.secretItemForContextMenu.loadItemForDelete(App.collectionModel.collectionPath, dbusPath)
                             App.secretItemForContextMenu.deleteItem()
-                        })
-                        page.selectedIndices = []
-                        page.selectedCount = 0
+                        }
+                        App.stateTracker.operationsChanged.connect(handler)
+                        deleteNext()
                     }
                 );
             }
@@ -343,15 +365,15 @@ Kirigami.ScrollablePage {
             width: view.width
             leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
             text: model.display
-            highlighted: view.currentIndex == index || page.selectedIndices.indexOf(index) !== -1
+            highlighted: page.selectedIndices.indexOf(index) !== -1
 
             TapHandler {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 acceptedModifiers: Qt.NoModifier
                 onTapped: {
                     if (contextMenu.visible) return
-                    page.selectedIndices = []
-                    page.selectedCount = 0
+                    page.selectedIndices = [index]
+                    page.selectedCount = 1
                     page.lastSelectedIndex = index
                     view.currentIndex = index
                     App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
@@ -413,6 +435,7 @@ Kirigami.ScrollablePage {
                                 page.selectedIndices = [index]
                                 page.selectedCount = 1
                                 page.lastSelectedIndex = index
+                                view.currentIndex = index
                                 App.secretItem.close()
                             }
                         } else {
@@ -420,7 +443,6 @@ Kirigami.ScrollablePage {
                             page.selectedCount = 0
                             view.currentIndex = index
                             page.lastSelectedIndex = index
-                            App.secretItem.close()
                         }
                         contextMenu.model = model
                         contextMenu.popup(delegate)
@@ -440,8 +462,8 @@ Kirigami.ScrollablePage {
             Keys.onPressed: (event) => {
                 if (contextMenu.visible) return
                 if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
-                    page.selectedIndices = []
-                    page.selectedCount = 0
+                    page.selectedIndices = [index]
+                    page.selectedCount = 1
                     view.currentIndex = index
                     App.secretItem.loadItem(App.collectionModel.collectionPath, model.dbusPath)
                     view.forceActiveFocus()
