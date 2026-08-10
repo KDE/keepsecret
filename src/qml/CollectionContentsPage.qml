@@ -18,6 +18,7 @@ Kirigami.ScrollablePage {
     property var selectedIndices: []
     property int lastSelectedIndex: -1
     property int selectedCount: 0
+    property bool selectionMode: false
 
     title: App.collectionModel.collectionName
 
@@ -32,6 +33,17 @@ Kirigami.ScrollablePage {
 
 
     actions: [
+        Kirigami.Action {
+            id: exitSelectionModeAction
+            text: i18nc("@action:button Exit multi-selection mode", "Exit Selection Mode")
+            icon.name: "dialog-cancel"
+            visible: page.selectionMode
+            onTriggered: {
+                page.selectionMode = false
+                page.selectedIndices = []
+                page.selectedCount = 0
+            }
+        },
         Kirigami.Action {
             id: newWalletAction
             visible: page.Window.window.shouldHideSidebar
@@ -363,15 +375,61 @@ Kirigami.ScrollablePage {
             required property var model
             required property int index
             width: view.width
-            leftPadding: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
+            leftPadding: page.selectionMode
+                ? Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2 + checkBox.width
+                : Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
             text: model.display
             highlighted: page.selectedIndices.indexOf(index) !== -1
+
+            QQC.CheckBox {
+                id: checkBox
+                visible: page.selectionMode
+                anchors {
+                    left: parent.left
+                    leftMargin: Kirigami.Units.largeSpacing
+                    verticalCenter: parent.verticalCenter
+                }
+                checked: page.selectedIndices.indexOf(index) !== -1
+                onToggled: {
+                    let newSelection = [...page.selectedIndices]
+                    const idx = newSelection.indexOf(index)
+                    if (checked && idx === -1) {
+                        newSelection.push(index)
+                    } else if (!checked && idx !== -1) {
+                        newSelection.splice(idx, 1)
+                    }
+                    page.selectedIndices = newSelection
+                    page.selectedCount = page.selectedIndices.length
+                }
+            }
+
+            onPressAndHold: {
+                if (!page.selectionMode) {
+                    page.selectionMode = true
+                    page.selectedIndices = [index]
+                    page.selectedCount = 1
+                    page.lastSelectedIndex = index
+                }
+            }
 
             TapHandler {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 acceptedModifiers: Qt.NoModifier
                 onTapped: {
                     if (contextMenu.visible) return
+                    if (page.selectionMode) {
+                        let newSelection = [...page.selectedIndices]
+                        const idx = newSelection.indexOf(index)
+                        if (idx === -1) {
+                            newSelection.push(index)
+                        } else {
+                            newSelection.splice(idx, 1)
+                        }
+                        page.selectedIndices = newSelection
+                        page.selectedCount = page.selectedIndices.length
+                        return
+                    }
+
                     page.selectedIndices = [index]
                     page.selectedCount = 1
                     page.lastSelectedIndex = index
