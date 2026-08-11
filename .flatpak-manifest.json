@@ -20,7 +20,7 @@
         "/share/qlogging-categories6"
     ],
     "modules": [
-        {    
+        {
             "name": "kirigami-app-components",
             "buildsystem": "cmake-ninja",
             "config-opts": [
