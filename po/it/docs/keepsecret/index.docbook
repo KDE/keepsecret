@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Italian "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>Manuale di &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>6/7/2026</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>KeepSecret è un gestore di password per KDE che memorizza i segreti in modo sicuro utilizzando l'API Secret Service di freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>password</keyword>
+<keyword
+>segreti</keyword>
+<keyword
+>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Introduzione</title>
+<para
+>&keepsecret; è un gestore di password per KDE che archivia e gestisce i segreti in modo sicuro utilizzando l'API Secret Service di freedesktop. Consente di archiviare password, chiavi e altre informazioni sensibili in portafogli cifrati. </para>
+<para
+>&keepsecret; funziona in sinergia con altre applicazioni che utilizzano l'API Secret Service, come browser web e strumenti di sviluppo, fornendo un punto di accesso unificato per gestire tutte le credenziali memorizzate. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>Utilizzare KeepSecret</title>
+
+<sect1 id="wallets">
+<title
+>Portafogli</title>
+<para
+>Un portafogli è una raccolta di segreti. &keepsecret; visualizza i portafogli nella barra laterale sinistra. Fare clic su un portafoglio per visualizzarne il contenuto. </para>
+<para
+>Per creare un nuovo portafogli, aprire il menu e selezionare <guimenuitem
+>Nuovo portafogli</guimenuitem
+>. Per eliminare un portafoglio, aprire il menu delle azioni del portafogli e selezionare <guimenuitem
+>Elimina portafogli</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Gestire le voci</title>
+<para
+>Ogni portafogli contiene un elenco di voci segrete. Fare clic su una voce per visualizzarne i dettagli nel pannello a destra. </para>
+<para
+>Per creare una nuova voce, fare clic sul pulsante <guibutton
+>Nuova voce</guibutton
+> nella barra degli strumenti. Compilare i campi etichetta, password, utente e server. È possibile fare clic su <guibutton
+>Genera</guibutton
+> per generare automaticamente una password complessa e casuale. </para>
+<para
+>Per copiare una password negli appunti, fare clic sul pulsante <guibutton
+>Copia password</guibutton
+>. La password sarà automaticamente eliminata dagli appunti dopo 30 secondi. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Importa ed esporta</title>
+<para
+>&keepsecret; consente di esportare il portafogli in un file <filename
+>.keepsecret</filename
+> per il backup o il trasferimento. Per esportare, aprire il menu delle azioni del portafoglio e selezionare <guimenuitem
+>Esporta…</guimenuitem
+>. </para>
+<para
+>Per importare i segreti, selezionare <guimenuitem
+>Importa…</guimenuitem
+> dal menu delle azioni del portafogli. È possibile importare sia file <filename
+>.keepsecret</filename
+> che file XML ereditati da KWallet. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Bloccare o sbloccare</title>
+<para
+>È possibile bloccare un portafogli per proteggerne il contenuto. Fare clic sul pulsante <guibutton
+>Blocca</guibutton
+> nella barra degli strumenti per bloccare il portafoglio attuale. Per sbloccarlo, fare clic su <guibutton
+>Sblocca</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Riconoscimenti e licenza</title>
+<para
+>&keepsecret; è sviluppato da collaboratori della comunità KDE. </para>
+<para
+>Copyright della documentazione &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>
