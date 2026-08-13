@@ -152,6 +152,7 @@ Kirigami.ScrollablePage {
                                 App.stateTracker.operationsChanged.disconnect(handler)
                                 page.selectedIndices = []
                                 page.selectedCount = 0
+                                page.selectionMode = false 
                                 return
                             }
                             const dbusPath = App.collectionModel.dbusPathAt(sourceRows[i])
@@ -375,40 +376,37 @@ Kirigami.ScrollablePage {
             required property var model
             required property int index
             width: view.width
-            leftPadding: page.selectionMode
-                ? Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2 + checkBox.width
-                : Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.largeSpacing * 2
             text: model.display
             highlighted: page.selectedIndices.indexOf(index) !== -1
 
-            QQC.CheckBox {
-                id: checkBox
-                visible: page.selectionMode
-                anchors {
-                    left: parent.left
-                    leftMargin: Kirigami.Units.largeSpacing
-                    verticalCenter: parent.verticalCenter
-                }
-                checked: page.selectedIndices.indexOf(index) !== -1
-                onToggled: {
-                    let newSelection = [...page.selectedIndices]
-                    const idx = newSelection.indexOf(index)
-                    if (checked && idx === -1) {
-                        newSelection.push(index)
-                    } else if (!checked && idx !== -1) {
-                        newSelection.splice(idx, 1)
-                    }
-                    page.selectedIndices = newSelection
-                    page.selectedCount = page.selectedIndices.length
-                }
-            }
+            contentItem: RowLayout {
+                spacing: Kirigami.Units.smallSpacing
+                Layout.leftMargin: Kirigami.Units.smallSpacing
 
-            onPressAndHold: {
-                if (!page.selectionMode) {
-                    page.selectionMode = true
-                    page.selectedIndices = [index]
-                    page.selectedCount = 1
-                    page.lastSelectedIndex = index
+
+                QQC.CheckBox {
+                    id: checkBox
+                    Layout.alignment: Qt.AlignVCenter
+                    visible: page.selectionMode
+                    checked: page.selectedIndices.indexOf(index) !== -1
+                    onToggled: {
+                        let newSelection = [...page.selectedIndices]
+                        const idx = newSelection.indexOf(index)
+                        if (checked && idx === -1) {
+                            newSelection.push(index)
+                        } else if (!checked && idx !== -1) {
+                            newSelection.splice(idx, 1)
+                        }
+                        page.selectedIndices = newSelection
+                        page.selectedCount = page.selectedIndices.length
+                    }
+                }
+
+                QQC.Label {
+                    text: delegate.text
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    elide: Text.ElideRight
                 }
             }
 
@@ -512,8 +510,12 @@ Kirigami.ScrollablePage {
             TapHandler {
                 acceptedDevices: PointerDevice.TouchScreen
                 onLongPressed: {
-                    contextMenu.model = model
-                    contextMenu.popup(delegate)
+                    if (!page.selectionMode) {
+                        page.selectionMode = true
+                        page.selectedIndices = [index]
+                        page.selectedCount = 1
+                        page.lastSelectedIndex = index
+                    }
                 }
             }
 
