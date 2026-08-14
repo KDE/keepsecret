@@ -106,8 +106,8 @@ Kirigami.ScrollablePage {
         },
         Kirigami.Action {
             id: exitSelectionModeAction
-            text: i18nc("@action:button Exit multi-selection mode", "Exit Selection Mode")
-            icon.name: "dialog-cancel"
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "exit-selection-mode"
             displayHint: Kirigami.DisplayHint.KeepVisible
             visible: page.selectionMode
             onTriggered: {

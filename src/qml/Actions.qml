@@ -29,6 +29,11 @@ AC.ActionCollectionManager {
             icon.name: "list-add-symbolic"
         }
         AC.ActionData {
+            name: "exit-selection-mode"
+            text: i18nc("@action:button Exit multi-selection mode", "Exit Selection Mode")
+            icon.name: "dialog-cancel"
+        }
+        AC.ActionData {
             name: "search"
             text: i18nc("@action:button", "Search")
             icon.name: "search-symbolic"
