@@ -30,93 +30,27 @@ Kirigami.ScrollablePage {
             view.forceActiveFocus();
         }
     }
+    function toggleSelection(idx) {
+        let newSelection = [...page.selectedIndices]
+        const i = newSelection.indexOf(idx)
+        if (i === -1) {
+            newSelection.push(idx)
+        } else {
+            newSelection.splice(i, 1)
+        }
+        page.selectedIndices = newSelection
+        page.selectedCount = page.selectedIndices.length
+    }
 
 
     actions: [
-        Kirigami.Action {
-            id: exitSelectionModeAction
-            text: i18nc("@action:button Exit multi-selection mode", "Exit Selection Mode")
-            icon.name: "dialog-cancel"
-            visible: page.selectionMode
-            onTriggered: {
-                page.selectionMode = false
-                page.selectedIndices = []
-                page.selectedCount = 0
-            }
-        },
-        Kirigami.Action {
-            id: newWalletAction
-            visible: page.Window.window.shouldHideSidebar
-            AC.ActionCollection.collection: "org.kde.keepsecret.collections"
-            AC.ActionCollection.action: "new-wallet"
-            onTriggered: page.Window.window.openWalletCreationDialog()
-        },
-
-        Kirigami.Action {
-            id: newAction
-            enabled: App.stateTracker.status & StateTracker.CollectionReady
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "new-entry"
-            onTriggered: creationDialog.open()
-        },
-        Kirigami.Action {
-            id: searchAction
-            enabled: App.stateTracker.status & StateTracker.CollectionReady
-            shortcut: checked ? "" : "Ctrl+F"
-            checkable: true
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "search"
-            onTriggered: {
-                if (checked) {
-                    searchField.forceActiveFocus()
-                }
-            }
-        },
-        Kirigami.Action {
-            id: lockAction
-            readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
-            enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: locked ? "unlock" : "lock"
-            onTriggered: {
-                if (locked) {
-                    App.collectionModel.unlock()
-                } else {
-                    App.collectionModel.lock()
-                }
-            }
-        },
-        Kirigami.Action {
-            displayHint: Kirigami.DisplayHint.AlwaysHide
-            enabled: App.stateTracker.status & StateTracker.CollectionReady
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "export-wallet"
-            onTriggered: exportDialog.open()
-        },
-        Kirigami.Action {
-            text: i18nc("@title:window Delete this wallet", "Delete Wallet")
-            icon.name: "delete-symbolic"
-            displayHint: Kirigami.DisplayHint.AlwaysHide
-            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
-            AC.ActionCollection.action: "delete-wallet"
-            onTriggered: {
-                showDeleteDialog(
-                    i18nc("@title:window", "Delete Wallet"),
-                    i18nc("@label", "Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
-                    i18nc("@action:check", "I understand that all the items will be permanently deleted"),
-                    () => {
-                        App.secretItem.close()
-                        App.secretService.deleteCollection(App.collectionModel.collectionPath)
-                    });
-            }
-        },
         Kirigami.Action {
             id: deleteSelectedAction
             text: page.selectedCount > 1
                 ? i18nc("@action:button Delete selected secrets", "Delete Selected Secrets")
                 : i18nc("@action:button Delete this secret", "Delete Secret")
             icon.name: "delete-symbolic"
-            displayHint: Kirigami.DisplayHint.AlwaysHide
+            displayHint: page.selectionMode ? Kirigami.DisplayHint.KeepVisible : Kirigami.DisplayHint.AlwaysHide
             AC.ActionCollection.collection: "org.kde.keepsecret.item"
             AC.ActionCollection.action: "delete"
             enabled: page.selectedCount > 0 || view.currentIndex !== -1
@@ -171,10 +105,93 @@ Kirigami.ScrollablePage {
             }
         },
         Kirigami.Action {
+            id: exitSelectionModeAction
+            text: i18nc("@action:button Exit multi-selection mode", "Exit Selection Mode")
+            icon.name: "dialog-cancel"
+            displayHint: Kirigami.DisplayHint.KeepVisible
+            visible: page.selectionMode
+            onTriggered: {
+                page.selectionMode = false
+                page.selectedIndices = []
+                page.selectedCount = 0
+            }
+        },
+        Kirigami.Action {
+            id: newWalletAction
+            visible: page.Window.window.shouldHideSidebar && !page.selectionMode
+            AC.ActionCollection.collection: "org.kde.keepsecret.collections"
+            AC.ActionCollection.action: "new-wallet"
+            onTriggered: page.Window.window.openWalletCreationDialog()
+        },
+
+        Kirigami.Action {
+            id: newAction
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
+            visible: !page.selectionMode
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "new-entry"
+            onTriggered: creationDialog.open()
+        },
+        Kirigami.Action {
+            id: searchAction
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
+            visible: !page.selectionMode
+            shortcut: checked ? "" : "Ctrl+F"
+            checkable: true
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "search"
+            onTriggered: {
+                if (checked) {
+                    searchField.forceActiveFocus()
+                }
+            }
+        },
+        Kirigami.Action {
+            id: lockAction
+            readonly property bool locked: App.stateTracker.status & StateTracker.CollectionLocked
+            enabled: App.stateTracker.status & (StateTracker.CollectionReady | StateTracker.CollectionLocked)
+            visible: !page.selectionMode
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: locked ? "unlock" : "lock"
+            onTriggered: {
+                if (locked) {
+                    App.collectionModel.unlock()
+                } else {
+                    App.collectionModel.lock()
+                }
+            }
+        },
+        Kirigami.Action {
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            enabled: App.stateTracker.status & StateTracker.CollectionReady
+            visible: !page.selectionMode
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "export-wallet"
+            onTriggered: exportDialog.open()
+        },
+        Kirigami.Action {
+            text: i18nc("@title:window Delete this wallet", "Delete Wallet")
+            icon.name: "delete-symbolic"
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            visible: !page.selectionMode
+            AC.ActionCollection.collection: "org.kde.keepsecret.collection"
+            AC.ActionCollection.action: "delete-wallet"
+            onTriggered: {
+                showDeleteDialog(
+                    i18nc("@title:window", "Delete Wallet"),
+                    i18nc("@label", "Are you sure you want to delete the wallet “%1”?", App.collectionModel.collectionName),
+                    i18nc("@action:check", "I understand that all the items will be permanently deleted"),
+                    () => {
+                        App.secretItem.close()
+                        App.secretService.deleteCollection(App.collectionModel.collectionPath)
+                    });
+            }
+        },
+        Kirigami.Action {
             text: i18nc("@action:inmenu", "Import")
             icon.name: "document-import"
             displayHint: Kirigami.DisplayHint.AlwaysHide
-
+            visible: !page.selectionMode
             Kirigami.Action {
                 AC.ActionCollection.collection: "org.kde.keepsecret.collection"
                 AC.ActionCollection.action: "import-keepsecret"
@@ -415,16 +432,8 @@ Kirigami.ScrollablePage {
                 acceptedModifiers: Qt.NoModifier
                 onTapped: {
                     if (contextMenu.visible) return
-                    if (page.selectionMode) {
-                        let newSelection = [...page.selectedIndices]
-                        const idx = newSelection.indexOf(index)
-                        if (idx === -1) {
-                            newSelection.push(index)
-                        } else {
-                            newSelection.splice(idx, 1)
-                        }
-                        page.selectedIndices = newSelection
-                        page.selectedCount = page.selectedIndices.length
+                    if(page.selectionMode) {
+                        page.toggleSelection(index)
                         return
                     }
 
@@ -509,6 +518,11 @@ Kirigami.ScrollablePage {
             // Long press (touch)
             TapHandler {
                 acceptedDevices: PointerDevice.TouchScreen
+                onTapped: {
+                    if (page.selectionMode) {
+                        page.toggleSelection(index)
+                    }
+                }
                 onLongPressed: {
                     if (!page.selectionMode) {
                         page.selectionMode = true
