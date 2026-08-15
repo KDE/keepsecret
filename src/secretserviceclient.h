@@ -53,6 +53,13 @@ struct SecretValueDeleter {
     }
 };
 
+struct GCharDeleter {
+    void operator()(gchar *data) const
+    {
+        g_free(data);
+    }
+};
+
 template<typename T>
 using GObjectPtr = std::unique_ptr<T, GObjectDeleter>;
 using SecretServicePtr = GObjectPtr<SecretService>;
@@ -61,6 +68,7 @@ using SecretItemPtr = GObjectPtr<SecretItem>;
 using GHashTablePtr = std::unique_ptr<GHashTable, GHashTableDeleter>;
 using GListPtr = std::unique_ptr<GList, GListDeleter>;
 using SecretValuePtr = std::unique_ptr<SecretValue, SecretValueDeleter>;
+using GCharPtr = std::unique_ptr<gchar, GCharDeleter>;
 
 class SecretServiceClient : public QObject
 {
