@@ -14,6 +14,9 @@ qt_add_qml_module(keepsecret URI org.kde.keepsecret
         qml/CollectionListPage.qml
 )
 
+qt_add_dbus_interface(dbus_SRCS org.freedesktop.Secrets.Service.xml secretsserviceinterface)
+qt_add_dbus_interface(dbus_SRCS org.freedesktop.Secrets.Collection.xml secretscollectioninterface)
+
 target_sources(keepsecret PRIVATE
     main.cpp
     app.cpp
@@ -31,6 +34,7 @@ target_sources(keepsecret PRIVATE
     importexportmanager.cpp
     importexportmanager.h
     resources.qrc
+    ${dbus_SRCS}
 )
 
 ecm_qt_declare_logging_category(keepsecret
