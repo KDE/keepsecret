@@ -73,7 +73,8 @@ QString CollectionModel::collectionName() const
         return QString();
     }
 
-    return QString::fromUtf8(secret_collection_get_label(m_secretCollection.get()));
+    auto label = GCharPtr(secret_collection_get_label(m_secretCollection.get()));
+    return QString::fromUtf8(label.get());
 }
 
 QString CollectionModel::collectionPath() const
@@ -236,7 +237,7 @@ void CollectionModel::refreshWallet()
         for (GList *l = list.get(); l != nullptr; l = l->next) {
             SecretItemPtr item = SecretItemPtr(SECRET_ITEM(l->data));
             Entry entry;
-            entry.label = QString::fromUtf8(secret_item_get_label(item.get()));
+            entry.label = QString::fromUtf8(GCharPtr(secret_item_get_label(item.get())).get());
             entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item.get())));
             entry.folder = QString();
             GHashTablePtr attributes = GHashTablePtr(secret_item_get_attributes(item.get()));

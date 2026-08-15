@@ -387,14 +387,15 @@ QList<SecretServiceClient::CollectionEntry> SecretServiceClient::listCollections
         for (GList *iter = glist.get(); iter != nullptr; iter = iter->next) {
             CollectionEntry entry;
             SecretCollection *collection = SECRET_COLLECTION(iter->data);
-            const gchar *rawLabel = secret_collection_get_label(collection);
+            auto label = GCharPtr(secret_collection_get_label(collection));
+
             // Skip empty names: gnome-keyring uses an empty label as an insernal session collection that the user shouldn't touch
-            if (strlen(rawLabel) == 0) {
+            if (strlen(label.get()) == 0) {
                 g_object_unref(collection);
                 continue;
             }
 
-            entry.name = QString::fromUtf8(rawLabel);
+            entry.name = QString::fromUtf8(label.get());
             entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(collection)));
             entry.locked = secret_collection_get_locked(collection);
 
@@ -532,7 +533,7 @@ static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gp
     QString message;
     SecretServiceClient *client = (SecretServiceClient *)inst;
 
-    secret_collection_create_finish(result, &error);
+    SecretCollectionPtr collection(secret_collection_create_finish(result, &error));
 
     if (SecretServiceClient::wasErrorFree(&error, message)) {
         StateTracker::instance()->clearError();
