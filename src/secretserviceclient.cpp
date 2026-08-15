@@ -6,12 +6,13 @@
 
 #include "secretserviceclient.h"
 #include "keepsecret_debug.h"
+#include "secretscollectioninterface.h"
+#include "secretsserviceinterface.h"
 #include "statetracker.h"
 
 #include <KConfig>
 #include <KLocalizedString>
 #include <QDBusConnection>
-#include <QDBusInterface>
 #include <QDBusPendingReply>
 #include <QDBusServiceWatcher>
 #include <QTimer>
@@ -120,21 +121,15 @@ QString SecretServiceClient::collectionLabelForPath(const QDBusObjectPath &path)
     if (!StateTracker::instance()->isServiceConnected()) {
         return {};
     }
-    QDBusInterface collectionInterface(m_serviceBusName, path.path(), QStringLiteral("org.freedesktop.Secret.Collection"), QDBusConnection::sessionBus());
+
+    OrgFreedesktopSecretCollectionInterface collectionInterface(m_serviceBusName, path.path(), QDBusConnection::sessionBus());
 
     if (!collectionInterface.isValid()) {
         qCWarning(KEEPSECRET_LOG) << "Failed to connect to the DBus collection object:" << path.path();
         return {};
     }
 
-    QVariant reply = collectionInterface.property("Label");
-
-    if (!reply.isValid()) {
-        qCWarning(KEEPSECRET_LOG) << "Error reading label:" << collectionInterface.lastError();
-        return {};
-    }
-
-    return reply.toString();
+    return collectionInterface.label();
 }
 
 SecretCollection *SecretServiceClient::retrieveCollection(const QString &collectionPath)
@@ -305,10 +300,7 @@ void SecretServiceClient::readDefaultCollection()
         return;
     }
 
-    QDBusInterface serviceInterface(m_serviceBusName,
-                                    QStringLiteral("/org/freedesktop/secrets"),
-                                    QStringLiteral("org.freedesktop.Secret.Service"),
-                                    QDBusConnection::sessionBus());
+    OrgFreedesktopSecretServiceInterface serviceInterface(m_serviceBusName, QStringLiteral("/org/freedesktop/secrets"), QDBusConnection::sessionBus());
 
     if (!serviceInterface.isValid()) {
         StateTracker::instance()->setError(StateTracker::ServiceConnectionError, i18nc("@info:status", "Failed to connect to the D-Bus SecretService object"));
@@ -320,8 +312,8 @@ void SecretServiceClient::readDefaultCollection()
     }
 
     StateTracker::instance()->setOperation(StateTracker::CollectionReadingDefault);
-    QDBusPendingCall call = serviceInterface.asyncCall(QStringLiteral("ReadAlias"), QStringLiteral("default"));
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
+    QDBusPendingReply<QDBusObjectPath> reply = serviceInterface.ReadAlias(QStringLiteral("default"));
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
 
     connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *call) {
         QDBusPendingReply<QDBusObjectPath> reply = *call;
