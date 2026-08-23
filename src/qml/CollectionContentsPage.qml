@@ -46,9 +46,7 @@ Kirigami.ScrollablePage {
     actions: [
         Kirigami.Action {
             id: deleteSelectedAction
-            text: page.selectedCount > 1
-                ? i18nc("@action:button Delete selected secrets", "Delete Selected Secrets")
-                : i18nc("@action:button Delete this secret", "Delete Secret")
+            text: i18ncp("@action:button Delete selected secrets", "Delete Secret", "Delete Selected Secrets", page.selectedCount)
             icon.name: "delete-symbolic"
             displayHint: page.selectionMode ? Kirigami.DisplayHint.KeepVisible : Kirigami.DisplayHint.AlwaysHide
             AC.ActionCollection.collection: "org.kde.keepsecret.item"
@@ -65,11 +63,11 @@ Kirigami.ScrollablePage {
                     : ""
 
                 showDeleteDialog(
-                    indices.length > 1 ? i18nc("@title:window", "Delete Secrets") : i18nc("@title:window", "Delete Secret"),
+                    i18ncp("@title:window", "Delete Secret", "Delete Secrets", indices.length),
                     indices.length > 1
                         ? i18nc("@label", "Are you sure you want to delete %1 items?", indices.length)
                         : i18nc("@label", "Are you sure you want to delete the item “%1”?", singleLabel),
-                    i18nc("@action:check", "I understand that the item(s) will be permanently deleted"),
+                    i18ncp("@action:check", "I understand that the item will be permanently deleted", "I understand that the items will be permanently deleted", indices.length),
                     () => {
                         const sourceRows = indices
                             .map(idx => view.model.mapToSource(view.model.index(idx, 0)).row)
@@ -86,7 +84,7 @@ Kirigami.ScrollablePage {
                                 App.stateTracker.operationsChanged.disconnect(handler)
                                 page.selectedIndices = []
                                 page.selectedCount = 0
-                                page.selectionMode = false 
+                                page.selectionMode = false
                                 return
                             }
                             const dbusPath = App.collectionModel.dbusPathAt(sourceRows[i])
@@ -345,9 +343,7 @@ Kirigami.ScrollablePage {
             }
         }
         QQC.MenuItem {
-            text: page.selectedCount > 1
-                ? i18nc("@action:inmenu Delete selected secrets", "Delete %1 Items", page.selectedCount)
-                : i18nc("@action:inmenu Delete this secret", "Delete")
+            text: i18ncp("@action:inmenu Delete selected secrets", "Delete", "Delete %1 Items", page.selectedCount)
             icon.name: "usermenu-delete-symbolic"
             onClicked: deleteSelectedAction.trigger()
         }
