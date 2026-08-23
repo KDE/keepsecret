@@ -90,7 +90,7 @@ Kirigami.ScrollablePage {
             Layout.fillWidth: true
             visible: false
             showCloseButton: true
-            text: i18nc("@info clipboard auto-clear countdown", "Password copied. Clipboard will be cleared in %1 seconds.", clipboardSecondsRemaining)
+            text: i18ncp("@info clipboard auto-clear countdown", "Password copied. Clipboard will be cleared in %1 second.", "Password copied. Clipboard will be cleared in %1 seconds.", clipboardSecondsRemaining)
         
             property int clipboardSecondsRemaining: 0
         }
