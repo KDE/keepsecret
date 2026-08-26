@@ -63,7 +63,7 @@ Kirigami.ScrollablePage {
                     : ""
 
                 showDeleteDialog(
-                    i18ncp("@title:window", "Delete Secret", "Delete Secrets", indices.length),
+                    i18ncp("@title:window, depend on number of secrets", "Delete Secret", "Delete Secrets", indices.length),
                     indices.length > 1
                         ? i18nc("@label", "Are you sure you want to delete %1 items?", indices.length)
                         : i18nc("@label", "Are you sure you want to delete the item “%1”?", singleLabel),
