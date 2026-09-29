@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Russian "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>Руководство пользователя &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>2026-07-06</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>KeepSecret — менеджер паролей для KDE с безопасным хранением секретов через API Secret Service freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>Пароль</keyword>
+<keyword
+>Пароли и ключи</keyword>
+<keyword
+>KeepSecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Введение</title>
+<para
+>&keepsecret; — менеджер паролей KDE, который надёжно хранит секреты и управляет ими с помощью API Secret Service проекта freedesktop. Позволяет хранить пароли, ключи и другие конфиденциальные сведения в зашифрованных кошельках. </para>
+<para
+>&keepsecret; работает вместе с другими приложениями, использующими API Secret Service, такими как веб-браузеры и средства разработки, и служит единым местом для управления всеми сохранёнными учётными данными. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>Использование KeepSecret</title>
+
+<sect1 id="wallets">
+<title
+>Бумажники</title>
+<para
+>Кошелёк — это набор секретов. &keepsecret; показывает кошельки на левой боковой панели. Чтобы просмотреть содержимое кошелька, щёлкните по нему. </para>
+<para
+>Чтобы создать новый бумажник, откройте меню и выберите <guimenuitem
+>Создать бумажник</guimenuitem
+>. Чтобы удалить бумажник, откройте меню действий бумажника и выберите <guimenuitem
+>Удалить бумажник</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Управление записями</title>
+<para
+>Каждый кошелёк содержит список секретных записей. Чтобы просмотреть сведения о записи в правой панели, щёлкните по ней. </para>
+<para
+>Чтобы создать новую запись, нажмите кнопку <guibutton
+>Новая запись</guibutton
+> на панели инструментов. Заполните поля метки, пароля, пользователя и сервера. Чтобы автоматически создать надёжный случайный пароль, нажмите кнопку <guibutton
+>Сгенерировать</guibutton
+>. </para>
+<para
+>Чтобы скопировать пароль в буфер обмена, нажмите кнопку <guibutton
+>Копировать пароль</guibutton
+>. Через 30 секунд пароль автоматически удаляется из буфера обмена. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Импорт и экспорт</title>
+<para
+>&keepsecret; позволяет экспортировать кошелёк в файл <filename
+>.keepsecret</filename
+> для резервного копирования или переноса. Чтобы экспортировать, откройте меню действий кошелька и выберите <guimenuitem
+>Экспорт…</guimenuitem
+>. </para>
+<para
+>Чтобы импортировать секреты, выберите <guimenuitem
+>Импорт…</guimenuitem
+> в меню действий кошелька. Можно импортировать как файлы <filename
+>.keepsecret</filename
+>, так и устаревшие XML-файлы KWallet. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Блокировка и разблокировка</title>
+<para
+>Бумажник можно заблокировать, чтобы защитить его содержимое. Чтобы заблокировать текущий бумажник, нажмите кнопку <guibutton
+>Заблокировать</guibutton
+> на панели инструментов. Чтобы разблокировать его, нажмите <guibutton
+>Разблокировать</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Авторские права и лицензия</title>
+<para
+>Над &keepsecret; работают участники сообщества KDE. </para>
+<para
+>Авторские права на документацию &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>
