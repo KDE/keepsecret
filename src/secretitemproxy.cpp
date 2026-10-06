@@ -288,7 +288,7 @@ static void onItemCreateFinished(GObject *source, GAsyncResult *result, gpointer
 
 void SecretItemProxy::createItem(const QString &label,
                                  const QByteArray &secret,
-                                 // const SecretServiceClient::Type type,
+                                 const QString &contentType,
                                  const QString &user,
                                  const QString &server,
                                  const QString &collectionPath)
@@ -298,8 +298,11 @@ void SecretItemProxy::createItem(const QString &label,
         return;
     }
 
-    // TODO: make it a paramenter?
-    const SecretServiceClient::Type type = SecretServiceClient::PlainText;
+    // Treat explicit non-text content types, or secrets that aren't valid UTF-8,
+    // as binary — libsecret rejects invalid UTF-8 under a text/* content type.
+    const bool looksBinary = contentType == QStringLiteral("application/octet-stream")
+    || QString::fromUtf8(secret).toUtf8() != secret;
+    const SecretServiceClient::Type type = looksBinary ? SecretServiceClient::Binary : SecretServiceClient::PlainText;
 
     SecretCollection *collection = m_secretServiceClient->retrieveCollection(collectionPath);
 
@@ -317,7 +320,7 @@ void SecretItemProxy::createItem(const QString &label,
         mimeType = QStringLiteral("text/plain");
     }
 
-    SecretValuePtr secretValue = SecretValuePtr(secret_value_new(data.constData(), -1, mimeType.toLatin1().constData()));
+    SecretValuePtr secretValue = SecretValuePtr(secret_value_new(data.constData(), data.size(), mimeType.toLatin1().constData()));
     if (!secretValue) {
         StateTracker::instance()->setError(StateTracker::ItemCreationError, i18nc("@info:status", "Failed to create SecretValue"));
         return;

@@ -61,6 +61,7 @@ public:
 
     Q_INVOKABLE void createItem(const QString &label,
                                 const QByteArray &secret,
+                                const QString &contentType,
                                 // const SecretServiceClient::Type type,
                                 const QString &user,
                                 const QString &server,

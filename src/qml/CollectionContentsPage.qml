@@ -313,6 +313,7 @@ Kirigami.ScrollablePage {
         onAccepted: {
             App.secretItem.createItem(labelField.text,
                                 passwordField.text,
+                                "text/plain",
                                 userField.text,
                                 serverField.text,
                                 App.collectionModel.collectionPath);
@@ -651,12 +652,14 @@ Kirigami.ScrollablePage {
                 let item = items[i]
                 let label = item["label"] || ""
                 let secret = item["secret"] || ""
+                let contentType = item["contentType"] || ""
                 let attrs = item["attributes"] || {}
                 let server = attrs["server"] || ""
                 let user = attrs["user"] || ""
                 App.secretItem.createItem(
                     label,
                     secret,
+                    contentType,
                     user,
                     server,
                     App.collectionModel.collectionPath
