@@ -139,39 +139,45 @@ SecretCollection *SecretServiceClient::retrieveCollection(const QString &collect
     }
 
     GListPtr collections = GListPtr(secret_service_get_collections(m_service.get()));
+    SecretCollection *matchingCollection = nullptr;
 
     for (GList *l = collections.get(); l != nullptr; l = l->next) {
         SecretCollection *coll = SECRET_COLLECTION(l->data);
         const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
-        if (path == collectionPath) {
-            SecretCollection *collection = coll;
-            return collection;
+        if (path == collectionPath && !matchingCollection) {
+            matchingCollection = coll;
+        } else {
+            g_object_unref(coll);
         }
     }
 
-    return nullptr;
+    return matchingCollection;
 }
 
 SecretItemPtr SecretServiceClient::retrieveItem(const QString &itemPath, const QString &collectionPath, bool *ok)
 {
-    SecretCollection *collection = retrieveCollection(collectionPath);
+    SecretCollectionPtr collection = SecretCollectionPtr(retrieveCollection(collectionPath));
 
-    GListPtr list = GListPtr(secret_collection_get_items(collection));
+    GListPtr list = GListPtr(secret_collection_get_items(collection.get()));
+    SecretItemPtr matchingItem;
+
     if (list) {
         *ok = true;
         for (GList *l = list.get(); l != nullptr; l = l->next) {
             SecretItem *item = static_cast<SecretItem *>(l->data);
             const QString path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(item)));
 
-            if (path == itemPath) {
-                return SecretItemPtr(item);
+            if (path == itemPath && !matchingItem) {
+                matchingItem = SecretItemPtr(item);
+            } else {
+                g_object_unref(item);
             }
         }
     } else {
         *ok = false;
     }
 
-    return nullptr;
+    return matchingItem;
 }
 
 static void onServiceGetFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -377,19 +383,18 @@ QList<SecretServiceClient::CollectionEntry> SecretServiceClient::listCollections
 
     if (glist) {
         for (GList *iter = glist.get(); iter != nullptr; iter = iter->next) {
-            CollectionEntry entry;
-            SecretCollection *collection = SECRET_COLLECTION(iter->data);
-            auto label = GCharPtr(secret_collection_get_label(collection));
+            SecretCollectionPtr collection = SecretCollectionPtr(SECRET_COLLECTION(iter->data));
+            auto label = GCharPtr(secret_collection_get_label(collection.get()));
 
-            // Skip empty names: gnome-keyring uses an empty label as an insernal session collection that the user shouldn't touch
+            // Skip empty names: gnome-keyring uses an empty label as an internal session collection that the user shouldn't touch
             if (strlen(label.get()) == 0) {
-                g_object_unref(collection);
                 continue;
             }
 
+            CollectionEntry entry;
             entry.name = QString::fromUtf8(label.get());
-            entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(collection)));
-            entry.locked = secret_collection_get_locked(collection);
+            entry.dbusPath = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(collection.get())));
+            entry.locked = secret_collection_get_locked(collection.get());
 
             collections << entry;
         }
@@ -442,7 +447,7 @@ static void onLockCollectionFinished(GObject *source, GAsyncResult *result, gpoi
         path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
         break;
     }
-    g_list_free(locked);
+    g_list_free_full(locked, g_object_unref);
 
     StateTracker::instance()->clearOperation(StateTracker::CollectionLocking);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
@@ -469,7 +474,8 @@ void SecretServiceClient::lockCollection(const QString &collectionPath)
     }
 
     StateTracker::instance()->setOperation(StateTracker::CollectionLocking);
-    secret_service_lock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onLockCollectionFinished, this);
+    GListPtr objects = GListPtr(g_list_append(nullptr, collection.get()));
+    secret_service_lock(m_service.get(), objects.get(), nullptr, onLockCollectionFinished, this);
 }
 
 static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)
@@ -488,7 +494,7 @@ static void onUnlockCollectionFinished(GObject *source, GAsyncResult *result, gp
         path = QString::fromUtf8(g_dbus_proxy_get_object_path(G_DBUS_PROXY(coll)));
         break;
     }
-    g_list_free(unlocked);
+    g_list_free_full(unlocked, g_object_unref);
 
     StateTracker::instance()->clearOperation(StateTracker::CollectionUnlocking);
     if (SecretServiceClient::wasErrorFree(&error, message)) {
@@ -515,7 +521,8 @@ void SecretServiceClient::unlockCollection(const QString &collectionPath)
     }
 
     StateTracker::instance()->setOperation(StateTracker::CollectionUnlocking);
-    secret_service_unlock(m_service.get(), g_list_append(nullptr, collection.get()), nullptr, onUnlockCollectionFinished, this);
+    GListPtr objects = GListPtr(g_list_append(nullptr, collection.get()));
+    secret_service_unlock(m_service.get(), objects.get(), nullptr, onUnlockCollectionFinished, this);
 }
 
 static void onCreateCollectionFinished(GObject *source, GAsyncResult *result, gpointer inst)

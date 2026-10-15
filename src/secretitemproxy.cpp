@@ -328,7 +328,7 @@ void SecretItemProxy::createItem(const QString &label,
         StateTracker::instance()->clearError();
     }
 
-    GHashTablePtr attributes = GHashTablePtr(g_hash_table_new(g_str_hash, g_str_equal));
+    GHashTablePtr attributes = GHashTablePtr(g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free));
     g_hash_table_insert(attributes.get(), g_strdup("user"), g_strdup(user.toUtf8().constData()));
     g_hash_table_insert(attributes.get(), g_strdup("type"), g_strdup(m_secretServiceClient->typeToString(type).toUtf8().constData()));
     g_hash_table_insert(attributes.get(), g_strdup("server"), g_strdup(server.toUtf8().constData()));
@@ -543,7 +543,7 @@ void SecretItemProxy::save()
 
     // Only attributes of type org.qt.keychain can be saved
     if (m_attributes.contains(QStringLiteral("xdg:schema")) && m_attributes[QStringLiteral("xdg:schema")] == QStringLiteral("org.qt.keychain")) {
-        GHashTable *attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+        GHashTablePtr attributes = GHashTablePtr(g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free));
         for (auto it = m_attributes.constBegin(); it != m_attributes.constEnd(); ++it) {
             QByteArray keyBytes = it.key().toUtf8();
             gchar *key = g_strdup(keyBytes.constData());
@@ -551,10 +551,10 @@ void SecretItemProxy::save()
             QByteArray valueBytes = it.value().toString().toUtf8();
             gchar *value = g_strdup(valueBytes.constData());
 
-            g_hash_table_insert(attributes, key, value);
+            g_hash_table_insert(attributes.get(), key, value);
         }
 
-        secret_item_set_attributes(m_secretItem.get(), SecretServiceClient::qtKeychainSchema(), attributes, nullptr, onSetAttributesFinished, this);
+        secret_item_set_attributes(m_secretItem.get(), SecretServiceClient::qtKeychainSchema(), attributes.get(), nullptr, onSetAttributesFinished, this);
         StateTracker::instance()->setOperation(StateTracker::ItemSavingAttributes);
 
         SecretValuePtr secretValue;
