@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Brazilian-Portuguese "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>O manual do &keepsecret;</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>06/07/2026</date>
+<releaseinfo
+>KeepSecret 0.1</releaseinfo>
+<abstract>
+<para
+>O KeepSecret é um gerenciador de senhas para o KDE que armazena senhas de forma segura utilizando a API Secret Service do freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>KDE</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>senha</keyword>
+<keyword
+>segredos</keyword>
+<keyword
+>keepsecret</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>Introdução</title>
+<para
+>O &keepsecret; é um gerenciador de senhas do KDE que armazena e gerencia senhas de forma segura, utilizando a API Secret Service do freedesktop. Ele permite armazenar senhas, chaves e outras informações confidenciais em carteiras criptografadas. </para>
+<para
+>O &keepsecret; funciona em conjunto com outros aplicativos que utilizam a API Secret Service, como navegadores da web e ferramentas de desenvolvimento, oferecendo um local unificado para gerenciar todas as suas credenciais armazenadas. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>Usando o KeepSecret</title>
+
+<sect1 id="wallets">
+<title
+>Carteiras</title>
+<para
+>Uma carteira é uma coleção de senhas. O &keepsecret; exibe suas carteiras na barra lateral esquerda. Clique em uma carteira para visualizar seu conteúdo. </para>
+<para
+>Para criar uma nova carteira, abra o menu e selecione <guimenuitem
+>Nova carteira</guimenuitem
+>. Para excluir uma carteira, abra o menu de ações da carteira e selecione <guimenuitem
+>Excluir carteira</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>Gerenciando entradas</title>
+<para
+>Cada carteira contém uma lista de entradas secretas. Clique em uma entrada para visualizar seus detalhes no painel à direita. </para>
+<para
+>Para criar uma nova entrada, clique no botão <guibutton
+>Nova entrada</guibutton
+> na barra de ferramentas. Preencha os campos de rótulo, senha, usuário e servidor. Você pode clicar em <guibutton
+>Gerar</guibutton
+> para gerar automaticamente uma senha forte e aleatória. </para>
+<para
+>Para copiar uma senha para a área de transferência, clique no botão <guibutton
+>Copiar senha</guibutton
+>. A senha será automaticamente removida da área de transferência após 30 segundos. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>Importar e exportar</title>
+<para
+>O &keepsecret; pode exportar sua carteira para um arquivo <filename
+>.keepsecret</filename
+> para fins de backup ou transferência. Para exportar, abra o menu de ações da carteira e selecione <guimenuitem
+>Exportar…</guimenuitem
+>. </para>
+<para
+>Para importar segredos, selecione <guimenuitem
+>Importar…</guimenuitem
+> no menu de ações da carteira. Você pode importar tanto arquivos <filename
+>.keepsecret</filename
+> quanto arquivos XML legados do KWallet. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>Bloqueando e desbloqueando</title>
+<para
+>Você pode bloquear uma carteira para proteger seu conteúdo. Clique no botão <guibutton
+>Bloquear</guibutton
+> na barra de ferramentas para bloquear a carteira atual. Para desbloqueá-la, clique em <guibutton
+>Desbloquear</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>Créditos e licença</title>
+<para
+>O &keepsecret; é desenvolvido por colaboradores da comunidade KDE. </para>
+<para
+>Copyright &copy; 2026 da documentação de &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>
