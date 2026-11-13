@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!--
+SPDX-FileCopyrightText: 2026 Roshani Kumari <roshnikumariii098@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "dtd/kdedbx45.dtd" [
+    <!ENTITY keepsecret "<application
+>KeepSecret</application
+>">
+    <!ENTITY % addindex "IGNORE">
+    <!ENTITY % Arabic "INCLUDE">
+    <!ENTITY Roshani.Kumari "<personname
+><firstname
+>Roshani</firstname
+><surname
+>Kumari</surname
+></personname
+>">
+    <!ENTITY Roshani.Kumari.mail "<email
+>roshnikumariii098@gmail.com</email
+>">
+]>
+<book id="keepsecret" lang="&language;">
+<bookinfo>
+<title
+>كتيب استعمال حافظ الأسرار</title>
+<authorgroup>
+<author
+>&Roshani.Kumari; &Roshani.Kumari.mail;</author>
+</authorgroup>
+<copyright>
+<year
+>2026</year>
+<holder
+>Roshani Kumari</holder>
+</copyright>
+<legalnotice
+>&CCBYSA4Notice;</legalnotice>
+<date
+>2026-07-06</date>
+<releaseinfo
+>حافظ الأسرار 0.1</releaseinfo>
+<abstract>
+<para
+>حافظ الأسرار هو مدير كلمات سر لبيئة كيدي يقوم بتخزين الأسرار بشكل آمن باستخدام واجهة برمجة تطبيقات خدمة الأسرار الخاصة بـ freedesktop. </para>
+</abstract>
+<keywordset>
+<keyword
+>كيدي</keyword>
+<keyword
+>kdeutils</keyword>
+<keyword
+>كلمة سر</keyword>
+<keyword
+>أسرار</keyword>
+<keyword
+>حافظ الأسرار</keyword>
+</keywordset>
+</bookinfo>
+
+<chapter id="introduction">
+<title
+>مقدمة</title>
+<para
+>تطبيق حافظ الأسرار هو مدير كلمات سر لبيئة كيدي، يقوم بتخزين وإدارة البيانات السرية بشكل آمن باستخدام واجهة برمجة تطبيقات خدمة البيانات السرية من Freedesktop. يتيح لك التطبيق تخزين كلمات السر والمفاتيح وغيرها من المعلومات الحساسة في محافظ مُعماة. </para>
+<para
+>يعمل تطبيق  حافظ الأسرار جنبًا إلى جنب مع التطبيقات الأخرى التي تستخدم واجهة برمجة تطبيقات الخدمة السرية، مثل متصفحات الويب وأدوات التطوير، مما يوفر مكانًا موحدًا لإدارة جميع بيانات الاعتماد المخزنة لديك. </para>
+</chapter>
+
+<chapter id="using-keepsecret">
+<title
+>استخدام حافظ الأسرار</title>
+
+<sect1 id="wallets">
+<title
+>المحافظ</title>
+<para
+>المحفظة عبارة عن مجموعة من الأسرار. يعرض تطبيق حافظ الأسرار محافظك في الشريط الجانبي الأيسر. انقر على أي محفظة لعرض محتوياتها. </para>
+<para
+>لإنشاء محفظة جديدة، افتح القائمة واختر <guimenuitem
+>محفظة جديدة</guimenuitem
+>. لحذف محفظة، افتح قائمة إجراءات المحفظة واختر <guimenuitem
+>احذف محفظة</guimenuitem
+>. </para>
+</sect1>
+
+<sect1 id="entries">
+<title
+>إدارة المدخلات</title>
+<para
+>تحتوي كل محفظة على قائمة من البيانات السرية. انقر على أي بيانات لعرض تفاصيلها في اللوحة اليمنى. </para>
+<para
+>لإنشاء إدخال جديد، انقر فوق الزر <guibutton
+>مدخلة جديدة</guibutton
+> في شريط الأدوات. املأ حقول التسمية وكلمة السر واسم المستخدم والخادم. يمكنك النقر على <guibutton
+>أنشئ</guibutton
+> لإنشاء كلمة سر عشوائية قوية آليًا. </para>
+<para
+>لنسخ كلمة السر إلى الحافظة، انقر فوق الزر <guibutton
+>انسخ كلمة السر</guibutton
+>. ستُحذف كلمة السر آليًا من الحافظة بعد 30 ثانية. </para>
+</sect1>
+
+<sect1 id="import-export">
+<title
+>استورد وصدّر</title>
+<para
+>يمكنك تصدير محفظتك إلى ملف باسم <filename
+>.keepsecret</filename
+> لعمل نسخة احتياطية أو نقلها. للتصدير، افتح قائمة إجراءات المحفظة واختر <guimenuitem
+>صدر...</guimenuitem
+>. </para>
+<para
+>لاستيراد البيانات السرية، اختر <guimenuitem
+>استورد…</guimenuitem
+> من قائمة إجراءات المحفظة. يمكنك استيراد كل من ملفات <filename
+>.keepsecret</filename
+> وملفات KWallet XML القديمة. </para>
+</sect1>
+
+<sect1 id="locking">
+<title
+>القفل وفك القفل</title>
+<para
+>يمكنك قفل المحفظة لحماية محتوياتها. انقر فوق زر <guibutton
+>اقفل</guibutton
+> في شريط الأدوات لقفل المحفظة الحالية. لفتح القفل، انقر فوق <guibutton
+>فك القفل</guibutton
+>. </para>
+</sect1>
+
+</chapter>
+
+<chapter id="credits">
+<title
+>الحقوق والترخيص</title>
+<para
+>طُور برنامج حافظ الأسرار بواسطة مساهمين من مجتمع كيدي. </para>
+<para
+>حقوق الطبع والنشر للوثائق والنسخ &copy; 2026 &Roshani.Kumari; &Roshani.Kumari.mail;</para
+>&underCCBYSA4; &underGPL; </chapter>
+
+&documentation.index;
+
+</book>
